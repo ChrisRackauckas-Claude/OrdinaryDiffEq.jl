@@ -1,7 +1,7 @@
 name = "OrdinaryDiffEq"
 uuid = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>", "Yingbo Ma <mayingbo5@gmail.com>"]
 version = "6.103.0"
+authors = ["Chris Rackauckas <accounts@chrisrackauckas.com>", "Yingbo Ma <mayingbo5@gmail.com>"]
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -74,37 +74,95 @@ StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TruncatedStacktraces = "781d530d-4396-4725-bb49-402e4bee1e77"
 
-[sources]
-OrdinaryDiffEqAdamsBashforthMoulton = {path = "lib/OrdinaryDiffEqAdamsBashforthMoulton"}
-OrdinaryDiffEqBDF = {path = "lib/OrdinaryDiffEqBDF"}
-OrdinaryDiffEqCore = {path = "lib/OrdinaryDiffEqCore"}
-OrdinaryDiffEqDefault = {path = "lib/OrdinaryDiffEqDefault"}
-OrdinaryDiffEqDifferentiation = {path = "lib/OrdinaryDiffEqDifferentiation"}
-OrdinaryDiffEqExplicitRK = {path = "lib/OrdinaryDiffEqExplicitRK"}
-OrdinaryDiffEqExponentialRK = {path = "lib/OrdinaryDiffEqExponentialRK"}
-OrdinaryDiffEqExtrapolation = {path = "lib/OrdinaryDiffEqExtrapolation"}
-OrdinaryDiffEqFIRK = {path = "lib/OrdinaryDiffEqFIRK"}
-OrdinaryDiffEqFeagin = {path = "lib/OrdinaryDiffEqFeagin"}
-OrdinaryDiffEqFunctionMap = {path = "lib/OrdinaryDiffEqFunctionMap"}
-OrdinaryDiffEqHighOrderRK = {path = "lib/OrdinaryDiffEqHighOrderRK"}
-OrdinaryDiffEqIMEXMultistep = {path = "lib/OrdinaryDiffEqIMEXMultistep"}
-OrdinaryDiffEqLinear = {path = "lib/OrdinaryDiffEqLinear"}
-OrdinaryDiffEqLowOrderRK = {path = "lib/OrdinaryDiffEqLowOrderRK"}
-OrdinaryDiffEqLowStorageRK = {path = "lib/OrdinaryDiffEqLowStorageRK"}
-OrdinaryDiffEqNonlinearSolve = {path = "lib/OrdinaryDiffEqNonlinearSolve"}
-OrdinaryDiffEqNordsieck = {path = "lib/OrdinaryDiffEqNordsieck"}
-OrdinaryDiffEqPDIRK = {path = "lib/OrdinaryDiffEqPDIRK"}
-OrdinaryDiffEqPRK = {path = "lib/OrdinaryDiffEqPRK"}
-OrdinaryDiffEqQPRK = {path = "lib/OrdinaryDiffEqQPRK"}
-OrdinaryDiffEqRKN = {path = "lib/OrdinaryDiffEqRKN"}
-OrdinaryDiffEqRosenbrock = {path = "lib/OrdinaryDiffEqRosenbrock"}
-OrdinaryDiffEqSDIRK = {path = "lib/OrdinaryDiffEqSDIRK"}
-OrdinaryDiffEqSSPRK = {path = "lib/OrdinaryDiffEqSSPRK"}
-OrdinaryDiffEqStabilizedIRK = {path = "lib/OrdinaryDiffEqStabilizedIRK"}
-OrdinaryDiffEqStabilizedRK = {path = "lib/OrdinaryDiffEqStabilizedRK"}
-OrdinaryDiffEqSymplecticRK = {path = "lib/OrdinaryDiffEqSymplecticRK"}
-OrdinaryDiffEqTsit5 = {path = "lib/OrdinaryDiffEqTsit5"}
-OrdinaryDiffEqVerner = {path = "lib/OrdinaryDiffEqVerner"}
+[sources.OrdinaryDiffEqAdamsBashforthMoulton]
+path = "lib/OrdinaryDiffEqAdamsBashforthMoulton"
+
+[sources.OrdinaryDiffEqBDF]
+path = "lib/OrdinaryDiffEqBDF"
+
+[sources.OrdinaryDiffEqCore]
+path = "lib/OrdinaryDiffEqCore"
+
+[sources.OrdinaryDiffEqDefault]
+path = "lib/OrdinaryDiffEqDefault"
+
+[sources.OrdinaryDiffEqDifferentiation]
+path = "lib/OrdinaryDiffEqDifferentiation"
+
+[sources.OrdinaryDiffEqExplicitRK]
+path = "lib/OrdinaryDiffEqExplicitRK"
+
+[sources.OrdinaryDiffEqExponentialRK]
+path = "lib/OrdinaryDiffEqExponentialRK"
+
+[sources.OrdinaryDiffEqExtrapolation]
+path = "lib/OrdinaryDiffEqExtrapolation"
+
+[sources.OrdinaryDiffEqFIRK]
+path = "lib/OrdinaryDiffEqFIRK"
+
+[sources.OrdinaryDiffEqFeagin]
+path = "lib/OrdinaryDiffEqFeagin"
+
+[sources.OrdinaryDiffEqFunctionMap]
+path = "lib/OrdinaryDiffEqFunctionMap"
+
+[sources.OrdinaryDiffEqHighOrderRK]
+path = "lib/OrdinaryDiffEqHighOrderRK"
+
+[sources.OrdinaryDiffEqIMEXMultistep]
+path = "lib/OrdinaryDiffEqIMEXMultistep"
+
+[sources.OrdinaryDiffEqLinear]
+path = "lib/OrdinaryDiffEqLinear"
+
+[sources.OrdinaryDiffEqLowOrderRK]
+path = "lib/OrdinaryDiffEqLowOrderRK"
+
+[sources.OrdinaryDiffEqLowStorageRK]
+path = "lib/OrdinaryDiffEqLowStorageRK"
+
+[sources.OrdinaryDiffEqNonlinearSolve]
+path = "lib/OrdinaryDiffEqNonlinearSolve"
+
+[sources.OrdinaryDiffEqNordsieck]
+path = "lib/OrdinaryDiffEqNordsieck"
+
+[sources.OrdinaryDiffEqPDIRK]
+path = "lib/OrdinaryDiffEqPDIRK"
+
+[sources.OrdinaryDiffEqPRK]
+path = "lib/OrdinaryDiffEqPRK"
+
+[sources.OrdinaryDiffEqQPRK]
+path = "lib/OrdinaryDiffEqQPRK"
+
+[sources.OrdinaryDiffEqRKN]
+path = "lib/OrdinaryDiffEqRKN"
+
+[sources.OrdinaryDiffEqRosenbrock]
+path = "lib/OrdinaryDiffEqRosenbrock"
+
+[sources.OrdinaryDiffEqSDIRK]
+path = "lib/OrdinaryDiffEqSDIRK"
+
+[sources.OrdinaryDiffEqSSPRK]
+path = "lib/OrdinaryDiffEqSSPRK"
+
+[sources.OrdinaryDiffEqStabilizedIRK]
+path = "lib/OrdinaryDiffEqStabilizedIRK"
+
+[sources.OrdinaryDiffEqStabilizedRK]
+path = "lib/OrdinaryDiffEqStabilizedRK"
+
+[sources.OrdinaryDiffEqSymplecticRK]
+path = "lib/OrdinaryDiffEqSymplecticRK"
+
+[sources.OrdinaryDiffEqTsit5]
+path = "lib/OrdinaryDiffEqTsit5"
+
+[sources.OrdinaryDiffEqVerner]
+path = "lib/OrdinaryDiffEqVerner"
 
 [compat]
 ADTypes = "1.16"
@@ -163,7 +221,7 @@ OrdinaryDiffEqSymplecticRK = "1.6.0"
 OrdinaryDiffEqTsit5 = "1.4.0"
 OrdinaryDiffEqVerner = "1.5.0"
 Polyester = "0.7.18"
-PreallocationTools = "0.4.30"
+PreallocationTools = "0.4.30, 1"
 PrecompileTools = "1.2.1"
 Preferences = "1.4.3"
 RecursiveArrayTools = "3.36"
