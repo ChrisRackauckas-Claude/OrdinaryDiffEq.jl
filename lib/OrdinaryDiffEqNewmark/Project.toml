@@ -1,7 +1,7 @@
 name = "OrdinaryDiffEqNewmark"
 uuid = "d204908a-63b9-11ef-18f5-cfec7123a93b"
-authors = ["Dennis Ogiermann <termi-official@users.noreply.github.com>"]
 version = "0.0.1"
+authors = ["Dennis Ogiermann <termi-official@users.noreply.github.com>"]
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
@@ -28,7 +28,7 @@ MacroTools = "0.5.13"
 MuladdMacro = "0.2.4"
 NonlinearSolveFirstOrder = "1.9.0"
 OrdinaryDiffEqCore = "1.1"
-PreallocationTools = "0.4.34"
+PreallocationTools = "0.4.34, 1"
 Random = "<0.0.1, 1"
 RecursiveArrayTools = "3.27.0"
 Reexport = "1.2.2"
