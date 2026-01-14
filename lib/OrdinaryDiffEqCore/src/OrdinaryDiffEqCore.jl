@@ -13,6 +13,11 @@ import DiffEqBase
 
 import Logging: @logmsg, LogLevel
 
+using SciMLLogging: SciMLLogging, @SciMLMessage, AbstractVerbositySpecifier,
+    AbstractVerbosityPreset,
+    CustomLevel, AbstractMessageLevel, @verbosity_specifier,
+    None, Silent, WarnLevel, InfoLevel, ErrorLevel, Minimal, Standard, Detailed, All
+
 using MuladdMacro: @muladd
 
 using LinearAlgebra: opnorm, I, UniformScaling, diag, rank, isdiag
@@ -136,6 +141,8 @@ end
 include("doc_utils.jl")
 include("misc_utils.jl")
 
+include("verbosity.jl")
+
 include("algorithms.jl")
 include("composite_algs.jl")
 
@@ -160,5 +167,7 @@ include("initdt.jl")
 include("interp_func.jl")
 
 include("precompilation_setup.jl")
+
+include("deprecated.jl")
 
 end

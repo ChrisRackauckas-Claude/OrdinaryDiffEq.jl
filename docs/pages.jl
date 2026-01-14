@@ -1,6 +1,7 @@
 pages = [
     "OrdinaryDiffEq.jl: ODE solvers and utilities" => "index.md",
     "Usage" => "usage.md",
+    "Controlling Solver Verbosity" => "verbosity.md",
     "Explicit Solvers" => [
         "explicit/Tsit5.md",
         "explicit/Verner.md",
