@@ -36,19 +36,11 @@ sol_ip = solve(prob_ip, FBDF(), reltol = 1.0e-8, abstol = 1.0e-8)
 sol_op = solve(prob_op, FBDF(), reltol = 1.0e-8, abstol = 1.0e-8)
 
 # make sure interpolation changes don't accidentally break this test suite
-# ref (Rodas5P) always uses stiffness-aware interpolation
+# both ref (Rodas5P) and sol (FBDF) use stiffness-aware interpolation
+@test occursin("stiffness-aware", SciMLBase.interp_summary(sol_ip))
+@test occursin("stiffness-aware", SciMLBase.interp_summary(sol_op))
 @test occursin("stiffness-aware", SciMLBase.interp_summary(ref_ip))
 @test occursin("stiffness-aware", SciMLBase.interp_summary(ref_op))
-# FBDF uses stiffness-aware interpolation on Julia >= 1.11 where [sources] in
-# Project.toml is supported (local BDF sub-library is used). On Julia 1.10 the
-# registry version of OrdinaryDiffEqBDF is loaded, which still uses Hermite.
-if VERSION >= v"1.11"
-    @test occursin("stiffness-aware", SciMLBase.interp_summary(sol_ip))
-    @test occursin("stiffness-aware", SciMLBase.interp_summary(sol_op))
-else
-    @test SciMLBase.interp_summary(sol_ip) == "3rd order Hermite"
-    @test SciMLBase.interp_summary(sol_op) == "3rd order Hermite"
-end
 
 reltol = 1.0e-4
 abstol = 1.0e-4
