@@ -339,60 +339,80 @@ end
 # L'_i(Θ) = L_i(Θ) * Σ_{m≠i} 1/(Θ - Θ_m)
 #   (using logarithmic derivative of the Lagrange basis)
 
+# Product-rule form of L'_i(Θ):
+#   L'_i(Θ) = Σ_{m≠i} [1/(θ_i - θ_m)] * Π_{l≠i,l≠m} (Θ - θ_l)/(θ_i - θ_l)
+# This form avoids 0*Inf = NaN at node points (where Θ = θ_j for some j).
 @inline function _lagrange_basis_deriv(Θ, i, n, k)
     half = length(k) ÷ 2
     θ_i = _get_theta(k[half + i])
-    Li = one(Θ)
-    dLi_sum = zero(Θ)
+    result = zero(Θ)
     for m in 1:n
         m == i && continue
         θ_m = _get_theta(k[half + m])
-        Li *= (Θ - θ_m) / (θ_i - θ_m)
-        dLi_sum += inv(Θ - θ_m)
+        term = inv(θ_i - θ_m)
+        for l in 1:n
+            (l == i || l == m) && continue
+            θ_l = _get_theta(k[half + l])
+            term *= (Θ - θ_l) / (θ_i - θ_l)
+        end
+        result += term
     end
-    return Li * dLi_sum
+    return result
 end
 
-# Compute second derivative L''_i(Θ) of Lagrange basis function.
-# L''_i(Θ) = L_i(Θ) * (S1² - S2)
-# where S1 = Σ_{m≠i} 1/(Θ - Θ_m), S2 = Σ_{m≠i} 1/(Θ - Θ_m)²
+# Product-rule form of L''_i(Θ):
+#   L''_i(Θ) = Σ_{m≠i} Σ_{p≠i,p≠m} [1/((θ_i-θ_m)(θ_i-θ_p))]
+#              * Π_{l≠i,l≠m,l≠p} (Θ-θ_l)/(θ_i-θ_l)
 @inline function _lagrange_basis_deriv2(Θ, i, n, k)
     half = length(k) ÷ 2
     θ_i = _get_theta(k[half + i])
-    Li = one(Θ)
-    S1 = zero(Θ)
-    S2 = zero(Θ)
+    result = zero(Θ)
     for m in 1:n
         m == i && continue
         θ_m = _get_theta(k[half + m])
-        Li *= (Θ - θ_m) / (θ_i - θ_m)
-        inv_diff = inv(Θ - θ_m)
-        S1 += inv_diff
-        S2 += inv_diff * inv_diff
+        for p in 1:n
+            (p == i || p == m) && continue
+            θ_p = _get_theta(k[half + p])
+            term = inv(θ_i - θ_m) * inv(θ_i - θ_p)
+            for l in 1:n
+                (l == i || l == m || l == p) && continue
+                θ_l = _get_theta(k[half + l])
+                term *= (Θ - θ_l) / (θ_i - θ_l)
+            end
+            result += term
+        end
     end
-    return Li * (S1 * S1 - S2)
+    return result
 end
 
-# Compute third derivative L'''_i(Θ) of Lagrange basis function.
-# L'''_i(Θ) = L_i(Θ) * (S1³ - 3·S1·S2 + 2·S3)
-# where S1 = Σ_{m≠i} 1/(Θ - Θ_m), S2 = Σ_{m≠i} 1/(Θ - Θ_m)², S3 = Σ_{m≠i} 1/(Θ - Θ_m)³
+# Product-rule form of L'''_i(Θ):
+#   L'''_i(Θ) = Σ_{m≠i} Σ_{p≠i,p≠m} Σ_{q≠i,q≠m,q≠p}
+#              [1/((θ_i-θ_m)(θ_i-θ_p)(θ_i-θ_q))]
+#              * Π_{l≠i,l≠m,l≠p,l≠q} (Θ-θ_l)/(θ_i-θ_l)
 @inline function _lagrange_basis_deriv3(Θ, i, n, k)
     half = length(k) ÷ 2
     θ_i = _get_theta(k[half + i])
-    Li = one(Θ)
-    S1 = zero(Θ)
-    S2 = zero(Θ)
-    S3 = zero(Θ)
+    result = zero(Θ)
     for m in 1:n
         m == i && continue
         θ_m = _get_theta(k[half + m])
-        Li *= (Θ - θ_m) / (θ_i - θ_m)
-        inv_diff = inv(Θ - θ_m)
-        S1 += inv_diff
-        S2 += inv_diff * inv_diff
-        S3 += inv_diff * inv_diff * inv_diff
+        for p in 1:n
+            (p == i || p == m) && continue
+            θ_p = _get_theta(k[half + p])
+            for q in 1:n
+                (q == i || q == m || q == p) && continue
+                θ_q = _get_theta(k[half + q])
+                term = inv(θ_i - θ_m) * inv(θ_i - θ_p) * inv(θ_i - θ_q)
+                for l in 1:n
+                    (l == i || l == m || l == p || l == q) && continue
+                    θ_l = _get_theta(k[half + l])
+                    term *= (Θ - θ_l) / (θ_i - θ_l)
+                end
+                result += term
+            end
+        end
     end
-    return Li * (S1 * S1 * S1 - 3 * S1 * S2 + 2 * S3)
+    return result
 end
 
 # Out-of-place, no idxs
