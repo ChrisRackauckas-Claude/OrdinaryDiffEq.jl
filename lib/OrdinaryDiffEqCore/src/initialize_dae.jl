@@ -26,6 +26,13 @@ end
 
 ## Default algorithms
 
+# Flag set by OrdinaryDiffEqNonlinearSolve's __init__() to indicate that
+# BrownFullBasicInit/ShampineCollocationInit methods are available.
+# Using a Ref{Bool} instead of `applicable()` avoids creating method table
+# backedges that would invalidate the entire precompiled solve chain when
+# OrdinaryDiffEqNonlinearSolve loads and defines _initialize_dae! methods.
+const _nonlinearsolve_loaded = Ref(false)
+
 function _initialize_dae!(
         integrator::ODEIntegrator, prob::ODEProblem,
         alg::DefaultInit, x::Union{Val{true}, Val{false}}
@@ -35,14 +42,13 @@ function _initialize_dae!(
             integrator, prob,
             OverrideInit(integrator.opts.abstol), x
         )
-    elseif !applicable(
-            _initialize_dae!, integrator, prob,
-            BrownFullBasicInit(integrator.opts.abstol), x
-        )
+    elseif !_nonlinearsolve_loaded[]
         error("`OrdinaryDiffEqNonlinearSolve` is not loaded, which is required for the default initialization algorithm (`BrownFullBasicInit` or `ShampineCollocationInit`). To solve this problem, either do `using OrdinaryDiffEqNonlinearSolve` or pass `initializealg = CheckInit()` to the `solve` function. This second option requires consistent `u0`.")
     else
-        _initialize_dae!(
-            integrator, prob,
+        # Use invokelatest to avoid creating method table backedges that would
+        # be invalidated when OrdinaryDiffEqNonlinearSolve defines this method.
+        Base.invokelatest(
+            _initialize_dae!, integrator, prob,
             BrownFullBasicInit(integrator.opts.abstol), x
         )
     end
@@ -57,23 +63,16 @@ function _initialize_dae!(
             integrator, prob,
             OverrideInit(integrator.opts.abstol), x
         )
-    elseif !applicable(
-            _initialize_dae!, integrator, prob,
-            BrownFullBasicInit(), x
-        ) &&
-            !applicable(
-            _initialize_dae!,
-            integrator, prob, ShampineCollocationInit(), x
-        )
+    elseif !_nonlinearsolve_loaded[]
         error("`OrdinaryDiffEqNonlinearSolve` is not loaded, which is required for the default initialization algorithm (`BrownFullBasicInit` or `ShampineCollocationInit`). To solve this problem, either do `using OrdinaryDiffEqNonlinearSolve` or pass `initializealg = CheckInit()` to the `solve` function. This second option requires consistent `u0`.")
     elseif prob.differential_vars === nothing
-        _initialize_dae!(
-            integrator, prob,
+        Base.invokelatest(
+            _initialize_dae!, integrator, prob,
             ShampineCollocationInit(), x
         )
     else
-        _initialize_dae!(
-            integrator, prob,
+        Base.invokelatest(
+            _initialize_dae!, integrator, prob,
             BrownFullBasicInit(integrator.opts.abstol), x
         )
     end
