@@ -27,6 +27,8 @@ get_fsalfirstlast(cache::HighOrderRKMutableCache, u) = (cache.fsalfirst, cache.k
     thread::Thread
 end
 
+@truncate_stacktrace TanYam7Cache 1
+
 function alg_cache(
         alg::TanYam7, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -102,6 +104,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace DP8Cache 1
 get_fsalfirstlast(cache::DP8Cache, u) = (cache.k1, cache.k13)
 
 function alg_cache(
@@ -188,6 +192,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace TsitPap8Cache 1
+
 function alg_cache(
         alg::TsitPap8, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -257,6 +263,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace PFRK87Cache 1
 
 function alg_cache(
         alg::PFRK87, u, rate_prototype, ::Type{uEltypeNoUnits},

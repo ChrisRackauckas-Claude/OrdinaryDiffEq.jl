@@ -40,3 +40,5 @@ function IRKC(;
         extrapolant, controller, eigen_est, AD_choice
     )
 end
+
+@truncate_stacktrace IRKC

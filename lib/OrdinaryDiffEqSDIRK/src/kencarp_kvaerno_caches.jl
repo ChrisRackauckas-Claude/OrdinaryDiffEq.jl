@@ -33,6 +33,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace Kvaerno3Cache 1
+
 function alg_cache(
         alg::Kvaerno3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -100,6 +102,8 @@ end
     tab::Tab
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace KenCarp3Cache 1
 
 function alg_cache(
         alg::KenCarp3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -180,6 +184,8 @@ end
     tab::Tab
 end
 
+@truncate_stacktrace CFNLIRK3Cache 1
+
 function alg_cache(
         alg::CFNLIRK3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -244,6 +250,8 @@ end
     tab::Tab
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace Kvaerno4Cache 1
 
 function alg_cache(
         alg::Kvaerno4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -404,6 +412,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace Kvaerno5Cache 1
+
 function alg_cache(
         alg::Kvaerno5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -483,6 +493,8 @@ end
     tab::Tab
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace KenCarp5Cache 1
 
 function alg_cache(
         alg::KenCarp5, u, rate_prototype, ::Type{uEltypeNoUnits},

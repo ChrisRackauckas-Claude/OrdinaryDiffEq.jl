@@ -1,5 +1,6 @@
 module OrdinaryDiffEqQPRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: OrdinaryDiffEqAdaptiveAlgorithm, OrdinaryDiffEqConstantCache,
     explicit_rk_docstring, @cache,
     OrdinaryDiffEqMutableCache,

@@ -4,6 +4,8 @@ struct ImplicitDiscreteState{uType, pType, tType}
     t::tType
 end
 
+@truncate_stacktrace ImplicitDiscreteState
+
 mutable struct IDSolveCache{uType, cType, thetaType} <: OrdinaryDiffEqMutableCache
     u::uType
     uprev::uType
@@ -11,6 +13,8 @@ mutable struct IDSolveCache{uType, cType, thetaType} <: OrdinaryDiffEqMutableCac
     nlcache::cType
     Θks::thetaType
 end
+
+@truncate_stacktrace IDSolveCache 1
 
 function alg_cache(
         alg::IDSolve, u, rate_prototype, ::Type{uEltypeNoUnits},

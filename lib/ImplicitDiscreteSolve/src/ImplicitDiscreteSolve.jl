@@ -1,5 +1,6 @@
 module ImplicitDiscreteSolve
 
+using TruncatedStacktraces: @truncate_stacktrace
 using SciMLBase
 using NonlinearSolveBase
 using NonlinearSolveFirstOrder

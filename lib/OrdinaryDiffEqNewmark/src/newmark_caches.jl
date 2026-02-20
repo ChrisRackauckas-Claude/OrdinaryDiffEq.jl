@@ -11,6 +11,8 @@
     thread::Thread
 end
 
+@truncate_stacktrace NewmarkBetaCache 1
+
 function alg_cache(
         alg::NewmarkBeta, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -52,6 +54,8 @@ end
     atmp::uType
     thread::Thread
 end
+
+@truncate_stacktrace NewmarkBetaConstantCache 1
 
 function alg_cache(
         alg::NewmarkBeta, u, rate_prototype, ::Type{uEltypeNoUnits},

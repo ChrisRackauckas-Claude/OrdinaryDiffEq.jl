@@ -1,5 +1,6 @@
 module OrdinaryDiffEqStabilizedIRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_maximum_order,
     calculate_residuals!,
     beta2_default, beta1_default, gamma_default, issplit,

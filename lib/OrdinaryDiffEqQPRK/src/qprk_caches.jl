@@ -31,6 +31,8 @@ struct QPRK98ConstantCache <: OrdinaryDiffEqConstantCache end
     thread::Thread
 end
 
+@truncate_stacktrace QPRK98Cache 1
+
 get_fsalfirstlast(cache::QPRK98Cache, u) = (cache.fsalfirst, cache.k)
 
 function alg_cache(

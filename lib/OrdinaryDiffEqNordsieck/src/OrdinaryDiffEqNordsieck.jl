@@ -1,5 +1,6 @@
 module OrdinaryDiffEqNordsieck
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, qsteady_max_default,
     get_current_alg_order, DummyController,
     AbstractController, OrdinaryDiffEqAdaptiveAlgorithm,

@@ -48,3 +48,5 @@ function PDIRK44(;
         extrapolant, threading, AD_choice
     )
 end
+
+@truncate_stacktrace PDIRK44

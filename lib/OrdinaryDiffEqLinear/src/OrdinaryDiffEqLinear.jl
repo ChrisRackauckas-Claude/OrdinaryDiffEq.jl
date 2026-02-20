@@ -1,5 +1,6 @@
 module OrdinaryDiffEqLinear
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_extrapolates, dt_required,
     OrdinaryDiffEqLinearExponentialAlgorithm,
     OrdinaryDiffEqAdaptiveAlgorithm, OrdinaryDiffEqAlgorithm,

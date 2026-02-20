@@ -25,6 +25,8 @@ function NLAnderson(;
     return NLAnderson(κ, fast_convergence_cutoff, max_iter, max_history, aa_start, droptol)
 end
 
+@truncate_stacktrace NLAnderson 1
+
 struct NLNewton{K, C1, C2, R} <: AbstractNLSolverAlgorithm
     κ::K
     max_iter::Int
@@ -50,6 +52,8 @@ function NLNewton(;
     )
 end
 
+@truncate_stacktrace NLNewton 1
+
 struct NonlinearSolveAlg{K, C1, C2, A} <: AbstractNLSolverAlgorithm
     κ::K
     max_iter::Int
@@ -70,6 +74,8 @@ function NonlinearSolveAlg(
         alg
     )
 end
+
+@truncate_stacktrace NonlinearSolveAlg 1
 
 # solver
 
@@ -96,6 +102,8 @@ mutable struct NLSolver{
     nfails::Int
     prev_θ::E
 end
+
+@truncate_stacktrace NLSolver 1
 
 # default to DIRK
 function NLSolver{iip, tType}(
@@ -160,6 +168,8 @@ mutable struct NLNewtonCache{
     J_t::tType
 end
 
+@truncate_stacktrace NLNewtonCache 1
+
 mutable struct NLNewtonConstantCache{tType, tType2, J, W, ufType} <: AbstractNLSolverCache
     tstep::tType
     J::J
@@ -174,6 +184,8 @@ mutable struct NLNewtonConstantCache{tType, tType2, J, W, ufType} <: AbstractNLS
     J_t::tType
 end
 
+@truncate_stacktrace NLNewtonConstantCache 1
+
 mutable struct NLFunctionalCache{uType, tType, rateType} <: AbstractNLSolverCache
     ustep::uType
     tstep::tType
@@ -181,6 +193,8 @@ mutable struct NLFunctionalCache{uType, tType, rateType} <: AbstractNLSolverCach
     atmp::uType
     dz::uType
 end
+
+@truncate_stacktrace NLFunctionalCache 1
 
 mutable struct NLFunctionalConstantCache{tType} <: AbstractNLSolverCache
     tstep::tType
@@ -206,6 +220,8 @@ mutable struct NLAndersonCache{uType, tType, rateType, uEltypeNoUnits} <:
     droptol::Union{Nothing, tType}
 end
 
+@truncate_stacktrace NLAndersonCache 1
+
 mutable struct NLAndersonConstantCache{uType, tType, uEltypeNoUnits} <:
     AbstractNLSolverCache
     tstep::tType
@@ -223,6 +239,8 @@ mutable struct NLAndersonConstantCache{uType, tType, uEltypeNoUnits} <:
     droptol::Union{Nothing, tType}
 end
 
+@truncate_stacktrace NLAndersonConstantCache 1
+
 mutable struct NonlinearSolveCache{uType, tType, rateType, tType2, P, C} <:
     AbstractNLSolverCache
     ustep::uType
@@ -233,3 +251,5 @@ mutable struct NonlinearSolveCache{uType, tType, rateType, tType2, P, C} <:
     prob::P
     cache::C
 end
+
+@truncate_stacktrace NonlinearSolveCache 1

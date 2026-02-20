@@ -16,6 +16,8 @@ mutable struct RadauIIA3ConstantCache{F, Tab, Tol, Dt, U, JType} <:
     J::JType
 end
 
+@truncate_stacktrace RadauIIA3ConstantCache 1
+
 function alg_cache(
         alg::RadauIIA3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -71,6 +73,8 @@ mutable struct RadauIIA3Cache{
     status::NLStatus
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace RadauIIA3Cache 1
 
 function alg_cache(
         alg::RadauIIA3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -149,6 +153,8 @@ mutable struct RadauIIA5ConstantCache{F, Tab, Tol, Dt, U, JType} <:
     J::JType
 end
 
+@truncate_stacktrace RadauIIA5ConstantCache 1
+
 function alg_cache(
         alg::RadauIIA5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -214,6 +220,8 @@ mutable struct RadauIIA5Cache{
     status::NLStatus
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace RadauIIA5Cache 1
 
 function alg_cache(
         alg::RadauIIA5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -311,6 +319,8 @@ mutable struct RadauIIA9ConstantCache{F, Tab, Tol, Dt, U, JType} <:
     J::JType
 end
 
+@truncate_stacktrace RadauIIA9ConstantCache 1
+
 function alg_cache(
         alg::RadauIIA9, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -397,6 +407,8 @@ mutable struct RadauIIA9Cache{
     status::NLStatus
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace RadauIIA9Cache 1
 
 function alg_cache(
         alg::RadauIIA9, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -525,6 +537,8 @@ mutable struct AdaptiveRadauConstantCache{F, Tab, Tol, Dt, U, JType} <:
     index::Int
 end
 
+@truncate_stacktrace AdaptiveRadauConstantCache 1
+
 function alg_cache(
         alg::AdaptiveRadau, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -611,6 +625,8 @@ mutable struct AdaptiveRadauCache{
     hist_iter::Float64
     index::Int
 end
+
+@truncate_stacktrace AdaptiveRadauCache 1
 
 function alg_cache(
         alg::AdaptiveRadau, u, rate_prototype, ::Type{uEltypeNoUnits},

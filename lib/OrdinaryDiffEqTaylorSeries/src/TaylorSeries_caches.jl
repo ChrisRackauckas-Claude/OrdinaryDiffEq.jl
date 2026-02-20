@@ -15,6 +15,8 @@
     thread::Thread
 end
 
+@truncate_stacktrace ExplicitTaylor2Cache 1
+
 function alg_cache(
         alg::ExplicitTaylor2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -61,6 +63,8 @@ get_fsalfirstlast(cache::ExplicitTaylor2Cache, u) = (cache.k1, cache.k1)
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace ExplicitTaylorCache 1
 
 function alg_cache(
         alg::ExplicitTaylor{P}, u, rate_prototype, ::Type{uEltypeNoUnits},

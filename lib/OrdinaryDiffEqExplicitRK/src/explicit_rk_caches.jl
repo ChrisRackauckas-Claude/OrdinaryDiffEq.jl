@@ -11,6 +11,8 @@
     tab::TabType
 end
 
+@truncate_stacktrace ExplicitRKCache 1
+
 get_fsalfirstlast(cache::ExplicitRKCache, u) = (cache.kk[1], cache.fsallast)
 
 function alg_cache(
@@ -59,7 +61,9 @@ function ExplicitRKConstantCache(tableau, rate_prototype)
         nothing
     else
         Vector{eltype(B_interp)}(undef, size(B_interp, 1))
-    end
+   
+
+@truncate_stacktrace ExplicitRKConstantCache 1 end
     return ExplicitRKConstantCache(A, c, α, αEEst, stages, kk, B_interp, bi)
 end
 

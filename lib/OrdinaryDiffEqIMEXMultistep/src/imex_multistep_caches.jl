@@ -14,6 +14,8 @@ end
     tprev2::tType
 end
 
+@truncate_stacktrace CNAB2ConstantCache 1
+
 @cache mutable struct CNAB2Cache{uType, rateType, N, tType} <: IMEXMutableCache
     u::uType
     uprev::uType
@@ -26,6 +28,8 @@ end
     uprev3::uType
     tprev2::tType
 end
+
+@truncate_stacktrace CNAB2Cache 1
 
 function alg_cache(
         alg::CNAB2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -79,6 +83,8 @@ end
     tprev2::tType
 end
 
+@truncate_stacktrace CNLF2ConstantCache 1
+
 @cache mutable struct CNLF2Cache{uType, rateType, N, tType} <: IMEXMutableCache
     u::uType
     uprev::uType
@@ -91,6 +97,8 @@ end
     uprev3::uType
     tprev2::tType
 end
+
+@truncate_stacktrace CNLF2Cache 1
 
 function alg_cache(
         alg::CNLF2, u, rate_prototype, ::Type{uEltypeNoUnits},

@@ -165,6 +165,8 @@ end
     KsCache::KsType
 end
 
+@truncate_stacktrace LawsonEulerCache 1
+
 function alg_cache(
         alg::LawsonEuler, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -224,6 +226,8 @@ end
     KsCache::KsType
 end
 
+@truncate_stacktrace NorsettEulerCache 1
+
 function alg_cache(
         alg::NorsettEuler, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -258,6 +262,8 @@ end
     ops::opType
     KsCache::KsType
 end
+
+@truncate_stacktrace ETDRK2Cache 1
 
 function alg_cache(
         alg::ETDRK2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -296,6 +302,8 @@ end
     KsCache::KsType
 end
 
+@truncate_stacktrace ETDRK3Cache 1
+
 function alg_cache(
         alg::ETDRK3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -333,6 +341,8 @@ end
     ops::opType
     KsCache::KsType
 end
+
+@truncate_stacktrace ETDRK4Cache 1
 
 function alg_cache(
         alg::ETDRK4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -376,6 +386,8 @@ end
     ops::opType
     KsCache::KsType
 end
+
+@truncate_stacktrace HochOst4Cache 1
 
 function alg_cache(
         alg::HochOst4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -459,6 +471,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace Exp4Cache 1
 function alg_cache(
         alg::Exp4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -508,6 +522,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EPIRK4s3ACache 1
 function alg_cache(
         alg::EPIRK4s3A, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -556,6 +572,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EPIRK4s3BCache 1
 function alg_cache(
         alg::EPIRK4s3B, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -604,6 +622,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EPIRK5s3Cache 1
 function alg_cache(
         alg::EPIRK5s3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -651,6 +671,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EXPRB53s3Cache 1
 function alg_cache(
         alg::EXPRB53s3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -699,6 +721,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EPIRK5P1Cache 1
 function alg_cache(
         alg::EPIRK5P1, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -748,6 +772,8 @@ end
     B::matType
     KsCache::KsType
 end
+
+@truncate_stacktrace EPIRK5P2Cache 1
 function alg_cache(
         alg::EPIRK5P2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -865,6 +891,8 @@ end
     J::JType
     KsCache::KsType
 end
+
+@truncate_stacktrace Exprb32Cache 1
 function alg_cache(
         alg::Exprb32, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -899,6 +927,8 @@ struct Exprb43Cache{uType, rateType, JCType, FType, JType, KsType} <: ExpRKCache
     J::JType
     KsCache::KsType
 end
+
+@truncate_stacktrace Exprb43Cache 1
 function alg_cache(
         alg::Exprb43, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -985,6 +1015,8 @@ end
     B1::expType # ϕ1(hA) + ϕ2(hA)
     B0::expType # -ϕ2(hA)
 end
+
+@truncate_stacktrace ETD2Cache 1
 get_fsalfirstlast(cache::ETD2Cache, u) = (ETD2Fsal(cache.rtmp1), ETD2Fsal(cache.rtmp1))
 
 function alg_cache(

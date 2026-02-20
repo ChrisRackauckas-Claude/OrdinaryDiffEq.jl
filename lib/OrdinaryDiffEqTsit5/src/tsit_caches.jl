@@ -19,6 +19,8 @@
     thread::Thread
 end
 
+@truncate_stacktrace Tsit5Cache 1
+
 function alg_cache(
         alg::Tsit5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,

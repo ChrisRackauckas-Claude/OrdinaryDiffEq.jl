@@ -120,6 +120,8 @@ Initial order: " * lpad(init_order, 2, " ") * " --> " * lpad(init_order, 2, " ")
     )
 end
 
+@truncate_stacktrace ImplicitEulerExtrapolation
+
 @doc generic_solver_docstring(
     "Midpoint extrapolation using Barycentric coordinates.",
     "ExtrapolationMidpointDeuflhard",
@@ -281,6 +283,8 @@ Initial order: " * lpad(init_order, 2, " ") * " --> " * lpad(init_order, 2, " ")
         sequence, threading, AD_choice
     )
 end
+
+@truncate_stacktrace ImplicitDeuflhardExtrapolation
 
 @doc generic_solver_docstring(
     "Midpoint extrapolation using Barycentric coordinates,
@@ -449,6 +453,8 @@ Initial order: " * lpad(init_order, 2, " ") * " --> " * lpad(init_order, 2, " ")
     )
 end
 
+@truncate_stacktrace ImplicitHairerWannerExtrapolation
+
 @doc differentiation_rk_docstring(
     "Euler extrapolation using Barycentric coordinates,
     following Hairer's SODEX in the adaptivity behavior.",
@@ -547,3 +553,5 @@ Initial order: " * lpad(init_order, 2, " ") * " --> " * lpad(init_order, 2, " ")
         AD_choice
     )
 end
+
+@truncate_stacktrace ImplicitEulerBarycentricExtrapolation

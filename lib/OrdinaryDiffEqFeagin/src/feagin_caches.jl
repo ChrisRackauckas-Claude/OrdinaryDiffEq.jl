@@ -29,6 +29,8 @@ get_fsalfirstlast(cache::FeaginCache, u) = (cache.fsalfirst, cache.k)
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace Feagin10Cache 1
+
 function alg_cache(
         alg::Feagin10, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -108,6 +110,8 @@ end
     tab::TabType
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace Feagin12Cache 1
 
 function alg_cache(
         alg::Feagin12, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -207,6 +211,8 @@ end
     tab::TabType
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace Feagin14Cache 1
 
 function alg_cache(
         alg::Feagin14, u, rate_prototype, ::Type{uEltypeNoUnits},

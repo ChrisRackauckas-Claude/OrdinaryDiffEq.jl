@@ -11,6 +11,8 @@
     fsalfirst::rateType
     tab::TabType
 end
+
+@truncate_stacktrace KuttaPRK2p5Cache 1
 get_fsalfirstlast(cache::KuttaPRK2p5Cache, u) = (cache.fsalfirst, cache.k)
 
 struct KuttaPRK2p5ConstantCache{T, T2} <: OrdinaryDiffEqConstantCache

@@ -88,6 +88,8 @@ function RosenbrockW6S4OS(;
     )
 end
 
+@truncate_stacktrace RosenbrockW6S4OS
+
 # Documentation for Rosenbrock methods without step_limiter
 
 for (Alg, desc, refs, is_W) in [

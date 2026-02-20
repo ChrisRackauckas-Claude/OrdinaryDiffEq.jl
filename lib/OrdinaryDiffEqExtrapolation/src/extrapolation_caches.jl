@@ -31,6 +31,8 @@ end
     k_tmps::Array{rateType, 1}
 end
 
+@truncate_stacktrace AitkenNevilleCache 1
+
 @cache mutable struct AitkenNevilleConstantCache{dtType, arrayType} <:
     OrdinaryDiffEqConstantCache
     dtpropose::dtType
@@ -141,6 +143,8 @@ end
     diff1::Array{uType, 1}
     diff2::Array{uType, 1}
 end
+
+@truncate_stacktrace ImplicitEulerExtrapolationCache 1
 get_fsalfirstlast(cache::ImplicitEulerExtrapolationCache, u) = (zero(u), zero(u))
 
 @cache mutable struct ImplicitEulerExtrapolationConstantCache{
@@ -167,6 +171,8 @@ get_fsalfirstlast(cache::ImplicitEulerExtrapolationCache, u) = (zero(u), zero(u)
     work::Array{QType, 1}
     dt_new::Array{QType, 1}
 end
+
+@truncate_stacktrace ImplicitEulerExtrapolationConstantCache 1
 
 function alg_cache(
         alg::ImplicitEulerExtrapolation, u, rate_prototype,
@@ -342,6 +348,8 @@ struct extrapolation_coefficients{T1, T2, T3}
     extrapolation_weights_2::T2
     extrapolation_scalars_2::T3
 end
+
+@truncate_stacktrace extrapolation_coefficients
 
 function create_extrapolation_coefficients(
         T,
@@ -1018,6 +1026,8 @@ end
     stage_number::Vector{Int} # stage_number[n] contains information for extrapolation order (n + alg.min_order - 1)
 end
 
+@truncate_stacktrace ExtrapolationMidpointDeuflhardConstantCache 1
+
 function alg_cache(
         alg::ExtrapolationMidpointDeuflhard, u, rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits},
@@ -1074,6 +1084,8 @@ end
     coefficients::extrapolation_coefficients
     stage_number::Vector{Int} # Stage_number[n] contains information for extrapolation order (n + alg.min_order - 1)
 end
+
+@truncate_stacktrace ExtrapolationMidpointDeuflhardCache 1
 
 function alg_cache(
         alg::ExtrapolationMidpointDeuflhard, u, rate_prototype,
@@ -1139,6 +1151,8 @@ end
     uf::UF
 end
 
+@truncate_stacktrace ImplicitDeuflhardExtrapolationConstantCache 1
+
 @cache mutable struct ImplicitDeuflhardExtrapolationCache{
         uType, QType,
         extrapolation_coefficients,
@@ -1182,6 +1196,8 @@ end
     diff1::Array{uType, 1}
     diff2::Array{uType, 1}
 end
+
+@truncate_stacktrace ImplicitDeuflhardExtrapolationCache 1
 
 function alg_cache(
         alg::ImplicitDeuflhardExtrapolation, u, rate_prototype,
@@ -1352,6 +1368,8 @@ end
     dt_new::Array{QType, 1}
 end
 
+@truncate_stacktrace ExtrapolationMidpointHairerWannerConstantCache 1
+
 function alg_cache(
         alg::ExtrapolationMidpointHairerWanner, u, rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits},
@@ -1418,6 +1436,8 @@ end
     work::Array{QType, 1}
     dt_new::Array{QType, 1}
 end
+
+@truncate_stacktrace ExtrapolationMidpointHairerWannerCache 1
 
 function alg_cache(
         alg::ExtrapolationMidpointHairerWanner, u, rate_prototype,
@@ -1486,6 +1506,8 @@ end
     work::Array{QType, 1}
     dt_new::Array{QType, 1}
 end
+
+@truncate_stacktrace ImplicitHairerWannerExtrapolationConstantCache 1
 
 function alg_cache(
         alg::ImplicitHairerWannerExtrapolation, u, rate_prototype,
@@ -1589,6 +1611,8 @@ end
     work::Array{QType, 1}
     dt_new::Array{QType, 1}
 end
+
+@truncate_stacktrace ImplicitHairerWannerExtrapolationCache 1
 
 function alg_cache(
         alg::ImplicitHairerWannerExtrapolation, u, rate_prototype,
@@ -1719,6 +1743,8 @@ end
     dt_new::Array{QType, 1}
 end
 
+@truncate_stacktrace ImplicitEulerBarycentricExtrapolationConstantCache 1
+
 function alg_cache(
         alg::ImplicitEulerBarycentricExtrapolation, u, rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits},
@@ -1804,6 +1830,8 @@ end
     work::Array{QType, 1}
     dt_new::Array{QType, 1}
 end
+
+@truncate_stacktrace ImplicitEulerBarycentricExtrapolationCache 1
 
 function alg_cache(
         alg::ImplicitEulerBarycentricExtrapolation, u, rate_prototype,

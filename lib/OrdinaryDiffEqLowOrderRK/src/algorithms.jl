@@ -35,6 +35,8 @@ function Heun(stage_limiter!, step_limiter! = trivial_limiter!)
     return Heun(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace Heun
+
 @doc explicit_rk_docstring(
     "The optimized second order midpoint method. Uses embedded Euler method for adaptivity.",
     "Ralston",
@@ -53,6 +55,8 @@ function Ralston(stage_limiter!, step_limiter! = trivial_limiter!)
     return Ralston(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace Ralston
+
 @doc explicit_rk_docstring(
     "The second order midpoint method. Uses embedded Euler method for adaptivity.",
     "Midpoint",
@@ -70,6 +74,8 @@ end
 function Midpoint(stage_limiter!, step_limiter! = trivial_limiter!)
     return Midpoint(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace Midpoint
 
 @doc explicit_rk_docstring(
     "The canonical Runge-Kutta Order 4 method. Uses a defect control for adaptive stepping using maximum error over the whole interval. Classic fourth-order method. Good for medium accuracy calculations.",
@@ -95,6 +101,8 @@ function RK4(stage_limiter!, step_limiter! = trivial_limiter!)
     return RK4(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace RK4
+
 @doc explicit_rk_docstring(
     "Bogacki-Shampine 3/2 method. Third-order adaptive method using embedded Euler method for adaptivity. Recommended for non-stiff problems at moderate tolerances.",
     "BS3",
@@ -118,6 +126,8 @@ end
 function BS3(stage_limiter!, step_limiter! = trivial_limiter!)
     return BS3(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace BS3
 
 @doc explicit_rk_docstring(
     "Owren-Zennaro optimized interpolation 3/2 method (free 3rd order interpolant).",
@@ -144,6 +154,8 @@ function OwrenZen3(stage_limiter!, step_limiter! = trivial_limiter!)
     return OwrenZen3(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace OwrenZen3
+
 @doc explicit_rk_docstring(
     "Owren-Zennaro optimized interpolation 4/3 method (free 4th order interpolant).",
     "OwrenZen4",
@@ -169,6 +181,8 @@ function OwrenZen4(stage_limiter!, step_limiter! = trivial_limiter!)
     return OwrenZen4(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace OwrenZen4
+
 @doc explicit_rk_docstring(
     "Owren-Zennaro optimized interpolation 5/4 method (free 5th order interpolant).",
     "OwrenZen5",
@@ -193,6 +207,8 @@ end
 function OwrenZen5(stage_limiter!, step_limiter! = trivial_limiter!)
     return OwrenZen5(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace OwrenZen5
 
 @doc explicit_rk_docstring(
     "Bogacki-Shampine 5/4 Runge-Kutta method. (lazy 5th order interpolant).",
@@ -220,6 +236,8 @@ end
 function BS5(stage_limiter!::StageLimiter, step_limiter!::StepLimiter, thread::Thread, lazy::Bool) where {StageLimiter, StepLimiter, Thread}
     return BS5{StageLimiter, StepLimiter, Thread, Val{lazy}}(stage_limiter!, step_limiter!, thread, Val{lazy}())
 end
+
+@truncate_stacktrace BS5
 # for backwards compatibility
 function BS5(stage_limiter!, step_limiter! = trivial_limiter!; lazy = true)
     return BS5(stage_limiter!, step_limiter!, False(), lazy)
@@ -248,6 +266,8 @@ end
 function DP5(stage_limiter!, step_limiter! = trivial_limiter!)
     return DP5(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace DP5
 
 AutoDP5(alg; kwargs...) = AutoAlgSwitch(DP5(), alg; kwargs...)
 
@@ -278,6 +298,8 @@ function Anas5(stage_limiter!, step_limiter! = trivial_limiter!; w = 1)
     return Anas5(stage_limiter!, step_limiter!, False(), w)
 end
 
+@truncate_stacktrace Anas5
+
 @doc explicit_rk_docstring(
     "Tsitouras' Runge-Kutta-Oliver 6 stage 5th order method.", "RKO65",
     references = "Tsitouras, Ch. \"Explicit Runge–Kutta methods for starting integration of
@@ -293,6 +315,8 @@ end
 function RKO65(stage_limiter!, step_limiter! = trivial_limiter!)
     return RKO65(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace RKO65
 
 @doc explicit_rk_docstring(
     "Zero Dissipation Runge-Kutta of 6th order.", "FRK65",
@@ -322,6 +346,8 @@ function FRK65(stage_limiter!, step_limiter! = trivial_limiter!; omega = 0.0)
     return FRK65(stage_limiter!, step_limiter!, False(), omega)
 end
 
+@truncate_stacktrace FRK65
+
 @doc explicit_rk_docstring(
     """Method designed to have good stability properties
     when applied to pseudospectral discretizations
@@ -348,6 +374,8 @@ function RKM(stage_limiter!, step_limiter! = trivial_limiter!)
     return RKM(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace RKM
+
 @doc explicit_rk_docstring(
     "5th order method.", "MSRK5",
     references = "Misha Stepanov - https://arxiv.org/pdf/2202.08443.pdf : Figure 3."
@@ -362,6 +390,8 @@ function MSRK5(stage_limiter!, step_limiter! = trivial_limiter!)
     return MSRK5(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace MSRK5
+
 @doc explicit_rk_docstring(
     "6th order method.", "MSRK6",
     references = "Misha Stepanov - https://arxiv.org/pdf/2202.08443.pdf : Table4"
@@ -375,6 +405,8 @@ end
 function MSRK6(stage_limiter!, step_limiter! = trivial_limiter!)
     return MSRK6(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace MSRK6
 
 @doc explicit_rk_docstring(
     "6-stage Pseudo-Symplectic method.", "PSRK4p7q6",
@@ -402,6 +434,8 @@ Base.@kwdef struct PSRK4p7q6{StageLimiter, StepLimiter, Thread} <: OrdinaryDiffE
     thread::Thread = False()
 end
 
+@truncate_stacktrace PSRK4p7q6
+
 @doc explicit_rk_docstring(
     "4-stage Pseudo-Symplectic method.", "PSRK3p5q4",
     references = "@article{Aubry1998,
@@ -422,6 +456,8 @@ Base.@kwdef struct PSRK3p5q4{StageLimiter, StepLimiter, Thread} <: OrdinaryDiffE
     thread::Thread = False()
 end
 
+@truncate_stacktrace PSRK3p5q4
+
 @doc explicit_rk_docstring(
     "5-stage Pseudo-Symplectic method.", "PSRK3p6q5",
     references = "@article{Aubry1998,
@@ -441,6 +477,8 @@ Base.@kwdef struct PSRK3p6q5{StageLimiter, StepLimiter, Thread} <: OrdinaryDiffE
     step_limiter!::StepLimiter = trivial_limiter!
     thread::Thread = False()
 end
+
+@truncate_stacktrace PSRK3p6q5
 
 @doc explicit_rk_docstring(
     "5th order method.",
@@ -464,6 +502,8 @@ function Stepanov5(stage_limiter!, step_limiter! = trivial_limiter!)
     return Stepanov5(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace Stepanov5
+
 @doc explicit_rk_docstring(
     "5th order method suited for SIR-type epidemic models.",
     "SIR54",
@@ -486,6 +526,8 @@ end
 function SIR54(stage_limiter!, step_limiter! = trivial_limiter!)
     return SIR54(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace SIR54
 
 @doc explicit_rk_docstring(
     "2nd order, 2-stage Method with optimal parameters.",
@@ -515,6 +557,8 @@ function Alshina2(stage_limiter!, step_limiter! = trivial_limiter!)
     return Alshina2(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace Alshina2
+
 @doc explicit_rk_docstring(
     "3rd order, 3-stage Method with optimal parameters.",
     "Alshina3",
@@ -543,6 +587,8 @@ function Alshina3(stage_limiter!, step_limiter! = trivial_limiter!)
     return Alshina3(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace Alshina3
+
 @doc explicit_rk_docstring(
     "6th order, 7-stage Method with optimal parameters.",
     "Alshina6",
@@ -569,3 +615,5 @@ end
 function Alshina6(stage_limiter!, step_limiter! = trivial_limiter!)
     return Alshina6(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace Alshina6

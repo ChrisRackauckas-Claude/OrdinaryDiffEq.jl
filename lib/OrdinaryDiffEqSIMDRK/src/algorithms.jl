@@ -15,6 +15,8 @@ function MER5v2(;
     )
 end
 
+@truncate_stacktrace MER5v2
+
 # for backwards compatibility
 function MER5v2(stage_limiter!, step_limiter! = trivial_limiter!)
     return MER5v2{typeof(stage_limiter!), typeof(step_limiter!), False}(
@@ -40,6 +42,8 @@ function MER6v2(;
     )
 end
 
+@truncate_stacktrace MER6v2
+
 # for backwards compatibility
 function MER6v2(stage_limiter!, step_limiter! = trivial_limiter!)
     return MER6v2{typeof(stage_limiter!), typeof(step_limiter!), False}(
@@ -64,6 +68,8 @@ function RK6v4(;
         thread
     )
 end
+
+@truncate_stacktrace RK6v4
 
 # for backwards compatibility
 function RK6v4(stage_limiter!, step_limiter! = trivial_limiter!)

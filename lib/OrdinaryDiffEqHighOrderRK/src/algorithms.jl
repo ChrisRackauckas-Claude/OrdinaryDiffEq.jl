@@ -16,6 +16,8 @@ function TanYam7(stage_limiter!, step_limiter! = trivial_limiter!)
     return TanYam7(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace TanYam7
+
 @doc explicit_rk_docstring(
     "Tsitouras-Papakostas 8/7 Runge-Kutta method.", "TsitPap8",
     references = """@article{tsitouras1999cheap,
@@ -39,6 +41,8 @@ function TsitPap8(stage_limiter!, step_limiter! = trivial_limiter!)
     return TsitPap8(stage_limiter!, step_limiter!, False())
 end
 
+@truncate_stacktrace TsitPap8
+
 @doc explicit_rk_docstring(
     "Hairer's 8/5/3 adaption of the Dormand-Prince Runge-Kutta method.",
     "DP8",
@@ -55,6 +59,8 @@ end
 function DP8(stage_limiter!, step_limiter! = trivial_limiter!)
     return DP8(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace DP8
 
 @doc explicit_rk_docstring(
     "Phase-fitted Runge-Kutta of 8th order.", "PFRK87",
@@ -82,3 +88,5 @@ end
 function PFRK87(stage_limiter!, step_limiter! = trivial_limiter!; omega = 0.0)
     return PFRK87(stage_limiter!, step_limiter!, False(), omega)
 end
+
+@truncate_stacktrace PFRK87

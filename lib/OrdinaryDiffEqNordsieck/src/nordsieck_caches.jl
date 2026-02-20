@@ -19,6 +19,8 @@ mutable struct AN5ConstantCache{zType, lType, dtsType, dType, tsit5Type} <:
     order::Int
 end
 
+@truncate_stacktrace AN5ConstantCache 1
+
 function alg_cache(
         alg::AN5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -61,6 +63,8 @@ mutable struct AN5Cache{uType, dType, rateType, zType, lType, dtsType, tsit5Type
     tsit5cache::tsit5Type
     order::Int
 end
+
+@truncate_stacktrace AN5Cache 1
 
 function alg_cache(
         alg::AN5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -148,6 +152,8 @@ mutable struct JVODEConstantCache{zType, lType, dtsType, dType, tsit5Type, etaTy
     maxη::etaType
 end
 
+@truncate_stacktrace JVODEConstantCache 1
+
 function alg_cache(
         alg::JVODE, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -224,6 +230,8 @@ mutable struct JVODECache{
     η₋₁::etaType
     maxη::etaType
 end
+
+@truncate_stacktrace JVODECache 1
 
 function alg_cache(
         alg::JVODE, u, rate_prototype, ::Type{uEltypeNoUnits},

@@ -7,6 +7,8 @@
     tab::TabType
 end
 
+@truncate_stacktrace PDIRK44Cache 1
+
 # Non-FSAL
 get_fsalfirstlast(cache::PDIRK44Cache, u) = (nothing, nothing)
 

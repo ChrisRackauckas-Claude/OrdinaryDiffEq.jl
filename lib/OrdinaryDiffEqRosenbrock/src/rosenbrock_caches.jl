@@ -47,6 +47,8 @@ mutable struct RosenbrockCache{
     stage_limiter!::StageLimiter
     interp_order::Int
 end
+
+@truncate_stacktrace RosenbrockCache 1
 function full_cache(c::RosenbrockCache)
     return [
         c.u, c.uprev, c.dense..., c.du, c.du1, c.du2,
@@ -65,6 +67,8 @@ struct RosenbrockCombinedConstantCache{TF, UF, Tab, JType, WType, F, AD} <:
     autodiff::AD
     interp_order::Int
 end
+
+@truncate_stacktrace RosenbrockCombinedConstantCache 1
 
 @cache mutable struct Rosenbrock23Cache{
         uType, rateType, uNoUnitsType, JType, WType,
@@ -101,6 +105,8 @@ end
     stage_limiter!::StageLimiter
 end
 
+@truncate_stacktrace Rosenbrock23Cache 1
+
 @cache mutable struct Rosenbrock32Cache{
         uType, rateType, uNoUnitsType, JType, WType,
         TabType, TFType, UFType, F, JCType, GCType,
@@ -135,6 +141,8 @@ end
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
 end
+
+@truncate_stacktrace Rosenbrock32Cache 1
 
 function alg_cache(
         alg::Rosenbrock23, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -268,6 +276,8 @@ function Rosenbrock23ConstantCache(::Type{T}, tf, uf, J, W, linsolve, autodiff) 
     return Rosenbrock23ConstantCache(tab.c₃₂, tab.d, tf, uf, J, W, linsolve, autodiff)
 end
 
+@truncate_stacktrace Rosenbrock23ConstantCache 1
+
 function alg_cache(
         alg::Rosenbrock23, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -302,6 +312,8 @@ function Rosenbrock32ConstantCache(::Type{T}, tf, uf, J, W, linsolve, autodiff) 
     return Rosenbrock32ConstantCache(tab.c₃₂, tab.d, tf, uf, J, W, linsolve, autodiff)
 end
 
+@truncate_stacktrace Rosenbrock32ConstantCache 1
+
 function alg_cache(
         alg::Rosenbrock32, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -332,6 +344,8 @@ struct Rosenbrock33ConstantCache{TF, UF, Tab, JType, WType, F} <:
     W::WType
     linsolve::F
 end
+
+@truncate_stacktrace Rosenbrock33ConstantCache 1
 
 @cache mutable struct Rosenbrock33Cache{
         uType, rateType, uNoUnitsType, JType, WType,
@@ -367,6 +381,8 @@ end
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
 end
+
+@truncate_stacktrace Rosenbrock33Cache 1
 
 function alg_cache(
         alg::ROS3P, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -474,6 +490,8 @@ end
     stage_limiter!::StageLimiter
 end
 
+@truncate_stacktrace Rosenbrock34Cache 1
+
 function alg_cache(
         alg::Rodas3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -539,6 +557,8 @@ struct Rosenbrock34ConstantCache{TF, UF, Tab, JType, WType, F} <:
     linsolve::F
 end
 
+@truncate_stacktrace Rosenbrock34ConstantCache 1
+
 function alg_cache(
         alg::Rodas3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -599,6 +619,8 @@ struct Rodas23WConstantCache{TF, UF, Tab, JType, WType, F, AD} <:
     autodiff::AD
 end
 
+@truncate_stacktrace Rodas23WConstantCache 1
+
 struct Rodas3PConstantCache{TF, UF, Tab, JType, WType, F, AD} <: RosenbrockConstantCache
     tf::TF
     uf::UF
@@ -608,6 +630,8 @@ struct Rodas3PConstantCache{TF, UF, Tab, JType, WType, F, AD} <: RosenbrockConst
     linsolve::F
     autodiff::AD
 end
+
+@truncate_stacktrace Rodas3PConstantCache 1
 
 @cache mutable struct Rodas23WCache{
         uType, rateType, uNoUnitsType, JType, WType, TabType,
@@ -648,6 +672,8 @@ end
     stage_limiter!::StageLimiter
 end
 
+@truncate_stacktrace Rodas23WCache 1
+
 @cache mutable struct Rodas3PCache{
         uType, rateType, uNoUnitsType, JType, WType, TabType,
         TFType, UFType, F, JCType, GCType, RTolType, A, StepLimiter, StageLimiter,
@@ -686,6 +712,8 @@ end
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
 end
+
+@truncate_stacktrace Rodas3PCache 1
 
 function alg_cache(
         alg::Rodas23W, u, rate_prototype, ::Type{uEltypeNoUnits},

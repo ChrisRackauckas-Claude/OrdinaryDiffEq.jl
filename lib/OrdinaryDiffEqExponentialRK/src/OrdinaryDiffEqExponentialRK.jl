@@ -1,5 +1,6 @@
 module OrdinaryDiffEqExponentialRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, ismultistep,
     OrdinaryDiffEqExponentialAlgorithm,
     _unwrap_val, OrdinaryDiffEqMutableCache,

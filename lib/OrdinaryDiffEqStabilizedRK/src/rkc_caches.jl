@@ -13,6 +13,8 @@ mutable struct ROCK2ConstantCache{T, T2, zType} <: OrdinaryDiffEqConstantCache
     min_stage::Int
     max_stage::Int
 end
+
+@truncate_stacktrace ROCK2ConstantCache 1
 @cache struct ROCK2Cache{uType, rateType, uNoUnitsType, C <: ROCK2ConstantCache} <:
     StabilizedRKMutableCache
     u::uType
@@ -25,6 +27,8 @@ end
     k::rateType
     constantcache::C
 end
+
+@truncate_stacktrace ROCK2Cache 1
 
 function alg_cache(
         alg::ROCK2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -70,6 +74,8 @@ mutable struct ROCK4ConstantCache{T, T2, T3, T4, zType} <: OrdinaryDiffEqConstan
     max_stage::Int
 end
 
+@truncate_stacktrace ROCK4ConstantCache 1
+
 @cache struct ROCK4Cache{uType, rateType, uNoUnitsType, C <: ROCK4ConstantCache} <:
     StabilizedRKMutableCache
     u::uType
@@ -83,6 +89,8 @@ end
     k::rateType
     constantcache::C
 end
+
+@truncate_stacktrace ROCK4Cache 1
 
 function alg_cache(
         alg::ROCK4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -131,6 +139,8 @@ end
     k::rateType
     constantcache::C
 end
+
+@truncate_stacktrace RKCCache 1
 
 function alg_cache(
         alg::RKC, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -183,6 +193,8 @@ end
     k::rateType
     constantcache::C
 end
+
+@truncate_stacktrace ESERK4Cache 1
 
 function alg_cache(
         alg::ESERK4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -238,6 +250,8 @@ end
     constantcache::C
 end
 
+@truncate_stacktrace ESERK5Cache 1
+
 function alg_cache(
         alg::ESERK5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -288,6 +302,8 @@ end
     k::rateType
     constantcache::C
 end
+
+@truncate_stacktrace SERK2Cache 1
 
 function alg_cache(
         alg::SERK2, u, rate_prototype, ::Type{uEltypeNoUnits},

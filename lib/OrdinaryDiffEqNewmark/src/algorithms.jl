@@ -28,6 +28,8 @@ function NewmarkBeta(β, γ; kwargs...)
     return NewmarkBeta(; β, γ, kwargs...)
 end
 
+@truncate_stacktrace NewmarkBeta
+
 # Needed for remake
 function NewmarkBeta(;
         β = 0.25, γ = 0.5, chunk_size = Val{0}(),

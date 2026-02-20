@@ -130,6 +130,8 @@ function ImplicitEuler(;
     )
 end
 
+@truncate_stacktrace ImplicitEuler
+
 @doc SDIRK_docstring(
     "A second order A-stable symplectic and symmetric implicit solver. Excellent for Hamiltonian systems and highly stiff equations.",
     "ImplicitMidpoint";
@@ -179,6 +181,8 @@ function ImplicitMidpoint(;
         step_limiter!, AD_choice
     )
 end
+
+@truncate_stacktrace ImplicitMidpoint
 
 @doc SDIRK_docstring(
     "A second order A-stable symmetric ESDIRK method. 'Almost symplectic' without numerical dampening.",
@@ -230,6 +234,8 @@ function Trapezoid(;
         AD_choice
     )
 end
+
+@truncate_stacktrace Trapezoid
 
 @doc SDIRK_docstring(
     "A second order A-B-L-S-stable one-step ESDIRK method. Includes stiffness-robust error estimates for accurate adaptive timestepping, smoothed derivatives for highly stiff and oscillatory problems. Good for high tolerances (>1e-2) on stiff problems.",
@@ -347,6 +353,8 @@ function SDIRK2(;
     )
 end
 
+@truncate_stacktrace SDIRK2
+
 @doc SDIRK_docstring(
     "Description TBD",
     "SDIRK22";
@@ -401,6 +409,8 @@ function SDIRK22(;
         AD_choice
     )
 end
+
+@truncate_stacktrace SDIRK22
 
 @doc SDIRK_docstring(
     """SSPSDIRK is an SSP-optimized SDIRK method,
@@ -460,6 +470,8 @@ function SSPSDIRK2(;
     )
 end
 
+@truncate_stacktrace SSPSDIRK2
+
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 3rd order ESDIRK method.",
     "Kvaerno3";
@@ -516,6 +528,8 @@ function Kvaerno3(;
     )
 end
 
+@truncate_stacktrace Kvaerno3
+
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 3rd order ESDIRK method with splitting.",
     "KenCarp3";
@@ -568,6 +582,8 @@ function KenCarp3(;
     )
 end
 
+@truncate_stacktrace KenCarp3
+
 @doc SDIRK_docstring(
     "Third order method.",
     "CFNLIRK3";
@@ -616,6 +632,8 @@ function CFNLIRK3(;
         AD_choice
     )
 end
+
+@truncate_stacktrace CFNLIRK3
 
 @doc SDIRK_docstring(
     "An A-L stable 4th order SDIRK method.",
@@ -677,6 +695,8 @@ function Cash4(;
     )
 end
 
+@truncate_stacktrace Cash4
+
 @doc SDIRK_docstring(
     "Method of order 4.",
     "SFSDIRK4";
@@ -725,6 +745,8 @@ function SFSDIRK4(;
         AD_choice
     )
 end
+
+@truncate_stacktrace SFSDIRK4
 
 @doc SDIRK_docstring(
     "Method of order 5.",
@@ -776,6 +798,8 @@ function SFSDIRK5(;
     )
 end
 
+@truncate_stacktrace SFSDIRK5
+
 @doc SDIRK_docstring(
     "Method of order 6.",
     "SFSDIRK6";
@@ -825,6 +849,8 @@ function SFSDIRK6(;
         AD_choice
     )
 end
+
+@truncate_stacktrace SFSDIRK6
 
 @doc SDIRK_docstring(
     "Method of order 7.",
@@ -876,6 +902,8 @@ function SFSDIRK7(;
     )
 end
 
+@truncate_stacktrace SFSDIRK7
+
 @doc SDIRK_docstring(
     "Method of order 8.",
     "SFSDIRK8";
@@ -926,6 +954,8 @@ function SFSDIRK8(;
     )
 end
 
+@truncate_stacktrace SFSDIRK8
+
 @doc SDIRK_docstring(
     "An A-L stable 4th order SDIRK method.",
     "Hairer4";
@@ -971,6 +1001,8 @@ function Hairer4(;
         controller, AD_choice
     )
 end
+
+@truncate_stacktrace Hairer4
 
 @doc SDIRK_docstring(
     "An A-L stable 4th order SDIRK method.",
@@ -1018,6 +1050,8 @@ function Hairer42(;
         controller, AD_choice
     )
 end
+
+@truncate_stacktrace Hairer42
 
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 4th order ESDIRK method.",
@@ -1075,6 +1109,8 @@ function Kvaerno4(;
     )
 end
 
+@truncate_stacktrace Kvaerno4
+
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 5th order ESDIRK method.",
     "Kvaerno5";
@@ -1130,6 +1166,8 @@ function Kvaerno5(;
         smooth_est, extrapolant, controller, step_limiter!, AD_choice
     )
 end
+
+@truncate_stacktrace Kvaerno5
 
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 4th order ESDIRK method with splitting. Includes splitting capabilities. Recommended for medium tolerance stiff problems (>1e-8).",
@@ -1237,6 +1275,8 @@ function KenCarp47(;
     )
 end
 
+@truncate_stacktrace KenCarp47
+
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 5th order ESDIRK method with splitting.",
     "KenCarp5";
@@ -1288,6 +1328,8 @@ function KenCarp5(;
         smooth_est, extrapolant, controller, step_limiter!, AD_choice
     )
 end
+
+@truncate_stacktrace KenCarp5
 
 @doc SDIRK_docstring(
     "An A-L stable stiffly-accurate 5th order eight-stage ESDIRK method with splitting.",
@@ -1341,6 +1383,8 @@ function KenCarp58(;
     )
 end
 
+@truncate_stacktrace KenCarp58
+
 # `smooth_est` is not necessary, as the embedded method is also L-stable
 @doc SDIRK_docstring(
     "Optimized ESDIRK tableaus.
@@ -1392,6 +1436,8 @@ function ESDIRK54I8L2SA(;
     )
 end
 
+@truncate_stacktrace ESDIRK54I8L2SA
+
 @doc SDIRK_docstring(
     "Optimized ESDIRK tableaus.
 Updates of the original KenCarp tableau expected to achieve lower error for the same steps in theory,
@@ -1441,6 +1487,8 @@ function ESDIRK436L2SA2(;
         controller, AD_choice
     )
 end
+
+@truncate_stacktrace ESDIRK436L2SA2
 
 @doc SDIRK_docstring(
     "Optimized ESDIRK tableaus.
@@ -1492,6 +1540,8 @@ function ESDIRK437L2SA(;
     )
 end
 
+@truncate_stacktrace ESDIRK437L2SA
+
 @doc SDIRK_docstring(
     "Optimized ESDIRK tableaus.
 Updates of the original KenCarp tableau expected to achieve lower error for the same steps in theory,
@@ -1541,6 +1591,8 @@ function ESDIRK547L2SA2(;
         controller, AD_choice
     )
 end
+
+@truncate_stacktrace ESDIRK547L2SA2
 
 @doc SDIRK_docstring(
     "Optimized ESDIRK tableaus.
@@ -1593,3 +1645,5 @@ function ESDIRK659L2SA(;
         controller, AD_choice
     )
 end
+
+@truncate_stacktrace ESDIRK659L2SA

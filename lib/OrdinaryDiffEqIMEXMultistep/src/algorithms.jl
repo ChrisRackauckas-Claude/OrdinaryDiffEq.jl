@@ -51,6 +51,8 @@ function CNAB2(;
     )
 end
 
+@truncate_stacktrace CNAB2
+
 @doc generic_solver_docstring(
     "Crank-Nicholson Leapfrong 2.",
     "CNLF2",
@@ -99,3 +101,5 @@ function CNLF2(;
         AD_choice
     )
 end
+
+@truncate_stacktrace CNLF2

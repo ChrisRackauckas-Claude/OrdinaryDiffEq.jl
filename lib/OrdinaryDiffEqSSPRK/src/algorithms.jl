@@ -20,6 +20,8 @@ function SSPRK53_2N2(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRK53_2N2
+
 @doc explicit_rk_docstring(
     "A second-order, two-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -41,6 +43,8 @@ function SSPRK22(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK22
 
 @doc explicit_rk_docstring(
     "A third-order, five-stage explicit strong stability preserving (SSP) method.
@@ -84,6 +88,8 @@ function SSPRK63(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRK63
+
 @doc explicit_rk_docstring(
     "A third-order, eight-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -104,6 +110,8 @@ function SSPRK83(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK83
 
 @doc explicit_rk_docstring(
     "A third-order, four-stage explicit strong stability preserving (SSP) method.",
@@ -143,6 +151,8 @@ function SSPRK43(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRK43
+
 @doc explicit_rk_docstring(
     "A third-order, four-stage explicit strong stability preserving (SSP) method.",
     "SSPRK432",
@@ -164,6 +174,8 @@ function SSPRK432(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK432
 
 @doc explicit_rk_docstring(
     "A second-order, three-step explicit strong stability preserving (SSP) linear multistep method.
@@ -190,6 +202,8 @@ function SSPRKMSVS32(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRKMSVS32
+
 @doc explicit_rk_docstring(
     "A fourth-order, five-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -210,6 +224,8 @@ function SSPRK54(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK54
 
 @doc explicit_rk_docstring(
     "A third-order, five-stage explicit strong stability preserving (SSP) low-storage method.
@@ -233,6 +249,8 @@ function SSPRK53_2N1(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRK53_2N1
+
 @doc explicit_rk_docstring(
     "A fourth-order, ten-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -254,6 +272,8 @@ function SSPRK104(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK104
 
 @doc explicit_rk_docstring(
     "A third-order, nine-stage explicit strong stability preserving (SSP) method.
@@ -278,6 +298,8 @@ function SSPRK932(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK932
 
 @doc explicit_rk_docstring(
     "A third-order, four-step explicit strong stability preserving (SSP) linear multistep method.
@@ -304,6 +326,8 @@ function SSPRKMSVS43(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRKMSVS43
+
 @doc explicit_rk_docstring(
     "A third-order, seven-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -324,6 +348,8 @@ function SSPRK73(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK73
 
 @doc explicit_rk_docstring(
     "A third-order, five-stage explicit strong stability preserving (SSP) low-storage method.
@@ -346,6 +372,8 @@ function SSPRK53_H(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SSPRK53_H
+
 @doc explicit_rk_docstring(
     "A third-order, three-stage explicit strong stability preserving (SSP) method.
 Fixed timestep only.",
@@ -367,6 +395,8 @@ function SSPRK33(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace SSPRK33
 
 @doc explicit_rk_docstring(
     "Optimal strong-stability-preserving Runge-Kutta time discretizations for discontinuous Galerkin methods",
@@ -394,6 +424,8 @@ function KYKSSPRK42(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace KYKSSPRK42
+
 @doc explicit_rk_docstring(
     "Optimal strong-stability-preserving Runge-Kutta time discretizations for discontinuous Galerkin methods",
     "KYK2014DGSSPRK_3S2",
@@ -420,3 +452,5 @@ function KYK2014DGSSPRK_3S2(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace KYK2014DGSSPRK_3S2

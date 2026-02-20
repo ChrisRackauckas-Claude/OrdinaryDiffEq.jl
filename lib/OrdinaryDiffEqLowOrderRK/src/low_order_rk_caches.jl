@@ -67,6 +67,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace HeunCache 1
+
 @cache struct RalstonCache{
         uType,
         rateType,
@@ -85,6 +87,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace RalstonCache 1
 
 function alg_cache(
         alg::Heun, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -155,6 +159,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace MidpointCache 1
+
 struct MidpointConstantCache <: OrdinaryDiffEqConstantCache end
 
 function alg_cache(
@@ -198,6 +204,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace RK4Cache 1
 
 struct RK4ConstantCache <: OrdinaryDiffEqConstantCache end
 
@@ -249,6 +257,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace BS3Cache 1
+
 function alg_cache(
         alg::BS3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -298,6 +308,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace OwrenZen3Cache 1
 
 function alg_cache(
         alg::OwrenZen3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -350,6 +362,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace OwrenZen4Cache 1
 
 function alg_cache(
         alg::OwrenZen4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -407,6 +421,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace OwrenZen5Cache 1
+
 function alg_cache(
         alg::OwrenZen5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -463,6 +479,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace BS5Cache 1
 
 function alg_cache(
         alg::BS5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -522,6 +540,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace DP5Cache 1
 
 function alg_cache(
         alg::DP5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -597,6 +617,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace Anas5Cache 1
+
 function alg_cache(
         alg::Anas5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -662,6 +684,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace RKO65Cache 1
 
 u_cache(c::RKO65Cache) = ()
 du_cache(c::RKO65Cache) = (c.k, c.du, c.fsalfirst)
@@ -797,6 +821,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace FRK65Cache 1
 
 struct FRK65ConstantCache{T1, T2} <: OrdinaryDiffEqConstantCache
     α21::T1
@@ -1065,6 +1091,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace RKMCache 1
+
 struct RKMConstantCache{T, T2} <: OrdinaryDiffEqConstantCache
     α2::T
     α3::T
@@ -1172,6 +1200,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace MSRK5Cache 1
+
 function alg_cache(
         alg::MSRK5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1228,6 +1258,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace MSRK6Cache 1
+
 function alg_cache(
         alg::MSRK6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1279,6 +1311,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace PSRK4p7q6Cache 1
+
 function alg_cache(
         alg::PSRK4p7q6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1326,6 +1360,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace PSRK3p6q5Cache 1
+
 function alg_cache(
         alg::PSRK3p6q5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1370,6 +1406,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace PSRK3p5q4Cache 1
 
 function alg_cache(
         alg::PSRK3p5q4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -1419,6 +1457,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace Stepanov5Cache 1
 
 function alg_cache(
         alg::Stepanov5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -1492,6 +1532,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SIR54Cache 1
+
 function alg_cache(
         alg::SIR54, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1543,6 +1585,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace Alshina2Cache 1
+
 function alg_cache(
         alg::Alshina2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -1588,6 +1632,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace Alshina3Cache 1
 
 function alg_cache(
         alg::Alshina3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -1635,6 +1681,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace Alshina6Cache 1
 
 function alg_cache(
         alg::Alshina6, u, rate_prototype, ::Type{uEltypeNoUnits},

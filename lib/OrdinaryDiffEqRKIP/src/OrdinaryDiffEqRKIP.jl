@@ -1,5 +1,6 @@
 module OrdinaryDiffEqRKIP
 
+using TruncatedStacktraces: @truncate_stacktrace
 using Compat: logrange
 using LinearAlgebra: ldiv!, exp, axpy!, norm, mul!
 using SciMLOperators: AbstractSciMLOperator

@@ -1,5 +1,6 @@
 module OrdinaryDiffEqExtrapolation
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_maximum_order, get_current_adaptive_order,
     get_current_alg_order, calculate_residuals!,
     accept_step_controller,

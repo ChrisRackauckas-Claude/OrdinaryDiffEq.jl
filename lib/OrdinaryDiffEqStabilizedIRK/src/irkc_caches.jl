@@ -6,6 +6,8 @@
     du₂::rateType
 end
 
+@truncate_stacktrace IRKCConstantCache 1
+
 @cache mutable struct IRKCCache{uType, rateType, uNoUnitsType, N, C <: IRKCConstantCache} <:
     OrdinaryDiffEqMutableCache
     u::uType
@@ -22,6 +24,8 @@ end
     du₂::rateType
     constantcache::C
 end
+
+@truncate_stacktrace IRKCCache 1
 
 function get_fsalfirstlast(cache::IRKCCache, u)
     return (cache.fsalfirst, du_alias_or_new(cache.nlsolver, cache.fsalfirst))

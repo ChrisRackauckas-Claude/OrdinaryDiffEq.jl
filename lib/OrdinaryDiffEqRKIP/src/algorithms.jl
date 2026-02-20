@@ -99,6 +99,8 @@ function RKIP(
     )
 end
 
+@truncate_stacktrace RKIP
+
 alg_order(alg::RKIP) = alg.tableau.order
 alg_adaptive_order(alg::RKIP) = alg.tableau.adaptiveorder
 

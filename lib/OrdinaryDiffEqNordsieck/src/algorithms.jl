@@ -33,6 +33,8 @@ function JVODE(
     )
     return JVODE(algorithm, bias1, bias2, bias3, addon, qmax, qsteady_min, qsteady_max)
 end
+
+@truncate_stacktrace JVODE
 """
 !!! warning "Experimental"
 

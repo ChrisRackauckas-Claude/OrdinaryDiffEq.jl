@@ -1,5 +1,6 @@
 module OrdinaryDiffEqPDIRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: isfsal, alg_order, _unwrap_val,
     OrdinaryDiffEqNewtonAlgorithm, OrdinaryDiffEqConstantCache,
     OrdinaryDiffEqMutableCache, constvalue, alg_cache,

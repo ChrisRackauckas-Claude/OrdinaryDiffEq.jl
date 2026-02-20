@@ -18,6 +18,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace ImplicitEulerCache 1
+
 function alg_cache(
         alg::ImplicitEuler, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -87,6 +89,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace ImplicitMidpointCache 1
+
 function alg_cache(
         alg::ImplicitMidpoint, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -107,6 +111,8 @@ mutable struct TrapezoidConstantCache{uType, tType, N} <: SDIRKConstantCache
     tprev2::tType
     nlsolver::N
 end
+
+@truncate_stacktrace TrapezoidConstantCache 1
 
 function alg_cache(
         alg::Trapezoid, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -140,6 +146,8 @@ end
     nlsolver::N
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace TrapezoidCache 1
 
 function alg_cache(
         alg::Trapezoid, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -197,6 +205,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace TRBDF2Cache 1
+
 function alg_cache(
         alg::TRBDF2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -249,6 +259,8 @@ end
     step_limiter!::StepLimiter
 end
 
+@truncate_stacktrace SDIRK2Cache 1
+
 function alg_cache(
         alg::SDIRK2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -276,6 +288,8 @@ struct SDIRK22ConstantCache{uType, tType, N, Tab} <: SDIRKConstantCache
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace SDIRK22ConstantCache 1
 
 function alg_cache(
         alg::SDIRK22, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -311,6 +325,8 @@ end
     tab::Tab
     step_limiter!::StepLimiter
 end
+
+@truncate_stacktrace SDIRK22Cache 1
 
 function alg_cache(
         alg::SDIRK22, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -362,6 +378,8 @@ end
     z₂::uType
     nlsolver::N
 end
+
+@truncate_stacktrace SSPSDIRK2Cache 1
 
 function alg_cache(
         alg::SSPSDIRK2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -417,6 +435,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace Cash4Cache 1
 
 function alg_cache(
         alg::Cash4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -478,6 +498,8 @@ end
     tab::Tab
 end
 
+@truncate_stacktrace SFSDIRK4Cache 1
+
 function alg_cache(
         alg::SFSDIRK4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -538,6 +560,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace SFSDIRK5Cache 1
 
 function alg_cache(
         alg::SFSDIRK5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -601,6 +625,8 @@ end
     tab::Tab
 end
 
+@truncate_stacktrace SFSDIRK6Cache 1
+
 function alg_cache(
         alg::SFSDIRK6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -663,6 +689,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace SFSDIRK7Cache 1
 
 function alg_cache(
         alg::SFSDIRK7, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -728,6 +756,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace SFSDIRK8Cache 1
 
 function alg_cache(
         alg::SFSDIRK8, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -796,6 +826,8 @@ end
     tab::Tab
 end
 
+@truncate_stacktrace Hairer4Cache 1
+
 function alg_cache(
         alg::Union{Hairer4, Hairer42}, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -842,6 +874,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace ESDIRK54I8L2SACache 1
 
 function alg_cache(
         alg::ESDIRK54I8L2SA, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -910,6 +944,8 @@ end
     tab::Tab
 end
 
+@truncate_stacktrace ESDIRK436L2SA2Cache 1
+
 function alg_cache(
         alg::ESDIRK436L2SA2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -975,6 +1011,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace ESDIRK437L2SACache 1
 
 function alg_cache(
         alg::ESDIRK437L2SA, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -1042,6 +1080,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace ESDIRK547L2SA2Cache 1
 
 function alg_cache(
         alg::ESDIRK547L2SA2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -1111,6 +1151,8 @@ end
     nlsolver::N
     tab::Tab
 end
+
+@truncate_stacktrace ESDIRK659L2SACache 1
 
 function alg_cache(
         alg::ESDIRK659L2SA, u, rate_prototype, ::Type{uEltypeNoUnits},

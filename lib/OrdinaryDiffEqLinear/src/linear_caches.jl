@@ -13,6 +13,8 @@ get_fsalfirstlast(cache::LinearMutableCache, u) = (cache.fsalfirst, cache.k)
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusMidpointCache 1
+
 function alg_cache(
         alg::MagnusMidpoint, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -48,6 +50,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace RKMK2Cache 1
 
 function alg_cache(
         alg::RKMK2, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -85,6 +89,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace LieRK4Cache 1
+
 function alg_cache(
         alg::LieRK4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -120,6 +126,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace CG3Cache 1
 
 function alg_cache(
         alg::CG3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -157,6 +165,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace CG2Cache 1
+
 function alg_cache(
         alg::CG2, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -193,6 +203,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace CG4aCache 1
+
 function alg_cache(
         alg::CG4a, u, rate_prototype, uEltypeNoUnits, uBottomEltypeNoUnits,
         tTypeNoUnits, uprev, uprev2, f, t, dt, reltol, p, calck, ::Val{true}, verbose
@@ -224,6 +236,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace RKMK4Cache 1
 
 function alg_cache(
         alg::RKMK4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -263,6 +277,8 @@ end
     atmp::uNoUnitsType
     exp_cache::expType
 end
+
+@truncate_stacktrace MagnusAdapt4Cache 1
 
 function alg_cache(
         alg::MagnusAdapt4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -304,6 +320,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusNC8Cache 1
+
 function alg_cache(
         alg::MagnusNC8, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -339,6 +357,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace MagnusGL4Cache 1
 
 function alg_cache(
         alg::MagnusGL4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -376,6 +396,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusGL8Cache 1
+
 function alg_cache(
         alg::MagnusGL8, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -411,6 +433,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace MagnusNC6Cache 1
 
 function alg_cache(
         alg::MagnusNC6, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -448,6 +472,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusGL6Cache 1
+
 function alg_cache(
         alg::MagnusGL6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -484,6 +510,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusGauss4Cache 1
+
 function alg_cache(
         alg::MagnusGauss4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -519,6 +547,8 @@ end
     k::rateType
     exp_cache::expType
 end
+
+@truncate_stacktrace LieEulerCache 1
 
 function alg_cache(
         alg::LieEuler, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -589,6 +619,8 @@ end
     exp_cache::expType
 end
 
+@truncate_stacktrace MagnusLeapfrogCache 1
+
 function alg_cache(
         alg::MagnusLeapfrog, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits},
@@ -634,6 +666,8 @@ end
     KsCache::KsType # different depending on alg.krylov
     exp_cache::expType
 end
+
+@truncate_stacktrace LinearExponentialCache 1
 
 get_fsalfirstlast(cache::LinearExponentialCache, u) = (zero(u), zero(u))
 

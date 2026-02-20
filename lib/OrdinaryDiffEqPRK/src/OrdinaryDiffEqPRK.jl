@@ -1,5 +1,6 @@
 module OrdinaryDiffEqPRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm, alg_order, OrdinaryDiffEqMutableCache,
     OrdinaryDiffEqConstantCache, constvalue, @cache,
     alg_cache, get_fsalfirstlast,

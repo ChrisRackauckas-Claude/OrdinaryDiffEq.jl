@@ -1,5 +1,6 @@
 module OrdinaryDiffEqAdamsBashforthMoulton
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: OrdinaryDiffEqMutableCache, OrdinaryDiffEqConstantCache, @cache,
     alg_cache,
     initialize!, perform_step!, alg_order, isstandard,

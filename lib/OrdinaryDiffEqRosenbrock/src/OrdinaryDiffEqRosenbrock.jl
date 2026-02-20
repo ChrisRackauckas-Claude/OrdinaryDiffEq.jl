@@ -1,5 +1,6 @@
 module OrdinaryDiffEqRosenbrock
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, isWmethod, isfsal, _unwrap_val,
     DEFAULT_PRECS, OrdinaryDiffEqRosenbrockAlgorithm, @cache,
     alg_cache, initialize!,

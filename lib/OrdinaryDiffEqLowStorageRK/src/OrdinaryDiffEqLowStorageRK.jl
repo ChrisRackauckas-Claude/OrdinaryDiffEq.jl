@@ -1,5 +1,6 @@
 module OrdinaryDiffEqLowStorageRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, calculate_residuals!,
     beta2_default, beta1_default, gamma_default,
     initialize!, perform_step!, unwrap_alg,

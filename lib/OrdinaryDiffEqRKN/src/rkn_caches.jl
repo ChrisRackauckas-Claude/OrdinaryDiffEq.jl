@@ -12,6 +12,8 @@ get_fsalfirstlast(cache::NystromMutableCache, u) = (cache.fsalfirst, cache.k)
     tmp::uType
 end
 
+@truncate_stacktrace Nystrom4Cache 1
+
 # struct Nystrom4ConstantCache <: NystromConstantCache end
 
 function alg_cache(
@@ -58,6 +60,8 @@ end
     atmp::uNoUnitsType
     tab::TabType
 end
+
+@truncate_stacktrace FineRKN4Cache 1
 
 function alg_cache(
         alg::FineRKN4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -107,6 +111,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace FineRKN5Cache 1
+
 function alg_cache(
         alg::FineRKN5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -150,6 +156,8 @@ end
     tmp::uType
 end
 
+@truncate_stacktrace Nystrom4VelocityIndependentCache 1
+
 function alg_cache(
         alg::Nystrom4VelocityIndependent, u, rate_prototype,
         ::Type{uEltypeNoUnits}, ::Type{uBottomEltypeNoUnits},
@@ -188,6 +196,8 @@ end
     onestep_cache::Nystrom4VelocityIndependentCache
     tab::TabType
 end
+
+@truncate_stacktrace IRKN3Cache 1
 
 function alg_cache(
         alg::IRKN3, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -231,6 +241,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace IRKN4Cache 1
+
 function alg_cache(
         alg::IRKN4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -272,6 +284,8 @@ end
     tmp::uType
     tab::TabType
 end
+
+@truncate_stacktrace Nystrom5VelocityIndependentCache 1
 
 function alg_cache(
         alg::Nystrom5VelocityIndependent, u, rate_prototype,
@@ -320,6 +334,8 @@ struct DPRKN4Cache{uType, rateType, reducedRateType, uNoUnitsType, TabType} <:
     tab::TabType
 end
 
+@truncate_stacktrace DPRKN4Cache 1
+
 function alg_cache(
         alg::DPRKN4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -365,6 +381,8 @@ end
     atmp::uNoUnitsType
     tab::TabType
 end
+
+@truncate_stacktrace DPRKN5Cache 1
 
 function alg_cache(
         alg::DPRKN5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -414,6 +432,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace DPRKN6Cache 1
+
 function alg_cache(
         alg::DPRKN6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -461,6 +481,8 @@ end
     atmp::uNoUnitsType
     tab::TabType
 end
+
+@truncate_stacktrace DPRKN6FMCache 1
 
 function alg_cache(
         alg::DPRKN6FM, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -512,6 +534,8 @@ end
     atmp::uNoUnitsType
     tab::TabType
 end
+
+@truncate_stacktrace DPRKN8Cache 1
 
 function alg_cache(
         alg::DPRKN8, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -575,6 +599,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace DPRKN12Cache 1
+
 function alg_cache(
         alg::DPRKN12, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -635,6 +661,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace ERKN4Cache 1
+
 function alg_cache(
         alg::ERKN4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -678,6 +706,8 @@ end
     atmp::uNoUnitsType
     tab::TabType
 end
+
+@truncate_stacktrace ERKN5Cache 1
 
 function alg_cache(
         alg::ERKN5, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -726,6 +756,8 @@ end
     tab::TabType
 end
 
+@truncate_stacktrace ERKN7Cache 1
+
 function alg_cache(
         alg::ERKN7, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -767,6 +799,8 @@ end
     k::rateType
     tmp::uType
 end
+
+@truncate_stacktrace RKN4Cache 1
 
 function alg_cache(
         alg::RKN4, u, rate_prototype, ::Type{uEltypeNoUnits},

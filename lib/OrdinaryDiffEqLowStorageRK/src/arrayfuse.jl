@@ -23,6 +23,8 @@ function ArrayFuse(visible::AT, hidden::AT, p) where {AT}
     return ArrayFuse{AT, eltype(visible), typeof(p)}(visible, hidden, p)
 end
 
+@truncate_stacktrace ArrayFuse
+
 @inline function Base.copyto!(af::ArrayFuse, src::Broadcast.Broadcasted)
     @. af.visible = af.p[1] * af.visible + af.p[2] * src
     return @. af.hidden = af.hidden + af.p[3] * af.visible

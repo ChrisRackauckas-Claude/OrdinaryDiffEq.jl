@@ -188,7 +188,9 @@ mutable struct AutoSwitchCache{nAlg, sAlg, tolType, T}
             switch_max,
             current
         )
-    end
+   
+
+@truncate_stacktrace AutoSwitchCache 1 end
 end
 
 """

@@ -25,6 +25,8 @@
     lazy::L
 end
 
+@truncate_stacktrace Vern6Cache 1
+
 get_fsalfirstlast(cache::Vern6Cache, u) = (cache.k1, cache.k9)
 
 function alg_cache(
@@ -95,6 +97,8 @@ end
     thread::Thread
     lazy::L
 end
+
+@truncate_stacktrace Vern7Cache 1
 
 # fake values since non-FSAL method
 get_fsalfirstlast(cache::Vern7Cache, u) = (nothing, nothing)
@@ -169,6 +173,8 @@ end
     thread::Thread
     lazy::L
 end
+
+@truncate_stacktrace Vern8Cache 1
 
 # fake values since non-FSAL method
 get_fsalfirstlast(cache::Vern8Cache, u) = (nothing, nothing)
@@ -252,6 +258,8 @@ end
     lazy::L
 end
 
+@truncate_stacktrace Vern9Cache 1
+
 # fake values since non-FSAL method
 get_fsalfirstlast(cache::Vern9Cache, u) = (nothing, nothing)
 
@@ -329,6 +337,8 @@ end
     thread::Thread
     lazy::L
 end
+
+@truncate_stacktrace RKV76IIaCache 1
 
 # fake values since non-FSAL method
 get_fsalfirstlast(cache::RKV76IIaCache, u) = (nothing, nothing)

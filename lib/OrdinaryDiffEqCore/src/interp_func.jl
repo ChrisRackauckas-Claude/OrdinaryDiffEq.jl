@@ -69,6 +69,8 @@ function InterpolationData(id::InterpolationData, f)
     )
 end
 
+@truncate_stacktrace InterpolationData 1
+
 # strip interpolation of function information
 function SciMLBase.strip_interpolation(id::InterpolationData)
     cache = strip_cache(id.cache)

@@ -1,5 +1,6 @@
 module OrdinaryDiffEqNonlinearSolve
 
+using TruncatedStacktraces: @truncate_stacktrace
 using ADTypes: ADTypes, dense_ad, AutoForwardDiff, AutoFiniteDiff
 
 import SciMLBase

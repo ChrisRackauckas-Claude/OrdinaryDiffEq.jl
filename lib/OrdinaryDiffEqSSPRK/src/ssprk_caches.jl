@@ -13,6 +13,8 @@ get_fsalfirstlast(cache::SSPRKMutableCache, u) = (cache.fsalfirst, cache.k)
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK22Cache 1
+
 struct SSPRK22ConstantCache <: SSPRKConstantCache end
 
 function alg_cache(
@@ -49,6 +51,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK33Cache 1
 
 struct SSPRK33ConstantCache <: SSPRKConstantCache end
 
@@ -94,6 +98,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace KYKSSPRK42Cache 1
 
 struct KYKSSPRK42ConstantCache{T, T2} <: SSPRKConstantCache
     α20::T
@@ -175,6 +181,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK53Cache 1
 
 struct SSPRK53ConstantCache{T, T2} <: SSPRKConstantCache
     α30::T
@@ -261,6 +269,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK53_2N1Cache 1
+
 struct SSPRK53_2N1ConstantCache{T, T2} <: SSPRKConstantCache
     α40::T
     α43::T
@@ -340,6 +350,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK53_2N2Cache 1
+
 struct SSPRK53_2N2ConstantCache{T, T2} <: SSPRKConstantCache
     α30::T
     α32::T
@@ -417,6 +429,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK53_HCache 1
 
 struct SSPRK53_HConstantCache{T, T2} <: SSPRKConstantCache
     α30::T
@@ -496,6 +510,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK63Cache 1
 
 struct SSPRK63ConstantCache{T, T2} <: SSPRKConstantCache
     α40::T
@@ -583,6 +599,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK73Cache 1
 
 struct SSPRK73ConstantCache{T, T2} <: SSPRKConstantCache
     α40::T
@@ -679,6 +697,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK83Cache 1
 
 struct SSPRK83ConstantCache{T, T2} <: SSPRKConstantCache
     α50::T
@@ -784,6 +804,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK43Cache 1
+
 struct SSPRK43ConstantCache{T, T2} <: SSPRKConstantCache
     one_third_u::T
     two_thirds_u::T
@@ -850,6 +872,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK432Cache 1
+
 struct SSPRK432ConstantCache <: SSPRKConstantCache end
 
 function alg_cache(
@@ -903,6 +927,8 @@ end
     step::Int
 end
 
+@truncate_stacktrace SSPRKMSVS32Cache 1
+
 @cache mutable struct SSPRKMSVS32ConstantCache{uType, dtArrayType, dtType} <:
     OrdinaryDiffEqConstantCache
     u_2::uType
@@ -913,6 +939,8 @@ end
     v_n::Float64
     step::Int
 end
+
+@truncate_stacktrace SSPRKMSVS32ConstantCache 1
 
 function alg_cache(
         alg::SSPRKMSVS32, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -971,6 +999,8 @@ end
     thread::Thread
     step::Int
 end
+
+@truncate_stacktrace SSPRKMSVS43Cache 1
 
 @cache mutable struct SSPRKMSVS43ConstantCache{uType, rateType} <:
     OrdinaryDiffEqConstantCache
@@ -1038,6 +1068,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK932Cache 1
+
 struct SSPRK932ConstantCache <: SSPRKConstantCache end
 
 function alg_cache(
@@ -1085,6 +1117,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace SSPRK54Cache 1
 
 struct SSPRK54ConstantCache{T, T2} <: SSPRKConstantCache
     β10::T
@@ -1180,6 +1214,8 @@ end
     thread::Thread
 end
 
+@truncate_stacktrace SSPRK104Cache 1
+
 struct SSPRK104ConstantCache <: SSPRKConstantCache end
 
 function alg_cache(
@@ -1230,6 +1266,8 @@ end
     step_limiter!::StepLimiter
     thread::Thread
 end
+
+@truncate_stacktrace KYK2014DGSSPRK_3S2_Cache 1
 
 struct KYK2014DGSSPRK_3S2_ConstantCache{T, T2} <: OrdinaryDiffEqConstantCache
     #These are not α and β for RK but for Shu-Osher

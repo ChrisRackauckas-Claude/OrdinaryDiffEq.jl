@@ -25,6 +25,8 @@ function ORK256(
     return ORK256(stage_limiter!, step_limiter!, False(), williamson_condition)
 end
 
+@truncate_stacktrace ORK256
+
 @doc explicit_rk_docstring(
     "7-stage, third order low-storage low-dissipation, low-dispersion scheme for
 discontinuous Galerkin space discretizations applied to wave propagation problems.
@@ -59,6 +61,8 @@ function DGLDDRK73_C(
     )
 end
 
+@truncate_stacktrace DGLDDRK73_C
+
 @doc explicit_rk_docstring(
     "A fourth-order, five-stage low-storage method of Carpenter and Kennedy
 (free 3rd order Hermite interpolant). Fixed timestep only. Designed for
@@ -88,6 +92,8 @@ function CarpenterKennedy2N54(
     )
     return CarpenterKennedy2N54(stage_limiter!, step_limiter!, False(), williamson_condition)
 end
+
+@truncate_stacktrace CarpenterKennedy2N54
 
 @doc explicit_rk_docstring(
     "12-stage, fourth order low-storage method with optimized stability regions for
@@ -119,6 +125,8 @@ function NDBLSRK124(
     )
 end
 
+@truncate_stacktrace NDBLSRK124
+
 @doc explicit_rk_docstring(
     "14-stage, fourth order low-storage method with optimized stability regions for
 advection-dominated problems. Fixed timestep only.",
@@ -149,6 +157,8 @@ function NDBLSRK144(
     )
 end
 
+@truncate_stacktrace NDBLSRK144
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 6-stage, fourth order low-storage, low-dissipation, low-dispersion scheme.
@@ -170,6 +180,8 @@ function CFRLDDRK64(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CFRLDDRK64
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -193,6 +205,8 @@ function TSLDDRK74(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace TSLDDRK74
 
 @doc explicit_rk_docstring(
     "8-stage, fourth order low-storage low-dissipation, low-dispersion scheme for
@@ -228,6 +242,8 @@ function DGLDDRK84_C(
     )
 end
 
+@truncate_stacktrace DGLDDRK84_C
+
 @doc explicit_rk_docstring(
     "8-stage, fourth order low-storage low-dissipation, low-dispersion scheme for
 discontinuous Galerkin space discretizations applied to wave propagation problems.
@@ -262,6 +278,8 @@ function DGLDDRK84_F(
     )
 end
 
+@truncate_stacktrace DGLDDRK84_F
+
 @doc explicit_rk_docstring(
     "A fourth-order, six-stage low-storage method. Fixed timestep only.",
     "SHLDDRK64",
@@ -290,6 +308,8 @@ function SHLDDRK64(
     return SHLDDRK64(stage_limiter!, step_limiter!, False(), williamson_condition)
 end
 
+@truncate_stacktrace SHLDDRK64
+
 @doc explicit_rk_docstring(
     "6-stage, fourth order low-stage, low-dissipation, low-dispersion scheme.
 Fixed timestep only.", "RK46NL",
@@ -304,6 +324,8 @@ end
 function RK46NL(stage_limiter!, step_limiter! = trivial_limiter!)
     return RK46NL(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace RK46NL
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -329,6 +351,8 @@ function ParsaniKetchesonDeconinck3S32(stage_limiter!, step_limiter! = trivial_l
     )
 end
 
+@truncate_stacktrace ParsaniKetchesonDeconinck3S32
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 8-stage, second order (3S) low-storage scheme, optimized for the spectral difference method applied to wave propagation problems.",
@@ -352,6 +376,8 @@ function ParsaniKetchesonDeconinck3S82(stage_limiter!, step_limiter! = trivial_l
         False()
     )
 end
+
+@truncate_stacktrace ParsaniKetchesonDeconinck3S82
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -377,6 +403,8 @@ function ParsaniKetchesonDeconinck3S53(stage_limiter!, step_limiter! = trivial_l
     )
 end
 
+@truncate_stacktrace ParsaniKetchesonDeconinck3S53
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 17-stage, third order (3S) low-storage scheme, optimized for the spectral difference method applied to wave propagation problems.",
@@ -400,6 +428,8 @@ function ParsaniKetchesonDeconinck3S173(stage_limiter!, step_limiter! = trivial_
         False()
     )
 end
+
+@truncate_stacktrace ParsaniKetchesonDeconinck3S173
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -425,6 +455,8 @@ function ParsaniKetchesonDeconinck3S94(stage_limiter!, step_limiter! = trivial_l
     )
 end
 
+@truncate_stacktrace ParsaniKetchesonDeconinck3S94
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 18-stage, fourth order (3S) low-storage scheme, optimized for the spectral difference method applied to wave propagation problems.",
@@ -448,6 +480,8 @@ function ParsaniKetchesonDeconinck3S184(stage_limiter!, step_limiter! = trivial_
         False()
     )
 end
+
+@truncate_stacktrace ParsaniKetchesonDeconinck3S184
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -473,6 +507,8 @@ function ParsaniKetchesonDeconinck3S105(stage_limiter!, step_limiter! = trivial_
     )
 end
 
+@truncate_stacktrace ParsaniKetchesonDeconinck3S105
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 20-stage, fifth order (3S) low-storage scheme, optimized for the spectral difference method applied to wave propagation problems.",
@@ -496,6 +532,8 @@ function ParsaniKetchesonDeconinck3S205(stage_limiter!, step_limiter! = trivial_
         False()
     )
 end
+
+@truncate_stacktrace ParsaniKetchesonDeconinck3S205
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -526,6 +564,8 @@ function CKLLSRK43_2(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK43_2
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 5-stage, fourth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -554,6 +594,8 @@ function CKLLSRK54_3C(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK54_3C
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -584,6 +626,8 @@ function CKLLSRK95_4S(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK95_4S
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 9-stage, fifth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -612,6 +656,8 @@ function CKLLSRK95_4C(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK95_4C
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -642,6 +688,8 @@ function CKLLSRK95_4M(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK95_4M
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 5-stage, fourth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -670,6 +718,8 @@ function CKLLSRK54_3C_3R(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK54_3C_3R
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -700,6 +750,8 @@ function CKLLSRK54_3M_3R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK54_3M_3R
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 5-stage, fourth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -728,6 +780,8 @@ function CKLLSRK54_3N_3R(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK54_3N_3R
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -758,6 +812,8 @@ function CKLLSRK85_4C_3R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK85_4C_3R
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 8-stage, fifth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -786,6 +842,8 @@ function CKLLSRK85_4M_3R(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK85_4M_3R
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -816,6 +874,8 @@ function CKLLSRK85_4P_3R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK85_4P_3R
+
 @doc explicit_rk_docstring(
     "Low-Storage Method
 5-stage, fourth order low-storage scheme, optimized for compressible Navier–Stokes equations.
@@ -844,6 +904,8 @@ function CKLLSRK54_3N_4R(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK54_3N_4R
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -874,6 +936,8 @@ function CKLLSRK54_3M_4R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK54_3M_4R
+
 @doc explicit_rk_docstring(
     "6-stage, fifth order low-storage scheme, optimized for compressible Navier–Stokes equations.",
     "CKLLSRK65_4M_4R",
@@ -901,6 +965,8 @@ function CKLLSRK65_4M_4R(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace CKLLSRK65_4M_4R
 
 @doc explicit_rk_docstring(
     "Low-Storage Method
@@ -931,6 +997,8 @@ function CKLLSRK85_4FM_4R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK85_4FM_4R
+
 @doc explicit_rk_docstring(
     "CKLLSRK75_4M_5R: Low-Storage Method
 7-stage, fifth order low-storage scheme, optimized for compressible Navier–Stokes equations.",
@@ -960,6 +1028,8 @@ function CKLLSRK75_4M_5R(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace CKLLSRK75_4M_5R
+
 @doc explicit_rk_docstring(
     "A third-order, five-stage method with embedded error estimator
 designed for spectral element discretizations of compressible fluid mechanics.",
@@ -982,6 +1052,8 @@ function RDPK3Sp35(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace RDPK3Sp35
 
 @doc explicit_rk_docstring(
     "A third-order, five-stage method with embedded error estimator
@@ -1008,6 +1080,8 @@ function RDPK3SpFSAL35(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace RDPK3SpFSAL35
+
 @doc explicit_rk_docstring(
     "A fourth-order, nine-stage method with embedded error estimator
 designed for spectral element discretizations of compressible fluid mechanics.",
@@ -1030,6 +1104,8 @@ function RDPK3Sp49(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace RDPK3Sp49
 
 @doc explicit_rk_docstring(
     "A fourth-order, nine-stage method with embedded error estimator
@@ -1056,6 +1132,8 @@ function RDPK3SpFSAL49(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace RDPK3SpFSAL49
+
 @doc explicit_rk_docstring(
     "A fifth-order, ten-stage method with embedded error estimator
 designed for spectral element discretizations of compressible fluid mechanics.",
@@ -1078,6 +1156,8 @@ function RDPK3Sp510(stage_limiter!, step_limiter! = trivial_limiter!)
         step_limiter!, False()
     )
 end
+
+@truncate_stacktrace RDPK3Sp510
 
 @doc explicit_rk_docstring(
     "A fifth-order, ten-stage method with embedded error estimator
@@ -1103,6 +1183,8 @@ function RDPK3SpFSAL510(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace RDPK3SpFSAL510
 
 #Low Storage Explicit Runge-Kutta Methods
 
@@ -1131,7 +1213,9 @@ struct HSLDDRK64{StageLimiter, StepLimiter, Thread} <: OrdinaryDiffEqAlgorithm
         )
         Base.depwarn("HSLDDRK64 is deprecated, use SHLDDRK64 instead.", :HSLDDRK64)
         return SHLDDRK64(; stage_limiter!, step_limiter!, thread, williamson_condition)
-    end
+   
+
+@truncate_stacktrace HSLDDRK64 end
 end
 
 @doc explicit_rk_docstring(
@@ -1164,6 +1248,8 @@ function NDBLSRK134(
     )
 end
 
+@truncate_stacktrace NDBLSRK134
+
 @doc explicit_rk_docstring(
     "Low dissipation and dispersion Runge-Kutta schemes for computational acoustics",
     "SHLDDRK_2N",
@@ -1191,6 +1277,8 @@ function SHLDDRK_2N(stage_limiter!, step_limiter! = trivial_limiter!)
     )
 end
 
+@truncate_stacktrace SHLDDRK_2N
+
 @doc explicit_rk_docstring(
     "Low dissipation and dispersion Runge-Kutta schemes for computational acoustics",
     "SHLDDRK52",
@@ -1217,3 +1305,5 @@ function SHLDDRK52(stage_limiter!, step_limiter! = trivial_limiter!)
         False()
     )
 end
+
+@truncate_stacktrace SHLDDRK52

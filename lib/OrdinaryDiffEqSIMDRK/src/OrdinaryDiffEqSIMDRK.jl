@@ -1,5 +1,6 @@
 module OrdinaryDiffEqSIMDRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 using MuladdMacro, Static
 using OrdinaryDiffEqCore: OrdinaryDiffEqAdaptiveAlgorithm, OrdinaryDiffEqConstantCache,
     trivial_limiter!, calculate_residuals, constvalue

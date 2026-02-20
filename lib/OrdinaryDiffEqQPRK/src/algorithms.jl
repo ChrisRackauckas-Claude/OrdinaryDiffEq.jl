@@ -14,3 +14,5 @@ end
 function QPRK98(stage_limiter!, step_limiter! = trivial_limiter!)
     return QPRK98(stage_limiter!, step_limiter!, False())
 end
+
+@truncate_stacktrace QPRK98

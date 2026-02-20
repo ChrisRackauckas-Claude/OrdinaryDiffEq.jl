@@ -94,7 +94,9 @@ mutable struct DAEResidualJacobianWrapper{
             f, p, tmp_du, tmp_u, α,
             invγdt, tmp, uprev, t
         )
-    end
+   
+
+@truncate_stacktrace DAEResidualJacobianWrapper 1 end
 end
 
 function SciMLBase.setproperties(wrap::DAEResidualJacobianWrapper, patch::NamedTuple)
@@ -131,6 +133,8 @@ mutable struct DAEResidualDerivativeWrapper{
     uprev::uprevType
     t::tType
 end
+
+@truncate_stacktrace DAEResidualDerivativeWrapper 1
 
 function (m::DAEResidualDerivativeWrapper)(x)
     tmp_du = (m.α * x + m.tmp) * m.invγdt

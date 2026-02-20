@@ -39,6 +39,8 @@ end
     half::uEltypeNoUnits
 end
 
+@truncate_stacktrace VelocityVerletCache 1
+
 struct VelocityVerletConstantCache{uEltypeNoUnits} <: HamiltonConstantCache
     half::uEltypeNoUnits
 end
@@ -74,6 +76,8 @@ end
     fsalfirst::rateType
     half::uEltypeNoUnits
 end
+
+@truncate_stacktrace LeapfrogDriftKickDriftCache 1
 
 struct LeapfrogDriftKickDriftConstantCache{uEltypeNoUnits} <: HamiltonConstantCache
     half::uEltypeNoUnits
@@ -111,6 +115,8 @@ end
     half::uEltypeNoUnits
 end
 
+@truncate_stacktrace VerletLeapfrogCache 1
+
 struct VerletLeapfrogConstantCache{uEltypeNoUnits} <: HamiltonConstantCache
     half::uEltypeNoUnits
 end
@@ -145,6 +151,8 @@ end
     fsalfirst::rateType
     tab::tableauType
 end
+
+@truncate_stacktrace Symplectic2Cache 1
 
 function alg_cache(
         alg::PseudoVerletLeapfrog, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -205,6 +213,8 @@ end
     tab::tableauType
 end
 
+@truncate_stacktrace Symplectic3Cache 1
+
 function alg_cache(
         alg::Ruth3, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -258,6 +268,8 @@ end
     tab::tableauType
 end
 
+@truncate_stacktrace Symplectic4Cache 1
+
 function alg_cache(
         alg::McAte4, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -310,6 +322,8 @@ end
     fsalfirst::rateType
     tab::tableauType
 end
+
+@truncate_stacktrace Symplectic45Cache 1
 
 function alg_cache(
         alg::CalvoSanz4, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -367,6 +381,8 @@ end
     tab::tableauType
 end
 
+@truncate_stacktrace Symplectic5Cache 1
+
 function alg_cache(
         alg::McAte5, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -397,6 +413,8 @@ end
     fsalfirst::rateType
     tab::tableauType
 end
+
+@truncate_stacktrace Symplectic6Cache 1
 
 function alg_cache(
         alg::Yoshida6, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -429,6 +447,8 @@ end
     tab::tableauType
 end
 
+@truncate_stacktrace Symplectic62Cache 1
+
 function alg_cache(
         alg::KahanLi6, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -459,6 +479,8 @@ end
     fsalfirst::rateType
     tab::tableauType
 end
+
+@truncate_stacktrace McAte8Cache 1
 
 function alg_cache(
         alg::McAte8, u, rate_prototype, ::Type{uEltypeNoUnits},
@@ -491,6 +513,8 @@ end
     tab::tableauType
 end
 
+@truncate_stacktrace KahanLi8Cache 1
+
 function alg_cache(
         alg::KahanLi8, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
@@ -521,6 +545,8 @@ end
     fsalfirst::rateType
     tab::tableauType
 end
+
+@truncate_stacktrace SofSpa10Cache 1
 
 function alg_cache(
         alg::SofSpa10, u, rate_prototype, ::Type{uEltypeNoUnits},

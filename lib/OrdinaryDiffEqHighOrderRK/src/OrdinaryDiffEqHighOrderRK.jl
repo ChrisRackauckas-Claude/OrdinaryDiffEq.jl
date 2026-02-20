@@ -1,5 +1,6 @@
 module OrdinaryDiffEqHighOrderRK
 
+using TruncatedStacktraces: @truncate_stacktrace
 import OrdinaryDiffEqCore: alg_order, qmax_default, qmin_default, beta2_default,
     beta1_default,
     explicit_rk_docstring, OrdinaryDiffEqAdaptiveAlgorithm,
