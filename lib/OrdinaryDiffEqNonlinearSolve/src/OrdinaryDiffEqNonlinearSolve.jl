@@ -69,10 +69,6 @@ include("functional.jl")
 include("newton.jl")
 include("initialize_dae.jl")
 
-function __init__()
-    OrdinaryDiffEqCore._nonlinearsolve_loaded[] = true
-end
-
 export BrownFullBasicInit, ShampineCollocationInit
 
 end
