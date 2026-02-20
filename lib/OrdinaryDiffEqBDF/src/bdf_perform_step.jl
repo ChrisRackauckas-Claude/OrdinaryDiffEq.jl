@@ -1422,11 +1422,11 @@ function perform_step!(
 
     fill!(u_corrector, zero(eltype(u)))
     for i in 1:(k - 1)
-        val = _ode_interpolant(
-            oftype(t, -i), dt, uprev, uprev,
+        _ode_interpolant!(
+            terk_tmp, oftype(t, -i), dt, uprev, uprev,
             integrator.k, cache, nothing, Val{0}, nothing
         )
-        @views copyto!(u_corrector[:, i], _vec(val))
+        @views copyto!(u_corrector[:, i], _vec(terk_tmp))
     end
     @.. broadcast = false tmp = -uprev * bdf_coeffs[k, 2]
     vc = _vec(tmp)
