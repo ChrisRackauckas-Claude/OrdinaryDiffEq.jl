@@ -151,7 +151,7 @@ If `integrator.f` has a custom Jacobian update function, then it will be called.
 either automatic or finite differencing will be used depending on the `cache`.
 If `next_step`, then it will evaluate the Jacobian at the next step.
 """
-function calc_J!(J, integrator, cache, next_step::Bool = false)
+function calc_J!(J, integrator, cache, next_step::Bool = false; dae_gamma = nothing)
     (; dt, t, uprev, f, p, alg) = integrator
     if next_step
         t = t + dt
@@ -161,7 +161,9 @@ function calc_J!(J, integrator, cache, next_step::Bool = false)
     if alg isa DAEAlgorithm
         if SciMLBase.has_jac(f)
             duprev = integrator.duprev
-            uf = cache.uf
+            # When the user provides a Jacobian, cache.uf is nothing,
+            # so use the pre-computed dae_gamma (= α * invγdt) passed from calc_W!
+            gamma = dae_gamma !== nothing ? dae_gamma : cache.uf.α * cache.uf.invγdt
             # need to do some jank here to account for sparsity pattern of W
             # https://github.com/SciML/OrdinaryDiffEq.jl/issues/2653
 
@@ -172,9 +174,9 @@ function calc_J!(J, integrator, cache, next_step::Bool = false)
                 set_all_nzval!(integrator.f.jac_prototype, true)
                 J .= true .* integrator.f.jac_prototype
                 set_all_nzval!(J, false)
-                f.jac(J, duprev, uprev, p, uf.α * uf.invγdt, t)
+                f.jac(J, duprev, uprev, p, gamma, t)
             else
-                f.jac(J, duprev, uprev, p, uf.α * uf.invγdt, t)
+                f.jac(J, duprev, uprev, p, gamma, t)
             end
         else
             (; du1, uf, jac_config) = cache
@@ -394,12 +396,15 @@ function calc_W!(
 
     if new_jac && isnewton(lcache)
         lcache.J_t = t
-        if isdae
+        if isdae && lcache.uf !== nothing
             lcache.uf.α = nlsolver.α
             lcache.uf.invγdt = inv(dtgamma)
             lcache.uf.tmp = nlsolver.tmp
         end
     end
+
+    # Pre-compute dae_gamma for user-provided DAE Jacobians (where cache.uf may be nothing)
+    dae_gamma = isdae ? nlsolver.α * inv(dtgamma) : nothing
 
     # calculate W
     if W isa WOperator
@@ -412,7 +417,8 @@ function calc_W!(
         if W.J !== nothing && !(W.J isa AbstractSciMLOperator)
             islin, isode = islinearfunction(integrator)
             islin ? (J = isode ? f.f : f.f1.f) :
-                (new_jac && (calc_J!(W.J, integrator, lcache, next_step)))
+                (new_jac && (calc_J!(W.J, integrator, lcache, next_step;
+                    dae_gamma = dae_gamma)))
             new_W && !isdae &&
                 jacobian2W!(W._concrete_form, mass_matrix, dtgamma, J)
         end
@@ -421,7 +427,8 @@ function calc_W!(
     else # concrete W using jacobian from `calc_J!`
         islin, isode = islinearfunction(integrator)
         islin ? (J = isode ? f.f : f.f1.f) :
-            (new_jac && (calc_J!(J, integrator, lcache, next_step)))
+            (new_jac && (calc_J!(J, integrator, lcache, next_step;
+                dae_gamma = dae_gamma)))
         new_W && !isdae && jacobian2W!(W, mass_matrix, dtgamma, J)
     end
     if isnewton(nlsolver)

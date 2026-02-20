@@ -102,3 +102,48 @@ prob = ODEProblem(rober, [1.0, 0.0, 0.0], (0.0, 1.0e5), (0.04, 3.0e7, 1.0e4, fal
 sol = solve(prob, TRBDF2())
 @test sol.u[end] == sol1.u[end]
 @test length(sol.t) == length(sol1.t)
+
+### DAE Jacobians
+# https://github.com/SciML/DifferentialEquations.jl/issues/846
+
+function dae_f(out, du, u, p, t)
+    out[1] = -0.04u[1] + 1e4 * u[2] * u[3] - du[1]
+    out[2] = +0.04u[1] - 3e7 * u[2]^2 - 1e4 * u[2] * u[3] - du[2]
+    out[3] = u[1] + u[2] + u[3] - 1.0
+end
+
+dae_jac_used = Ref(false)
+function dae_jac(J, du, u, p, gamma, t)
+    dae_jac_used[] = true
+    J[1, 1] = -0.04 - gamma
+    J[1, 2] = 1e4 * u[3]
+    J[1, 3] = 1e4 * u[2]
+    J[2, 1] = 0.04
+    J[2, 2] = -6e7 * u[2] - 1e4 * u[3] - gamma
+    J[2, 3] = -1e4 * u[2]
+    J[3, 1] = 1.0
+    J[3, 2] = 1.0
+    J[3, 3] = 1.0
+end
+
+dae_u₀ = [1.0, 0, 0]
+dae_du₀ = [-0.04, 0.04, 0.0]
+dae_tspan = (0.0, 100000.0)
+
+dae_differential_vars = [true, true, false]
+dae_prob = DAEProblem(
+    DAEFunction(dae_f; jac = dae_jac), dae_du₀, dae_u₀, dae_tspan,
+    differential_vars = dae_differential_vars
+)
+dae_prob2 = DAEProblem(
+    dae_f, dae_du₀, dae_u₀, dae_tspan,
+    differential_vars = dae_differential_vars
+)
+
+dae_jac_used[] = false
+dae_sol = solve(dae_prob, DABDF2())
+@test dae_jac_used[]
+dae_jac_used[] = false
+dae_sol2 = solve(dae_prob2, DABDF2())
+@test !dae_jac_used[]
+@test iszero(maximum(Array(dae_sol) - Array(dae_sol2)))
