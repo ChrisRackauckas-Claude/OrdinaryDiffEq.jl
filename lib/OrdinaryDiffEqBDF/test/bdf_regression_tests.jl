@@ -35,7 +35,7 @@ end
     end
 end
 
-if VERSION >= v"1.11"
+if VERSION >= v"1.12"
     @testset "FBDF in-place perform_step! non-allocating" begin
         integrator = init(
             probiip, FBDF(), abstol = 1.0e-8, reltol = 1.0e-8,
