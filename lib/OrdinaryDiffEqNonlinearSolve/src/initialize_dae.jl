@@ -96,11 +96,17 @@ function default_nlsolve(
     return SimpleGaussNewton(autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
 end
 
-## DefaultInit resolution — provides BrownFullBasicInit/ShampineCollocationInit
-# when OrdinaryDiffEqNonlinearSolve is loaded.
+## DefaultInit resolution for DAE-capable algorithms
 
-function _resolve_default_dae_init!(
-        integrator, prob::ODEProblem, x
+const DAECapableAlgorithm = Union{
+    OrdinaryDiffEqAdaptiveImplicitAlgorithm,
+    OrdinaryDiffEqImplicitAlgorithm,
+    DAEAlgorithm,
+}
+
+function _default_dae_init!(
+        integrator, prob::ODEProblem, x,
+        alg::DAECapableAlgorithm
     )
     _initialize_dae!(
         integrator, prob,
@@ -108,8 +114,9 @@ function _resolve_default_dae_init!(
     )
 end
 
-function _resolve_default_dae_init!(
-        integrator, prob::DAEProblem, x
+function _default_dae_init!(
+        integrator, prob::DAEProblem, x,
+        alg::DAECapableAlgorithm
     )
     if prob.differential_vars === nothing
         _initialize_dae!(

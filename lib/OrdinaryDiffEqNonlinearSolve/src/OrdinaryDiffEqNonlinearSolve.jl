@@ -41,6 +41,8 @@ using OrdinaryDiffEqCore: resize_nlsolver!, _initialize_dae!,
     AbstractNLSolver, NewtonAlgorithm,
     OverrideInit, ShampineCollocationInit, BrownFullBasicInit,
     _vec, _unwrap_val, DAEAlgorithm,
+    OrdinaryDiffEqAdaptiveImplicitAlgorithm,
+    OrdinaryDiffEqImplicitAlgorithm,
     _reshape, calculate_residuals, calculate_residuals!,
     has_special_newton_error, isadaptive,
     TryAgain, DIRK, COEFFICIENT_MULTISTEP, NORDSIECK_MULTISTEP, GLM,
@@ -49,7 +51,7 @@ using OrdinaryDiffEqCore: resize_nlsolver!, _initialize_dae!,
     MethodType, alg_order, error_constant,
     alg_extrapolates, resize_J_W!, has_autodiff
 
-import OrdinaryDiffEqCore: _initialize_dae!, _resolve_default_dae_init!,
+import OrdinaryDiffEqCore: _initialize_dae!, _default_dae_init!,
     isnewton, get_W, isfirstcall, isfirststage,
     isJcurrent, get_new_W_γdt_cutoff, resize_nlsolver!, apply_step!,
     postamble!, @SciMLMessage
