@@ -149,7 +149,7 @@ end
     end
     return nothing
 end
-@inline function SciMLBase.addsteps!(integrator::ODEIntegrator, args...)
+@inline function SciMLBase.addsteps!(integrator::ODEIntegratorType, args...)
     return ode_addsteps!(integrator, args...)
 end
 
