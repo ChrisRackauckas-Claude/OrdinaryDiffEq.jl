@@ -229,7 +229,13 @@ For AD/FD, uses separate wrapper functions.
 function calc_J_dae!(J_u, J_du, integrator, cache)
     (; t, uprev, f, p) = integrator
 
-    if SciMLBase.has_jac(f)
+    if SciMLBase.has_jac_u(f) && SciMLBase.has_jac_du(f)
+        # User provides separated Jacobians directly
+        duprev = integrator.duprev
+        f.jac_u(J_u, duprev, uprev, p, t)
+        f.jac_du(J_du, duprev, uprev, p, t)
+    elseif SciMLBase.has_jac(f)
+        # Extract from combined Jacobian via cj=0, cj=1 trick
         duprev = integrator.duprev
         cj_zero = zero(eltype(J_u))
         cj_one = one(eltype(J_u))
@@ -274,7 +280,13 @@ OOP variant: compute and return separated DAE Jacobians.
 function calc_J_dae(integrator, cache)
     (; t, uprev, f, p) = integrator
 
-    if SciMLBase.has_jac(f)
+    if SciMLBase.has_jac_u(f) && SciMLBase.has_jac_du(f)
+        # User provides separated Jacobians directly
+        duprev = integrator.duprev
+        J_u = f.jac_u(duprev, uprev, p, t)
+        J_du = f.jac_du(duprev, uprev, p, t)
+    elseif SciMLBase.has_jac(f)
+        # Extract from combined Jacobian via cj=0, cj=1 trick
         duprev = integrator.duprev
         cj_zero = zero(t)
         cj_one = one(t)
@@ -523,9 +535,11 @@ function calc_W!(
         lcache.J_t = t
         if isdae
             # Update the combined DAE wrapper (still used by NonlinearSolveAlg path)
-            lcache.uf.α = nlsolver.α
-            lcache.uf.invγdt = inv(dtgamma)
-            lcache.uf.tmp = nlsolver.tmp
+            if lcache.uf !== nothing
+                lcache.uf.α = nlsolver.α
+                lcache.uf.invγdt = inv(dtgamma)
+                lcache.uf.tmp = nlsolver.tmp
+            end
             # Update separated DAE Jacobian wrappers
             dae_jac = lcache.dae_jacobians
             if dae_jac !== nothing
@@ -725,10 +739,12 @@ function update_W!(
         if isdae
             if new_jac
                 # Update combined DAE wrapper
-                lcache.uf.α = nlsolver.α
-                lcache.uf.invγdt = inv(dtgamma)
-                lcache.uf.tmp = @. nlsolver.tmp
-                lcache.uf.uprev = @. integrator.uprev
+                if lcache.uf !== nothing
+                    lcache.uf.α = nlsolver.α
+                    lcache.uf.invγdt = inv(dtgamma)
+                    lcache.uf.tmp = @. nlsolver.tmp
+                    lcache.uf.uprev = @. integrator.uprev
+                end
                 # Update separated wrappers and compute J_u, J_du
                 dae_jac = lcache.dae_jacobians
                 if dae_jac !== nothing

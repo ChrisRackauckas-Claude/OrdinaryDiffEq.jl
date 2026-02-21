@@ -293,7 +293,8 @@ function build_nlsolver(
         # TODO: check if the solver is iterative
         weight = zero(u)
 
-        if islinear(f) || SciMLBase.has_jac(f)
+        if islinear(f) || SciMLBase.has_jac(f) ||
+                (SciMLBase.has_jac_u(f) && SciMLBase.has_jac_du(f))
             du1 = rate_prototype
             uf = nothing
             jac_config = nothing
@@ -347,8 +348,9 @@ function build_nlsolver(
         else
             # Build separated DAE Jacobian cache if applicable
             if isdae
-                if islinear(f) || SciMLBase.has_jac(f)
-                    # User provides f.jac — no wrappers, but still need J_du storage
+                if islinear(f) || SciMLBase.has_jac(f) ||
+                        (SciMLBase.has_jac_u(f) && SciMLBase.has_jac_du(f))
+                    # User provides Jacobian(s) — no wrappers, but still need J_du storage
                     J_du = similar(J)
                     dae_jacobians = DAEJacobiansCache(
                         J_du, nothing, nothing, nothing, nothing
@@ -473,7 +475,8 @@ function build_nlsolver(
         else
             # Build separated DAE Jacobian cache if applicable
             if isdae
-                if SciMLBase.has_jac(f)
+                if SciMLBase.has_jac(f) ||
+                        (SciMLBase.has_jac_u(f) && SciMLBase.has_jac_du(f))
                     dae_jacobians = DAEJacobiansConstantCache(
                         copy(J), nothing, nothing
                     )
