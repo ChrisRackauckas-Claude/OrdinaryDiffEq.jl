@@ -35,16 +35,11 @@ function _initialize_dae!(
             integrator, prob,
             OverrideInit(integrator.opts.abstol), x
         )
-    elseif !applicable(
-            _initialize_dae!, integrator, prob,
-            BrownFullBasicInit(integrator.opts.abstol), x
-        )
-        error("`OrdinaryDiffEqNonlinearSolve` is not loaded, which is required for the default initialization algorithm (`BrownFullBasicInit` or `ShampineCollocationInit`). To solve this problem, either do `using OrdinaryDiffEqNonlinearSolve` or pass `initializealg = CheckInit()` to the `solve` function. This second option requires consistent `u0`.")
     else
-        _initialize_dae!(
-            integrator, prob,
-            BrownFullBasicInit(integrator.opts.abstol), x
-        )
+        # Use invokelatest to prevent the compiler from creating backedges
+        # into _resolve_default_dae_init! that would be invalidated when
+        # OrdinaryDiffEqNonlinearSolve loads and adds more specific methods.
+        Base.invokelatest(_resolve_default_dae_init!, integrator, prob, x)
     end
 end
 
@@ -57,26 +52,22 @@ function _initialize_dae!(
             integrator, prob,
             OverrideInit(integrator.opts.abstol), x
         )
-    elseif !applicable(
-            _initialize_dae!, integrator, prob,
-            BrownFullBasicInit(), x
-        ) &&
-            !applicable(
-            _initialize_dae!,
-            integrator, prob, ShampineCollocationInit(), x
-        )
-        error("`OrdinaryDiffEqNonlinearSolve` is not loaded, which is required for the default initialization algorithm (`BrownFullBasicInit` or `ShampineCollocationInit`). To solve this problem, either do `using OrdinaryDiffEqNonlinearSolve` or pass `initializealg = CheckInit()` to the `solve` function. This second option requires consistent `u0`.")
-    elseif prob.differential_vars === nothing
-        _initialize_dae!(
-            integrator, prob,
-            ShampineCollocationInit(), x
-        )
     else
-        _initialize_dae!(
-            integrator, prob,
-            BrownFullBasicInit(integrator.opts.abstol), x
-        )
+        Base.invokelatest(_resolve_default_dae_init!, integrator, prob, x)
     end
+end
+
+# Resolve the default DAE init algorithm. The base definition errors because
+# OrdinaryDiffEqNonlinearSolve is required. OrdinaryDiffEqNonlinearSolve extends
+# this with concrete implementations for BrownFullBasicInit/ShampineCollocationInit.
+#
+# Using a separate function (called via invokelatest) instead of the original
+# `applicable()` pattern avoids creating method table backedges on
+# `_initialize_dae!` that would be invalidated when OrdinaryDiffEqNonlinearSolve
+# loads. The `applicable()` calls previously destroyed ~282 precompiled
+# solve-path MethodInstances.
+function _resolve_default_dae_init!(integrator, prob, x)
+    error("`OrdinaryDiffEqNonlinearSolve` is not loaded, which is required for the default initialization algorithm (`BrownFullBasicInit` or `ShampineCollocationInit`). To solve this problem, either do `using OrdinaryDiffEqNonlinearSolve` or pass `initializealg = CheckInit()` to the `solve` function. This second option requires consistent `u0`.")
 end
 
 function _initialize_dae!(

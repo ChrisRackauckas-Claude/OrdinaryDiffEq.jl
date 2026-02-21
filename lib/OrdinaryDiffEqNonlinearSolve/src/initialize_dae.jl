@@ -96,6 +96,34 @@ function default_nlsolve(
     return SimpleGaussNewton(autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
 end
 
+## DefaultInit resolution — provides BrownFullBasicInit/ShampineCollocationInit
+# when OrdinaryDiffEqNonlinearSolve is loaded.
+
+function _resolve_default_dae_init!(
+        integrator, prob::ODEProblem, x
+    )
+    _initialize_dae!(
+        integrator, prob,
+        BrownFullBasicInit(integrator.opts.abstol), x
+    )
+end
+
+function _resolve_default_dae_init!(
+        integrator, prob::DAEProblem, x
+    )
+    if prob.differential_vars === nothing
+        _initialize_dae!(
+            integrator, prob,
+            ShampineCollocationInit(), x
+        )
+    else
+        _initialize_dae!(
+            integrator, prob,
+            BrownFullBasicInit(integrator.opts.abstol), x
+        )
+    end
+end
+
 ## ShampineCollocationInit
 
 #=
