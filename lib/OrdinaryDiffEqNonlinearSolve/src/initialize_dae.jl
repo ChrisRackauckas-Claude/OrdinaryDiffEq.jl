@@ -102,13 +102,14 @@ const DAECapableAlgorithm = Union{
     OrdinaryDiffEqAdaptiveImplicitAlgorithm,
     OrdinaryDiffEqImplicitAlgorithm,
     DAEAlgorithm,
+    OrdinaryDiffEqCompositeAlgorithm,
 }
 
 function _default_dae_init!(
         integrator, prob::ODEProblem, x,
         alg::DAECapableAlgorithm
     )
-    _initialize_dae!(
+    return _initialize_dae!(
         integrator, prob,
         BrownFullBasicInit(integrator.opts.abstol), x
     )
@@ -118,7 +119,7 @@ function _default_dae_init!(
         integrator, prob::DAEProblem, x,
         alg::DAECapableAlgorithm
     )
-    if prob.differential_vars === nothing
+    return if prob.differential_vars === nothing
         _initialize_dae!(
             integrator, prob,
             ShampineCollocationInit(), x
@@ -805,8 +806,6 @@ function _initialize_dae!(
     nlprob = NonlinearProblem(nlfunc, ifelse.(differential_vars, du, u))
 
     nlsolve = default_nlsolve(alg.nlsolve, isinplace, nlprob, integrator.u)
-
-    @show nlsolve
 
     nlsol = solve(nlprob, nlsolve, verbose = integrator.opts.verbose.nonlinear_verbosity)
 
