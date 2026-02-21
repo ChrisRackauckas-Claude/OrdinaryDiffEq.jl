@@ -989,13 +989,14 @@ end
 ### VF64 specialized cache types
 
 """
-    Rosenbrock23CacheVF64{pType, AlgType, TabType, LSType, JCType, GCType}
+    Rosenbrock23CacheVF64{pType, AlgType, TabType, LSType, GCType}
 
 Specialized Rosenbrock23Cache for Vector{Float64} in-place problems with AutoSpecialize.
-6 type parameters instead of 16.
+5 type parameters instead of 16. jac_config type is constant for the VF64 path
+(AutoSpecialize fixes the dual number types).
 """
 mutable struct Rosenbrock23CacheVF64{
-        pType, AlgType, TabType, LSType, JCType, GCType,
+        pType, AlgType, TabType, LSType, GCType,
     } <: RosenbrockMutableCache
     u::Vector{Float64}
     uprev::Vector{Float64}
@@ -1018,7 +1019,7 @@ mutable struct Rosenbrock23CacheVF64{
     uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
     linsolve_tmp::Vector{Float64}
     linsolve::LSType
-    jac_config::JCType
+    jac_config::OrdinaryDiffEqDifferentiation._JacConfigVF64Type
     grad_config::GCType
     reltol::Float64
     alg::AlgType
@@ -1041,13 +1042,14 @@ end
 const Rosenbrock23CacheType = Union{Rosenbrock23Cache, Rosenbrock23CacheVF64}
 
 """
-    RosenbrockCacheVF64{pType, AlgType, TabType, LSType, JCType, GCType}
+    RosenbrockCacheVF64{pType, AlgType, TabType, LSType, GCType}
 
 Specialized RosenbrockCache for Vector{Float64} in-place problems with AutoSpecialize.
-6 type parameters instead of 16. Used by Rodas4, Rodas5P, etc.
+5 type parameters instead of 16. Used by Rodas4, Rodas5P, etc. jac_config type is
+constant for the VF64 path (AutoSpecialize fixes the dual number types).
 """
 mutable struct RosenbrockCacheVF64{
-        pType, AlgType, TabType, LSType, JCType, GCType,
+        pType, AlgType, TabType, LSType, GCType,
     } <: RosenbrockMutableCache
     u::Vector{Float64}
     uprev::Vector{Float64}
@@ -1071,7 +1073,7 @@ mutable struct RosenbrockCacheVF64{
     uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
     linsolve_tmp::Vector{Float64}
     linsolve::LSType
-    jac_config::JCType
+    jac_config::OrdinaryDiffEqDifferentiation._JacConfigVF64Type
     grad_config::GCType
     reltol::Float64
     alg::AlgType
