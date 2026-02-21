@@ -89,7 +89,7 @@ mutable struct ODEIntegrator{
         algType <: Union{OrdinaryDiffEqAlgorithm, DAEAlgorithm}, IIP,
         uType, duType, tType, pType, eigenType, EEstT, QT, tdirType,
         ksEltype, SolType, F, CacheType, O, FSALType, EventErrorType,
-        CallbackCacheType, IA, DV, CC,
+        CallbackCacheType, IA, DV, CC, RNGType,
     } <:
     SciMLBase.AbstractODEIntegrator{algType, IIP, uType, tType}
     sol::SolType
@@ -144,4 +144,20 @@ mutable struct ODEIntegrator{
     differential_vars::DV
     fsalfirst::FSALType
     fsallast::FSALType
+    rng::RNGType
+end
+
+SciMLBase.has_rng(::ODEIntegrator) = true
+SciMLBase.get_rng(integrator::ODEIntegrator) = integrator.rng
+function SciMLBase.set_rng!(integrator::ODEIntegrator, rng)
+    R = typeof(integrator.rng)
+    if !isa(rng, R)
+        throw(ArgumentError(
+            "Cannot set RNG of type $(typeof(rng)) on an integrator " *
+            "whose RNG type parameter is $R. " *
+            "Construct a new integrator via `init(prob, alg; rng = your_rng)` instead."
+        ))
+    end
+    integrator.rng = rng
+    return nothing
 end
