@@ -4,6 +4,9 @@ is_constant_cache(cache::CompositeCache) = is_constant_cache(cache.caches[1])
 function is_constant_cache(::DefaultCache{Cache1}) where {Cache1}
     return Cache1 <: OrdinaryDiffEqConstantCache
 end
+function is_constant_cache(::DefaultCacheVF64{Cache1}) where {Cache1}
+    return Cache1 <: OrdinaryDiffEqConstantCache
+end
 
 function SciMLBase.unwrap_cache(integrator::ODEIntegratorType, is_stiff)
     alg = integrator.alg
@@ -11,7 +14,7 @@ function SciMLBase.unwrap_cache(integrator::ODEIntegratorType, is_stiff)
     iscomp = alg isa CompositeAlgorithm
     if !iscomp
         return cache
-    elseif cache isa DefaultCache
+    elseif cache isa DefaultCacheType
         current = integrator.cache.current
         if current == 1
             return cache.cache1

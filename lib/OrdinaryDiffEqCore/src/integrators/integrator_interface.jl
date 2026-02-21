@@ -185,7 +185,7 @@ end
 end
 @inline function SciMLBase.get_tmp_cache(
         integrator, alg::CompositeAlgorithm,
-        cache::DefaultCache
+        cache::DefaultCacheType
     )
     init_ith_default_cache(cache, alg.algs, cache.current)
     return if cache.current == 1
@@ -213,7 +213,7 @@ end
 
 function full_cache(integrator::ODEIntegratorType)
     # for DefaultCache, we need to make sure to initialize all the caches in case they get switched to later
-    if integrator.cache isa DefaultCache
+    if integrator.cache isa DefaultCacheType
         (; alg, cache) = integrator
         algs = alg.algs
         init_ith_default_cache(cache, algs, 1)
@@ -228,7 +228,7 @@ end
 function full_cache(cache::CompositeCache)
     return Iterators.flatten(full_cache(c) for c in cache.caches)
 end
-function full_cache(cache::DefaultCache)
+function full_cache(cache::DefaultCacheType)
     caches = (
         cache.cache1, cache.cache2, cache.cache3, cache.cache4, cache.cache5, cache.cache6,
     )
