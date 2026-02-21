@@ -160,7 +160,7 @@ end
             Θ, integrator, integrator.cache.caches,
             integrator.cache.current, idxs, deriv
         )
-    elseif integrator.cache isa DefaultCacheTypeType
+    elseif integrator.cache isa DefaultCacheType
         val = default_ode_interpolant(
             Θ, integrator, integrator.cache,
             integrator.cache.current, idxs, deriv
@@ -254,7 +254,7 @@ end
             integrator.k, integrator.cache.caches[integrator.cache.current],
             idxs, deriv, integrator.differential_vars
         )
-    elseif integrator.cache isa DefaultCacheTypeType
+    elseif integrator.cache isa DefaultCacheType
         alg_choice = integrator.cache.current
         if alg_choice == 1
             ode_interpolant!(
@@ -454,7 +454,7 @@ end
             val, Θ, integrator, integrator.cache.caches,
             integrator.cache.current, idxs, deriv
         )
-    elseif integrator.cache isa DefaultCacheTypeType
+    elseif integrator.cache isa DefaultCacheType
         default_ode_extrapolant!(
             val, Θ, integrator, integrator.cache,
             integrator.cache.current, idxs, deriv
@@ -546,7 +546,7 @@ end
             Θ, integrator, integrator.cache.caches,
             integrator.cache.current, idxs, deriv
         )
-    elseif integrator.cache isa DefaultCacheTypeType
+    elseif integrator.cache isa DefaultCacheType
         default_ode_extrapolant(
             Θ, integrator, integrator.cache,
             integrator.cache.current, idxs, deriv

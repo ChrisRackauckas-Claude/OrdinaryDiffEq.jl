@@ -265,7 +265,36 @@ mutable struct NLNewtonCacheVF64{pType, LSType, JCType} <: AbstractNLSolverCache
     J_t::Float64
 end
 
-const NLNewtonCacheType = Union{NLNewtonCache, NLNewtonCacheVF64}
+"""
+    NLNewtonCacheVF64FiniteDiff{pType, LSType}
+
+Specialized NLNewtonCache for Vector{Float64} in-place problems using AutoFiniteDiff.
+2 type parameters instead of 10. The FiniteDiff jacobian prep type is function-independent,
+allowing jac_config to be hardcoded. Used by DefaultODEAlgorithm which selects AutoFiniteDiff.
+"""
+mutable struct NLNewtonCacheVF64FiniteDiff{pType, LSType} <: AbstractNLSolverCache
+    ustep::Vector{Float64}
+    tstep::Float64
+    k::Vector{Float64}
+    atmp::Vector{Float64}
+    dz::Vector{Float64}
+    J::Matrix{Float64}
+    W::Matrix{Float64}
+    new_W::Bool
+    firststage::Bool
+    firstcall::Bool
+    W_γdt::Float64
+    du1::Vector{Float64}
+    uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
+    jac_config::_JacConfigFiniteDiff
+    linsolve::LSType
+    weight::Vector{Float64}
+    invγdt::Float64
+    new_W_γdt_cutoff::Float64
+    J_t::Float64
+end
+
+const NLNewtonCacheType = Union{NLNewtonCache, NLNewtonCacheVF64, NLNewtonCacheVF64FiniteDiff}
 
 """
     NLSolverVF64{algType, CacheType}

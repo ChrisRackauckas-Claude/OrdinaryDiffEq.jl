@@ -2,6 +2,7 @@ function initialize!(
         integrator, cache::Union{
             Rosenbrock23Cache,
             Rosenbrock23CacheVF64,
+            Rosenbrock23CacheVF64FiniteDiff,
             Rosenbrock32Cache,
         }
     )

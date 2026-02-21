@@ -189,13 +189,24 @@ function alg_cache(
             alg.step_limiter! === trivial_limiter! &&
             alg.stage_limiter! === trivial_limiter! &&
             algebraic_vars === nothing
-        return Rosenbrock23CacheVF64(
-            u, uprev, k₁, k₂, k₃, du1, du2, f₁,
-            fsalfirst, fsallast, dT, J, W, tmp, atmp, weight, tab, tf, uf,
-            linsolve_tmp,
-            linsolve, jac_config, grad_config, reltol, alg, algebraic_vars,
-            alg.step_limiter!, alg.stage_limiter!
-        )
+        ad = alg_autodiff(alg)
+        if ADTypes.dense_ad(ad) isa ADTypes.AutoFiniteDiff
+            return Rosenbrock23CacheVF64FiniteDiff(
+                u, uprev, k₁, k₂, k₃, du1, du2, f₁,
+                fsalfirst, fsallast, dT, J, W, tmp, atmp, weight, tab, tf, uf,
+                linsolve_tmp,
+                linsolve, jac_config, grad_config, reltol, alg, algebraic_vars,
+                alg.step_limiter!, alg.stage_limiter!
+            )
+        else
+            return Rosenbrock23CacheVF64(
+                u, uprev, k₁, k₂, k₃, du1, du2, f₁,
+                fsalfirst, fsallast, dT, J, W, tmp, atmp, weight, tab, tf, uf,
+                linsolve_tmp,
+                linsolve, jac_config, grad_config, reltol, alg, algebraic_vars,
+                alg.step_limiter!, alg.stage_limiter!
+            )
+        end
     end
 
     return Rosenbrock23Cache(
@@ -951,12 +962,22 @@ function alg_cache(
     if u isa Vector{Float64} && f isa OrdinaryDiffEqCore._ODEFunctionVF64Type &&
             alg.step_limiter! === trivial_limiter! &&
             alg.stage_limiter! === trivial_limiter!
-        return RosenbrockCacheVF64(
-            u, uprev, dense, du, du1, du2, dtC, dtd, ks, fsalfirst, fsallast,
-            dT, J, W, tmp, atmp, weight, tab, tf, uf, linsolve_tmp,
-            linsolve, jac_config, grad_config, reltol, alg,
-            alg.step_limiter!, alg.stage_limiter!, size(tab.H, 1)
-        )
+        ad = alg_autodiff(alg)
+        if ADTypes.dense_ad(ad) isa ADTypes.AutoFiniteDiff
+            return RosenbrockCacheVF64FiniteDiff(
+                u, uprev, dense, du, du1, du2, dtC, dtd, ks, fsalfirst, fsallast,
+                dT, J, W, tmp, atmp, weight, tab, tf, uf, linsolve_tmp,
+                linsolve, jac_config, grad_config, reltol, alg,
+                alg.step_limiter!, alg.stage_limiter!, size(tab.H, 1)
+            )
+        else
+            return RosenbrockCacheVF64(
+                u, uprev, dense, du, du1, du2, dtC, dtd, ks, fsalfirst, fsallast,
+                dT, J, W, tmp, atmp, weight, tab, tf, uf, linsolve_tmp,
+                linsolve, jac_config, grad_config, reltol, alg,
+                alg.step_limiter!, alg.stage_limiter!, size(tab.H, 1)
+            )
+        end
     end
 
     return RosenbrockCache(
@@ -1039,7 +1060,59 @@ function get_fsalfirstlast(cache::Rosenbrock23CacheVF64, u)
     return (cache.fsalfirst, cache.fsallast)
 end
 
-const Rosenbrock23CacheType = Union{Rosenbrock23Cache, Rosenbrock23CacheVF64}
+"""
+    Rosenbrock23CacheVF64FiniteDiff{pType, AlgType, TabType, LSType, GCType}
+
+Specialized Rosenbrock23Cache for Vector{Float64} in-place problems using AutoFiniteDiff.
+5 type parameters instead of 16. The FiniteDiff jacobian prep type is function-independent,
+so jac_config can be hardcoded. Used by DefaultODEAlgorithm which selects AutoFiniteDiff.
+"""
+mutable struct Rosenbrock23CacheVF64FiniteDiff{
+        pType, AlgType, TabType, LSType, GCType,
+    } <: RosenbrockMutableCache
+    u::Vector{Float64}
+    uprev::Vector{Float64}
+    k₁::Vector{Float64}
+    k₂::Vector{Float64}
+    k₃::Vector{Float64}
+    du1::Vector{Float64}
+    du2::Vector{Float64}
+    f₁::Vector{Float64}
+    fsalfirst::Vector{Float64}
+    fsallast::Vector{Float64}
+    dT::Vector{Float64}
+    J::Matrix{Float64}
+    W::Matrix{Float64}
+    tmp::Vector{Float64}
+    atmp::Vector{Float64}
+    weight::Vector{Float64}
+    tab::TabType
+    tf::OrdinaryDiffEqCore._TimeGradientWrapperVF64Type{pType}
+    uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
+    linsolve_tmp::Vector{Float64}
+    linsolve::LSType
+    jac_config::_JacConfigFiniteDiff
+    grad_config::GCType
+    reltol::Float64
+    alg::AlgType
+    algebraic_vars::Nothing
+    step_limiter!::typeof(trivial_limiter!)
+    stage_limiter!::typeof(trivial_limiter!)
+end
+
+function full_cache(c::Rosenbrock23CacheVF64FiniteDiff)
+    return [
+        c.u, c.uprev, c.k₁, c.k₂, c.k₃, c.du1, c.du2, c.f₁,
+        c.fsalfirst, c.fsallast, c.dT, c.tmp, c.atmp, c.weight, c.linsolve_tmp,
+    ]
+end
+
+function get_fsalfirstlast(cache::Rosenbrock23CacheVF64FiniteDiff, u)
+    return (cache.fsalfirst, cache.fsallast)
+end
+
+const Rosenbrock23CacheType = Union{
+    Rosenbrock23Cache, Rosenbrock23CacheVF64, Rosenbrock23CacheVF64FiniteDiff}
 
 """
     RosenbrockCacheVF64{pType, AlgType, TabType, LSType, JCType, GCType}
@@ -1089,4 +1162,52 @@ function full_cache(c::RosenbrockCacheVF64)
     ]
 end
 
-const RosenbrockCacheType = Union{RosenbrockCache, RosenbrockCacheVF64}
+"""
+    RosenbrockCacheVF64FiniteDiff{pType, AlgType, TabType, LSType, GCType}
+
+Specialized RosenbrockCache for Vector{Float64} in-place problems using AutoFiniteDiff.
+5 type parameters instead of 16. Used by Rodas4, Rodas5P, etc. via DefaultODEAlgorithm.
+"""
+mutable struct RosenbrockCacheVF64FiniteDiff{
+        pType, AlgType, TabType, LSType, GCType,
+    } <: RosenbrockMutableCache
+    u::Vector{Float64}
+    uprev::Vector{Float64}
+    dense::Vector{Vector{Float64}}
+    du::Vector{Float64}
+    du1::Vector{Float64}
+    du2::Vector{Float64}
+    dtC::Matrix{Float64}
+    dtd::Vector{Float64}
+    ks::Vector{Vector{Float64}}
+    fsalfirst::Vector{Float64}
+    fsallast::Vector{Float64}
+    dT::Vector{Float64}
+    J::Matrix{Float64}
+    W::Matrix{Float64}
+    tmp::Vector{Float64}
+    atmp::Vector{Float64}
+    weight::Vector{Float64}
+    tab::TabType
+    tf::OrdinaryDiffEqCore._TimeGradientWrapperVF64Type{pType}
+    uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
+    linsolve_tmp::Vector{Float64}
+    linsolve::LSType
+    jac_config::_JacConfigFiniteDiff
+    grad_config::GCType
+    reltol::Float64
+    alg::AlgType
+    step_limiter!::typeof(trivial_limiter!)
+    stage_limiter!::typeof(trivial_limiter!)
+    interp_order::Int
+end
+
+function full_cache(c::RosenbrockCacheVF64FiniteDiff)
+    return [
+        c.u, c.uprev, c.dense..., c.du, c.du1, c.du2,
+        c.ks..., c.fsalfirst, c.fsallast, c.dT, c.tmp, c.atmp, c.weight, c.linsolve_tmp,
+    ]
+end
+
+const RosenbrockCacheType = Union{
+    RosenbrockCache, RosenbrockCacheVF64, RosenbrockCacheVF64FiniteDiff}

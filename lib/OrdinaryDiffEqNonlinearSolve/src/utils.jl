@@ -302,16 +302,29 @@ function build_nlsolver(
     # build non-linear solver
     ηold = one(t)
 
-    # VF64 path: construct NLSolverVF64 with NLNewtonCacheVF64 for fewer type params
+    # VF64 path: construct NLSolverVF64 with specialized NLNewtonCache for fewer type params
     if u isa Vector{Float64} && f isa OrdinaryDiffEqCore._ODEFunctionVF64Type &&
             nlcache isa NLNewtonCache
-        nlcache_vf64 = NLNewtonCacheVF64(
-            nlcache.ustep, nlcache.tstep, nlcache.k, nlcache.atmp, nlcache.dz,
-            nlcache.J, nlcache.W, nlcache.new_W, nlcache.firststage, nlcache.firstcall,
-            nlcache.W_γdt, nlcache.du1, nlcache.uf, nlcache.jac_config,
-            nlcache.linsolve, nlcache.weight, nlcache.invγdt,
-            nlcache.new_W_γdt_cutoff, nlcache.J_t
-        )
+        # Use FiniteDiff variant (2 params) when autodiff is AutoFiniteDiff,
+        # otherwise fall back to generic VF64 (3 params)
+        ad = alg_autodiff(alg)
+        if ADTypes.dense_ad(ad) isa AutoFiniteDiff
+            nlcache_vf64 = NLNewtonCacheVF64FiniteDiff(
+                nlcache.ustep, nlcache.tstep, nlcache.k, nlcache.atmp, nlcache.dz,
+                nlcache.J, nlcache.W, nlcache.new_W, nlcache.firststage, nlcache.firstcall,
+                nlcache.W_γdt, nlcache.du1, nlcache.uf, nlcache.jac_config,
+                nlcache.linsolve, nlcache.weight, nlcache.invγdt,
+                nlcache.new_W_γdt_cutoff, nlcache.J_t
+            )
+        else
+            nlcache_vf64 = NLNewtonCacheVF64(
+                nlcache.ustep, nlcache.tstep, nlcache.k, nlcache.atmp, nlcache.dz,
+                nlcache.J, nlcache.W, nlcache.new_W, nlcache.firststage, nlcache.firstcall,
+                nlcache.W_γdt, nlcache.du1, nlcache.uf, nlcache.jac_config,
+                nlcache.linsolve, nlcache.weight, nlcache.invγdt,
+                nlcache.new_W_γdt_cutoff, nlcache.J_t
+            )
+        end
         return NLSolverVF64(
             z, tmp, nothing, ztmp, Float64(tTypeNoUnits(γ)),
             Float64(c), Float64(α), nlalg, Float64(nlalg.κ),
