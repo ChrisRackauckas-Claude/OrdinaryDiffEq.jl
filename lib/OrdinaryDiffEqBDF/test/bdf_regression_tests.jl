@@ -57,8 +57,10 @@ end
         differential_vars = [true, true]
     )
     for MO in 1:5
-        sol = solve(dae_prob_mo, DFBDF(max_order = Val{MO}()),
-            abstol = 1.0e-8, reltol = 1.0e-8, verbose = false)
+        sol = solve(
+            dae_prob_mo, DFBDF(max_order = Val{MO}()),
+            abstol = 1.0e-8, reltol = 1.0e-8, verbose = false
+        )
         @test sol.t[end] > 0
     end
 end
