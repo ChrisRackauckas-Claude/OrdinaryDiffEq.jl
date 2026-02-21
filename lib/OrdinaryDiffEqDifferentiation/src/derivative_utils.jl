@@ -771,9 +771,14 @@ function update_W!(
                 dae_jac = lcache.dae_jacobians
                 if dae_jac !== nothing
                     cj = nlsolver.α * inv(dtgamma)
-                    W = dae_jacobian2W(lcache.J, dae_jac.J_du, cj)
-                    if !isa(W, Number)
-                        W = DiffEqBase.default_factorize(W)
+                    if lcache.W isa StaticWOperator
+                        W = StaticWOperator(
+                            dae_jacobian2W(lcache.J, dae_jac.J_du, cj))
+                    else
+                        W = dae_jacobian2W(lcache.J, dae_jac.J_du, cj)
+                        if !isa(W, Number)
+                            W = DiffEqBase.default_factorize(W)
+                        end
                     end
                     lcache.W = W
                     integrator.stats.nw += 1
