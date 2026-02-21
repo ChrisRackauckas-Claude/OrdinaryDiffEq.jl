@@ -33,6 +33,9 @@ function SciMLBase.forwarddiffs_model(
     )
     return _autodiff_is_forward(alg)
 end
+function SciMLBase.forwarddiffs_model(alg::CompositeAlgorithm)
+    return any(_autodiff_is_forward, alg.algs)
+end
 
 SciMLBase.forwarddiffs_model_time(alg::RosenbrockAlgorithm) = true
 
