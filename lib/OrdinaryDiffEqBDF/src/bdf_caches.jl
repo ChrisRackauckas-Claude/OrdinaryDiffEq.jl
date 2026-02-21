@@ -654,7 +654,7 @@ function alg_cache(
 
     return FBDFConstantCache(
         nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
-        u_corrector, bdf_coeffs, Val(5), nconsteps, consfailcnt, terkm2,
+        u_corrector, bdf_coeffs, Val(MO), nconsteps, consfailcnt, terkm2,
         terkm1, terk, terkp1, r, weights, iters_from_event
     )
 end
@@ -753,7 +753,7 @@ function alg_cache(
 
     return FBDFCache(
         fsalfirst, nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
-        u_corrector, u₀, bdf_coeffs, Val(5), nconsteps, consfailcnt, tmp, atmp,
+        u_corrector, u₀, bdf_coeffs, Val(MO), nconsteps, consfailcnt, tmp, atmp,
         terkm2, terkm1, terk, terkp1, terk_tmp, terkp1_tmp, r, weights, equi_ts,
         iters_from_event, dense, alg.step_limiter!
     )
