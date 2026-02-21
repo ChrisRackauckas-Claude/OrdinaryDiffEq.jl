@@ -360,6 +360,21 @@ end
 
 const EMPTY_ARRAY_OF_PAIRS = Pair[]
 
+SciMLBase.has_rng(::ODEIntegrator) = true
+SciMLBase.get_rng(integrator::ODEIntegrator) = integrator.rng
+function SciMLBase.set_rng!(integrator::ODEIntegrator, rng)
+    R = typeof(integrator.rng)
+    if !isa(rng, R)
+        throw(ArgumentError(
+            "Cannot set RNG of type $(typeof(rng)) on an integrator " *
+            "whose RNG type parameter is $R. " *
+            "Construct a new integrator via `init(prob, alg; rng = your_rng)` instead."
+        ))
+    end
+    integrator.rng = rng
+    return nothing
+end
+
 SciMLBase.has_reinit(integrator::ODEIntegrator) = true
 function SciMLBase.reinit!(
         integrator::ODEIntegrator, u0 = integrator.sol.prob.u0;
