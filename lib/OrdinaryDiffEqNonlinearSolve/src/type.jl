@@ -237,13 +237,13 @@ end
 # VF64 specialized types: fewer type parameters for shorter stack traces.
 
 """
-    NLNewtonCacheVF64{pType, LSType}
+    NLNewtonCacheVF64{pType, LSType, JCType}
 
 Specialized NLNewtonCache for Vector{Float64} in-place problems with AutoSpecialize.
-2 type parameters instead of 10. jac_config type is constant for the VF64 path
-(AutoSpecialize fixes the dual number types). linsolve varies with verbose settings.
+3 type parameters instead of 10. jac_config type varies with autodiff choice
+(ForwardDiff vs FiniteDiff). linsolve varies with verbose settings.
 """
-mutable struct NLNewtonCacheVF64{pType, LSType} <: AbstractNLSolverCache
+mutable struct NLNewtonCacheVF64{pType, LSType, JCType} <: AbstractNLSolverCache
     ustep::Vector{Float64}
     tstep::Float64
     k::Vector{Float64}
@@ -257,7 +257,7 @@ mutable struct NLNewtonCacheVF64{pType, LSType} <: AbstractNLSolverCache
     W_γdt::Float64
     du1::Vector{Float64}
     uf::OrdinaryDiffEqCore._UJacobianWrapperVF64Type{pType}
-    jac_config::OrdinaryDiffEqDifferentiation._JacConfigVF64Type
+    jac_config::JCType
     linsolve::LSType
     weight::Vector{Float64}
     invγdt::Float64

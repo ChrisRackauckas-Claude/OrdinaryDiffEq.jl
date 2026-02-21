@@ -90,35 +90,4 @@ include("derivative_utils.jl")
 include("derivative_wrappers.jl")
 include("operators.jl")
 
-# Precomputed concrete types for VF64 (Vector{Float64} + AutoSpecialize) path.
-# With AutoSpecialize, the function is wrapped in FunctionWrappersWrapper with fixed
-# dual types, making jac_config and linsolve types constant regardless of the user's
-# function. These are computed once at load time and used as field types in VF64 cache
-# structs to eliminate type parameters.
-
-const _LinSolveCacheVF64Type = let
-    W = Matrix{Float64}(undef, 1, 1)
-    b = Vector{Float64}(undef, 1)
-    weight = ones(Float64, 1)
-    Pl = LinearSolve.InvPreconditioner(LinearAlgebra.Diagonal(weight))
-    Pr = LinearAlgebra.Diagonal(weight)
-    linprob = LinearSolve.LinearProblem(W, b; u0 = b)
-    verbose = LinearVerbosity(
-        OrdinaryDiffEqCore.DEFAULT_VERBOSE.linear_verbosity)
-    typeof(LinearSolve.init(linprob, nothing;
-        alias = LinearSolve.LinearAliasSpecifier(alias_A = true, alias_b = true),
-        Pl = Pl, Pr = Pr,
-        assumptions = OperatorAssumptions(true),
-        verbose = verbose))
-end
-
-const _JacPrepVF64Type = let
-    tag = ForwardDiff.Tag(OrdinaryDiffEqTag(), Float64)
-    autodiff_alg = ADTypes.AutoForwardDiff(; chunksize = 1, tag = tag)
-    _f(du, u) = (du .= u)
-    typeof(DI.prepare_jacobian(_f, zeros(1), autodiff_alg, zeros(1); strict = Val(false)))
-end
-
-const _JacConfigVF64Type = Tuple{_JacPrepVF64Type, _JacPrepVF64Type}
-
 end
