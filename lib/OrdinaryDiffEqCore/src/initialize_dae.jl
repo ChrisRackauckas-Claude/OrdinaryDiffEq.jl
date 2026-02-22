@@ -59,42 +59,47 @@ end
 ## Nonlinear Solver Defaulting
 
 ## If an alg is given use it
-default_nlsolve(alg, isinplace, u, initprob, autodiff = false) = alg
+default_nlsolve(alg, isinplace, u, initprob, autodiff = false, chunksize = Val(0)) = alg
 
 ## If the initialization is trivial just use nothing alg
 function default_nlsolve(
-        ::Nothing, isinplace::Val{true}, u::Nothing, ::AbstractNonlinearProblem, autodiff = false
+        ::Nothing, isinplace::Val{true}, u::Nothing, ::AbstractNonlinearProblem,
+        autodiff = false, chunksize = Val(0)
     )
     return nothing
 end
 
 function default_nlsolve(
-        ::Nothing, isinplace::Val{true}, u::Nothing, ::NonlinearLeastSquaresProblem, autodiff = false
+        ::Nothing, isinplace::Val{true}, u::Nothing, ::NonlinearLeastSquaresProblem,
+        autodiff = false, chunksize = Val(0)
     )
     return nothing
 end
 
 function default_nlsolve(
-        ::Nothing, isinplace::Val{false}, u::Nothing, ::AbstractNonlinearProblem, autodiff = false
+        ::Nothing, isinplace::Val{false}, u::Nothing, ::AbstractNonlinearProblem,
+        autodiff = false, chunksize = Val(0)
     )
     return nothing
 end
 
 function default_nlsolve(
         ::Nothing, isinplace::Val{false}, u::Nothing,
-        ::NonlinearLeastSquaresProblem, autodiff = false
+        ::NonlinearLeastSquaresProblem, autodiff = false, chunksize = Val(0)
     )
     return nothing
 end
 
 function OrdinaryDiffEqCore.default_nlsolve(
-        ::Nothing, isinplace, u, ::AbstractNonlinearProblem, autodiff = false
+        ::Nothing, isinplace, u, ::AbstractNonlinearProblem, autodiff = false,
+        chunksize = Val(0)
     )
     error("This ODE requires a DAE initialization and thus a nonlinear solve but no nonlinear solve has been loaded. To solve this problem, do `using OrdinaryDiffEqNonlinearSolve` or pass a custom `nlsolve` choice into the `initializealg`.")
 end
 
 function OrdinaryDiffEqCore.default_nlsolve(
-        ::Nothing, isinplace, u, ::NonlinearLeastSquaresProblem, autodiff = false
+        ::Nothing, isinplace, u, ::NonlinearLeastSquaresProblem, autodiff = false,
+        chunksize = Val(0)
     )
     error("This ODE requires a DAE initialization and thus a nonlinear solve but no nonlinear solve has been loaded. To solve this problem, do `using OrdinaryDiffEqNonlinearSolve` or pass a custom `nlsolve` choice into the `initializealg`.")
 end

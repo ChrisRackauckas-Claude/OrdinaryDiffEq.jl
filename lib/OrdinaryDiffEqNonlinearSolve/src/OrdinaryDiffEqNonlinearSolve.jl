@@ -65,6 +65,14 @@ import OrdinaryDiffEqDifferentiation: update_W!, is_always_new, build_uf, build_
 import StaticArrays: SArray, MVector, SVector, @SVector, StaticArray, MMatrix, SA,
     StaticMatrix
 
+@static if isdefined(SciMLBase, :OrdinaryDiffEqTag)
+    import SciMLBase: OrdinaryDiffEqTag
+elseif isdefined(DiffEqBase, :OrdinaryDiffEqTag)
+    import DiffEqBase: OrdinaryDiffEqTag
+else
+    struct OrdinaryDiffEqTag end
+end
+
 include("type.jl")
 include("utils.jl")
 include("deprecated.jl")

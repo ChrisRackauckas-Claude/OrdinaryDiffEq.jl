@@ -39,6 +39,19 @@ end
 
 SciMLBase.forwarddiffs_model_time(alg::RosenbrockAlgorithm) = true
 
+function SciMLBase.forwarddiff_chunksize(
+        alg::Union{
+            OrdinaryDiffEqAdaptiveImplicitAlgorithm{CS, AD},
+            OrdinaryDiffEqImplicitAlgorithm{CS, AD},
+            DAEAlgorithm{CS, AD},
+            OrdinaryDiffEqExponentialAlgorithm{CS, AD},
+            OrdinaryDiffEqAdaptiveExponentialAlgorithm{CS, AD},
+            CompositeAlgorithm{CS, AD},
+        }
+    ) where {CS, AD}
+    return _get_fwd_chunksize(AD)
+end
+
 SciMLBase.allows_late_binding_tstops(::OrdinaryDiffEqAlgorithm) = true
 SciMLBase.allows_late_binding_tstops(::DAEAlgorithm) = true
 
@@ -210,7 +223,9 @@ function get_chunksize(alg::OrdinaryDiffEqAlgorithm)
     error("This algorithm does not have a chunk size defined.")
 end
 
+_get_fwd_chunksize(::Type{<:AutoForwardDiff{nothing}}) = Val(0)
 _get_fwd_chunksize(::Type{<:AutoForwardDiff{CS}}) where {CS} = Val(CS)
+_get_fwd_chunksize_int(::Type{<:AutoForwardDiff{nothing}}) = 0
 _get_fwd_chunksize_int(::Type{<:AutoForwardDiff{CS}}) where {CS} = CS
 _get_fwd_chunksize(AD) = Val(0)
 _get_fwd_chunksize_int(AD) = 0
