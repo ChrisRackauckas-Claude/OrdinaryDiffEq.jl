@@ -6,6 +6,7 @@ ROSENBROCKS_WITH_INTERPOLATIONS = Union{
     Rodas23WCache, Rodas3PCache,
     RosenbrockCombinedConstantCache,
     RosenbrockCache,
+    Tsit5DAConstantCache, Tsit5DACache,
 }
 
 function _ode_interpolant(
@@ -168,6 +169,7 @@ From MATLAB ODE Suite by Shampine
         cache::Union{
             RosenbrockCombinedConstantCache, Rodas23WConstantCache,
             Rodas3PConstantCache, RosenbrockCache, Rodas23WCache, Rodas3PCache,
+            Tsit5DAConstantCache, Tsit5DACache,
         },
         idxs::Nothing, T::Type{Val{0}}, differential_vars
     )
@@ -441,7 +443,7 @@ end
 
 @muladd function _ode_interpolant(
         Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs, T::Type{Val{2}}, differential_vars
     )
     if cache.interp_order == 4
@@ -461,7 +463,7 @@ end
 
 @muladd function _ode_interpolant!(
         out, Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs::Nothing, T::Type{Val{2}}, differential_vars
     )
     if cache.interp_order == 4
@@ -482,7 +484,7 @@ end
 
 @muladd function _ode_interpolant!(
         out, Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs, T::Type{Val{2}}, differential_vars
     )
     if cache.interp_order == 4
@@ -528,7 +530,7 @@ end
 
 @muladd function _ode_interpolant(
         Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs, T::Type{Val{3}}, differential_vars
     )
     if cache.interp_order == 4
@@ -543,7 +545,7 @@ end
 
 @muladd function _ode_interpolant!(
         out, Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs::Nothing, T::Type{Val{3}}, differential_vars
     )
     if cache.interp_order == 4
@@ -556,7 +558,7 @@ end
 
 @muladd function _ode_interpolant!(
         out, Θ, dt, y₀, y₁, k,
-        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache},
+        cache::Union{RosenbrockCombinedConstantCache, RosenbrockCache, Tsit5DAConstantCache, Tsit5DACache},
         idxs, T::Type{Val{3}}, differential_vars
     )
     if cache.interp_order == 4

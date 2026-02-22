@@ -21,6 +21,7 @@ function SciMLBase.interp_summary(
         Union{
             RosenbrockCombinedConstantCache, Rodas23WConstantCache, Rodas3PConstantCache,
             RosenbrockCache, Rodas23WCache, Rodas3PCache,
+            Tsit5DAConstantCache, Tsit5DACache,
         },
     }
     return dense ? "specialized 3rd order \"free\" stiffness-aware interpolation" :
