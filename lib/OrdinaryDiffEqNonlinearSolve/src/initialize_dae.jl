@@ -96,6 +96,42 @@ function default_nlsolve(
     return SimpleGaussNewton(autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
 end
 
+## DefaultInit resolution for DAE-capable algorithms
+
+const DAECapableAlgorithm = Union{
+    OrdinaryDiffEqAdaptiveImplicitAlgorithm,
+    OrdinaryDiffEqImplicitAlgorithm,
+    DAEAlgorithm,
+    OrdinaryDiffEqCompositeAlgorithm,
+}
+
+function _default_dae_init!(
+        integrator, prob::ODEProblem, x,
+        alg::DAECapableAlgorithm
+    )
+    return _initialize_dae!(
+        integrator, prob,
+        BrownFullBasicInit(integrator.opts.abstol), x
+    )
+end
+
+function _default_dae_init!(
+        integrator, prob::DAEProblem, x,
+        alg::DAECapableAlgorithm
+    )
+    return if prob.differential_vars === nothing
+        _initialize_dae!(
+            integrator, prob,
+            ShampineCollocationInit(), x
+        )
+    else
+        _initialize_dae!(
+            integrator, prob,
+            BrownFullBasicInit(integrator.opts.abstol), x
+        )
+    end
+end
+
 ## ShampineCollocationInit
 
 #=
@@ -770,8 +806,6 @@ function _initialize_dae!(
     nlprob = NonlinearProblem(nlfunc, ifelse.(differential_vars, du, u))
 
     nlsolve = default_nlsolve(alg.nlsolve, isinplace, nlprob, integrator.u)
-
-    @show nlsolve
 
     nlsol = solve(nlprob, nlsolve, verbose = integrator.opts.verbose.nonlinear_verbosity)
 
