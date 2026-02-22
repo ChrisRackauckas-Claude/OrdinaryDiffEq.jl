@@ -148,6 +148,10 @@ function _initialize_dae!(
         isinplace::Val{true}
     )
     (; p, t, f) = integrator
+    # Unwrap FunctionWrappersWrapper from f for DAE initialization closures.
+    # NonlinearSolve's internal ForwardDiff uses different tags/chunk sizes than
+    # the pre-compiled FunctionWrapper variants, causing NoFunctionWrapperFoundError.
+    f = SciMLBase.unwrapped_f(f)
     M = integrator.f.mass_matrix
     dtmax = integrator.opts.dtmax
     tmp = first(get_tmp_cache(integrator))
@@ -275,6 +279,7 @@ function _initialize_dae!(
         isinplace::Val{false}
     )
     (; p, t, f) = integrator
+    f = SciMLBase.unwrapped_f(f)
     u0 = integrator.u
     M = integrator.f.mass_matrix
     dtmax = integrator.opts.dtmax
@@ -529,6 +534,7 @@ function _initialize_dae!(
         alg::DiffEqBase.BrownFullBasicInit, isinplace::Val{true}
     )
     (; p, t, f) = integrator
+    f = SciMLBase.unwrapped_f(f)
     u = integrator.u
     M = integrator.f.mass_matrix
     M isa UniformScaling && return
@@ -617,6 +623,7 @@ function _initialize_dae!(
         alg::DiffEqBase.BrownFullBasicInit, isinplace::Val{false}
     )
     (; p, t, f) = integrator
+    f = SciMLBase.unwrapped_f(f)
 
     u0 = integrator.u
     M = integrator.f.mass_matrix
