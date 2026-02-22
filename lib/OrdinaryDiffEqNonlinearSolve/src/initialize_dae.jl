@@ -59,41 +59,54 @@ end
     end
 end
 
+_tagged_autodiff(u, ::Val{0}) = _tagged_autodiff(u, Val(1))
+function _tagged_autodiff(u, ::Val{CS} = Val(1)) where {CS}
+    AutoForwardDiff{CS}(ForwardDiff.Tag(OrdinaryDiffEqTag(), eltype(u)))
+end
+
 function default_nlsolve(
-        ::Nothing, isinplace::Val{true}, u, ::AbstractNonlinearProblem, autodiff = false
+        ::Nothing, isinplace::Val{true}, u, ::AbstractNonlinearProblem,
+        autodiff = false, chunksize = Val(1)
     )
     return FastShortcutNonlinearPolyalg(;
-        autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff()
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff()
     )
 end
 function default_nlsolve(
-        ::Nothing, isinplace::Val{true}, u, ::NonlinearLeastSquaresProblem, autodiff = false
+        ::Nothing, isinplace::Val{true}, u, ::NonlinearLeastSquaresProblem,
+        autodiff = false, chunksize = Val(1)
     )
-    return FastShortcutNLLSPolyalg(; autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
+    return FastShortcutNLLSPolyalg(;
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff())
 end
 function default_nlsolve(
-        ::Nothing, isinplace::Val{false}, u, ::AbstractNonlinearProblem, autodiff = false
+        ::Nothing, isinplace::Val{false}, u, ::AbstractNonlinearProblem,
+        autodiff = false, chunksize = Val(1)
     )
     return FastShortcutNonlinearPolyalg(;
-        autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff()
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff()
     )
 end
 function default_nlsolve(
-        ::Nothing, isinplace::Val{false}, u, ::NonlinearLeastSquaresProblem, autodiff = false
+        ::Nothing, isinplace::Val{false}, u, ::NonlinearLeastSquaresProblem,
+        autodiff = false, chunksize = Val(1)
     )
-    return FastShortcutNLLSPolyalg(; autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
+    return FastShortcutNLLSPolyalg(;
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff())
 end
 function default_nlsolve(
         ::Nothing, isinplace::Val{false}, u::StaticArray,
-        ::AbstractNonlinearProblem, autodiff = false
+        ::AbstractNonlinearProblem, autodiff = false, chunksize = Val(1)
     )
-    return SimpleTrustRegion(autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
+    return SimpleTrustRegion(
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff())
 end
 function default_nlsolve(
         ::Nothing, isinplace::Val{false}, u::StaticArray,
-        ::NonlinearLeastSquaresProblem, autodiff = false
+        ::NonlinearLeastSquaresProblem, autodiff = false, chunksize = Val(1)
     )
-    return SimpleGaussNewton(autodiff = autodiff ? AutoForwardDiff() : AutoFiniteDiff())
+    return SimpleGaussNewton(
+        autodiff = autodiff ? _tagged_autodiff(u, chunksize) : AutoFiniteDiff())
 end
 
 ## DefaultInit resolution for DAE-capable algorithms
@@ -148,9 +161,9 @@ function _initialize_dae!(
         isinplace::Val{true}
     )
     (; p, t, f) = integrator
-    # Unwrap FunctionWrappersWrapper from f for DAE initialization closures.
-    # NonlinearSolve's internal ForwardDiff uses different tags/chunk sizes than
-    # the pre-compiled FunctionWrapper variants, causing NoFunctionWrapperFoundError.
+    # Unwrap FunctionWrappersWrapper so the closure works with any argument types.
+    # NonlinearSolve may call the closure with types that don't match the
+    # pre-compiled FunctionWrapper variants (e.g., during nested AD).
     f = SciMLBase.unwrapped_f(f)
     M = integrator.f.mass_matrix
     dtmax = integrator.opts.dtmax
@@ -247,7 +260,8 @@ function _initialize_dae!(
             jac = jac
         )
         nlprob = NonlinearProblem(nlfunc, integrator.u, p)
-        nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD)
+        nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD,
+            SciMLBase.forwarddiff_chunksize(integrator.alg))
         nlsol = solve(
             nlprob, nlsolve; abstol = integrator.opts.abstol,
             reltol = integrator.opts.reltol, verbose = integrator.opts.verbose.nonlinear_verbosity
@@ -279,7 +293,6 @@ function _initialize_dae!(
         isinplace::Val{false}
     )
     (; p, t, f) = integrator
-    f = SciMLBase.unwrapped_f(f)
     u0 = integrator.u
     M = integrator.f.mass_matrix
     dtmax = integrator.opts.dtmax
@@ -336,7 +349,9 @@ function _initialize_dae!(
             jac = jac
         )
         nlprob = NonlinearProblem(nlfunc, u0)
-        nlsolve = default_nlsolve(alg.nlsolve, isinplace, nlprob, u0)
+        isAD = alg_autodiff(integrator.alg) isa AutoForwardDiff
+        nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD,
+            SciMLBase.forwarddiff_chunksize(integrator.alg))
 
         nlsol = solve(
             nlprob, nlsolve; abstol = integrator.opts.abstol,
@@ -428,7 +443,8 @@ function _initialize_dae!(
         jac = jac
     )
     nlprob = NonlinearProblem(nlfunc, u0, p)
-    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD)
+    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD,
+            SciMLBase.forwarddiff_chunksize(integrator.alg))
     nlsol = solve(
         nlprob, nlsolve; abstol = integrator.opts.abstol,
         reltol = integrator.opts.reltol, verbose = integrator.opts.verbose.nonlinear_verbosity
@@ -483,7 +499,9 @@ function _initialize_dae!(
         jac = jac
     )
     nlprob = NonlinearProblem(nlfunc, u0)
-    nlsolve = default_nlsolve(alg.nlsolve, isinplace, nlprob, u0)
+    isAD = alg_autodiff(integrator.alg) isa AutoForwardDiff
+    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD,
+            SciMLBase.forwarddiff_chunksize(integrator.alg))
 
     nlfunc = NonlinearFunction(nlequation; jac_prototype = f.jac_prototype)
     nlprob = NonlinearProblem(nlfunc, u0)
@@ -596,7 +614,8 @@ function _initialize_dae!(
     J = algebraic_jacobian(f.jac_prototype, algebraic_eqs, algebraic_vars)
     nlfunc = NonlinearFunction(nlequation!; jac_prototype = J)
     nlprob = NonlinearProblem(nlfunc, alg_u, p)
-    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u, nlprob, isAD)
+    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u, nlprob, isAD,
+        SciMLBase.forwarddiff_chunksize(integrator.alg))
 
     nlsol = solve(
         nlprob, nlsolve; abstol = alg.abstol, reltol = integrator.opts.reltol,
@@ -623,7 +642,6 @@ function _initialize_dae!(
         alg::DiffEqBase.BrownFullBasicInit, isinplace::Val{false}
     )
     (; p, t, f) = integrator
-    f = SciMLBase.unwrapped_f(f)
 
     u0 = integrator.u
     M = integrator.f.mass_matrix
@@ -663,7 +681,8 @@ function _initialize_dae!(
     J = algebraic_jacobian(f.jac_prototype, algebraic_eqs, algebraic_vars)
     nlfunc = NonlinearFunction(nlequation; jac_prototype = J)
     nlprob = NonlinearProblem(nlfunc, u0[algebraic_vars])
-    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD)
+    nlsolve = default_nlsolve(alg.nlsolve, isinplace, u0, nlprob, isAD,
+            SciMLBase.forwarddiff_chunksize(integrator.alg))
 
     nlsol = solve(nlprob, nlsolve, verbose = integrator.opts.verbose.nonlinear_verbosity)
 
@@ -812,7 +831,9 @@ function _initialize_dae!(
     nlfunc = NonlinearFunction(nlequation; jac_prototype = f.jac_prototype)
     nlprob = NonlinearProblem(nlfunc, ifelse.(differential_vars, du, u))
 
-    nlsolve = default_nlsolve(alg.nlsolve, isinplace, nlprob, integrator.u)
+    isAD = alg_autodiff(integrator.alg) isa AutoForwardDiff
+    nlsolve = default_nlsolve(alg.nlsolve, isinplace, integrator.u, nlprob, isAD,
+        SciMLBase.forwarddiff_chunksize(integrator.alg))
 
     nlsol = solve(nlprob, nlsolve, verbose = integrator.opts.verbose.nonlinear_verbosity)
 
