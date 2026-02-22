@@ -39,6 +39,33 @@ end
 
 SciMLBase.forwarddiffs_model_time(alg::RosenbrockAlgorithm) = true
 
+function SciMLBase.forwarddiff_chunksize(
+        alg::Union{
+            OrdinaryDiffEqAdaptiveImplicitAlgorithm{CS, AD},
+            OrdinaryDiffEqImplicitAlgorithm{CS, AD},
+            DAEAlgorithm{CS, AD},
+        }
+    ) where {CS, AD}
+    cs = _get_fwd_chunksize_int(AD)
+    return cs === nothing ? 0 : cs
+end
+function SciMLBase.forwarddiff_chunksize(
+        alg::Union{
+            OrdinaryDiffEqExponentialAlgorithm{CS, AD},
+            OrdinaryDiffEqAdaptiveExponentialAlgorithm{CS, AD},
+        }
+    ) where {CS, AD}
+    cs = _get_fwd_chunksize_int(AD)
+    return cs === nothing ? 0 : cs
+end
+function SciMLBase.forwarddiff_chunksize(alg::CompositeAlgorithm)
+    cs = 0
+    for a in alg.algs
+        cs = max(cs, SciMLBase.forwarddiff_chunksize(a))
+    end
+    return cs
+end
+
 SciMLBase.allows_late_binding_tstops(::OrdinaryDiffEqAlgorithm) = true
 SciMLBase.allows_late_binding_tstops(::DAEAlgorithm) = true
 
