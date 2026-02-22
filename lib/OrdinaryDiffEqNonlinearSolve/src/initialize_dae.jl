@@ -59,6 +59,7 @@ end
     end
 end
 
+_tagged_autodiff(u, ::Val{nothing}) = _tagged_autodiff(u, Val(1))
 _tagged_autodiff(u, ::Val{0}) = _tagged_autodiff(u, Val(1))
 function _tagged_autodiff(u, ::Val{CS} = Val(1)) where {CS}
     return AutoForwardDiff{CS}(ForwardDiff.Tag(OrdinaryDiffEqTag(), eltype(u)))

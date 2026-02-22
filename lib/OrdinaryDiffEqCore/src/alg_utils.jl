@@ -223,7 +223,9 @@ function get_chunksize(alg::OrdinaryDiffEqAlgorithm)
     error("This algorithm does not have a chunk size defined.")
 end
 
+_get_fwd_chunksize(::Type{<:AutoForwardDiff{nothing}}) = Val(0)
 _get_fwd_chunksize(::Type{<:AutoForwardDiff{CS}}) where {CS} = Val(CS)
+_get_fwd_chunksize_int(::Type{<:AutoForwardDiff{nothing}}) = 0
 _get_fwd_chunksize_int(::Type{<:AutoForwardDiff{CS}}) where {CS} = CS
 _get_fwd_chunksize(AD) = Val(0)
 _get_fwd_chunksize_int(AD) = 0
