@@ -201,7 +201,7 @@ end
 
 # Tsit5DA: explicit RK stages for addsteps (pure ODE only, ignores algebraic coupling)
 function _ode_addsteps!(
-        k, t, uprev, u, dt, f, p, cache::Tsit5DAConstantCache,
+        k, t, uprev, u, dt, f, p, cache::HybridExplicitImplicitConstantCache,
         always_calc_begin = false, allow_calc_end = true,
         force_calc_end = false
     )
@@ -237,7 +237,7 @@ function _ode_addsteps!(
 end
 
 function _ode_addsteps!(
-        k, t, uprev, u, dt, f, p, cache::Tsit5DACache,
+        k, t, uprev, u, dt, f, p, cache::HybridExplicitImplicitCache,
         always_calc_begin = false, allow_calc_end = true,
         force_calc_end = false
     )

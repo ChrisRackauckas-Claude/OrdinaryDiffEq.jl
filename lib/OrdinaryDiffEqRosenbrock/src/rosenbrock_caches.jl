@@ -964,7 +964,7 @@ end
 
 ### Tsit5DA - hybrid explicit/linear-implicit method for DAEs
 
-struct Tsit5DAConstantCache{TF, UF, Tab, JType, WType, F, AD} <: RosenbrockConstantCache
+struct HybridExplicitImplicitConstantCache{TF, UF, Tab, JType, WType, F, AD} <: RosenbrockConstantCache
     tf::TF
     uf::UF
     tab::Tab
@@ -975,7 +975,7 @@ struct Tsit5DAConstantCache{TF, UF, Tab, JType, WType, F, AD} <: RosenbrockConst
     interp_order::Int
 end
 
-mutable struct Tsit5DACache{
+mutable struct HybridExplicitImplicitCache{
         uType, rateType, uNoUnitsType, JType, WType, TabType,
         TFType, UFType, F, JCType, GCType, RTolType, A,
         StepLimiter, StageLimiter, DVType, AVType,
@@ -1016,7 +1016,7 @@ mutable struct Tsit5DACache{
     W_z::WZType         # -gamma * g_z (used for linear solve)
     linsolve_tmp_z::FZ  # n_g-sized RHS for algebraic solve
 end
-function full_cache(c::Tsit5DACache)
+function full_cache(c::HybridExplicitImplicitCache)
     return [
         c.u, c.uprev, c.dense..., c.du, c.du1, c.du2,
         c.ks..., c.fsalfirst, c.fsallast, c.dT, c.tmp, c.atmp, c.weight, c.linsolve_tmp,
@@ -1024,7 +1024,7 @@ function full_cache(c::Tsit5DACache)
 end
 
 function alg_cache(
-        alg::Tsit5DA, u, rate_prototype, ::Type{uEltypeNoUnits},
+        alg::HybridExplicitImplicitRK, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
         dt, reltol, p, calck,
         ::Val{false}, verbose
@@ -1032,19 +1032,19 @@ function alg_cache(
     tf = TimeDerivativeWrapper(f, u, p)
     uf = UDerivativeWrapper(f, t, p)
     J, W = build_J_W(alg, u, uprev, p, t, dt, f, nothing, uEltypeNoUnits, Val(false))
-    tab = Tsit5DATableau(constvalue(uBottomEltypeNoUnits), constvalue(tTypeNoUnits))
-    return Tsit5DAConstantCache(
+    tab = alg.tab(constvalue(uBottomEltypeNoUnits), constvalue(tTypeNoUnits))
+    return HybridExplicitImplicitConstantCache(
         tf, uf, tab, J, W, nothing, alg_autodiff(alg), size(tab.H, 1)
     )
 end
 
 function alg_cache(
-        alg::Tsit5DA, u, rate_prototype, ::Type{uEltypeNoUnits},
+        alg::HybridExplicitImplicitRK, u, rate_prototype, ::Type{uEltypeNoUnits},
         ::Type{uBottomEltypeNoUnits}, ::Type{tTypeNoUnits}, uprev, uprev2, f, t,
         dt, reltol, p, calck,
         ::Val{true}, verbose
     ) where {uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits}
-    tab = Tsit5DATableau(constvalue(uBottomEltypeNoUnits), constvalue(tTypeNoUnits))
+    tab = alg.tab(constvalue(uBottomEltypeNoUnits), constvalue(tTypeNoUnits))
     num_stages = size(tab.A, 1)
     interp_order = size(tab.H, 1)
 
@@ -1107,7 +1107,7 @@ function alg_cache(
         linsolve_tmp_z = zeros(eltype(u), n_g)
     end
 
-    return Tsit5DACache(
+    return HybridExplicitImplicitCache(
         u, uprev, dense, du, du1, du2, ks,
         fsalfirst, fsallast, dT, J, W, tmp, atmp, weight, tab, tf, uf,
         linsolve_tmp, linsolve, jac_config, grad_config, reltol, alg,

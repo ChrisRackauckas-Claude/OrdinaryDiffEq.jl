@@ -1566,7 +1566,7 @@ end
 # Tsit5DA - hybrid explicit/linear-implicit method for DAEs
 ################################################################################
 
-function initialize!(integrator, cache::Tsit5DAConstantCache)
+function initialize!(integrator, cache::HybridExplicitImplicitConstantCache)
     integrator.kshortsize = size(cache.tab.H, 1)
     integrator.k = typeof(integrator.k)(undef, integrator.kshortsize)
     for i in 1:(integrator.kshortsize)
@@ -1576,7 +1576,7 @@ function initialize!(integrator, cache::Tsit5DAConstantCache)
 end
 
 @muladd function perform_step!(
-        integrator, cache::Tsit5DAConstantCache, repeat_step = false
+        integrator, cache::HybridExplicitImplicitConstantCache, repeat_step = false
     )
     (; t, dt, uprev, u, f, p) = integrator
     (; tf, uf, tab) = cache
@@ -1717,7 +1717,7 @@ end
     return nothing
 end
 
-function initialize!(integrator, cache::Tsit5DACache)
+function initialize!(integrator, cache::HybridExplicitImplicitCache)
     integrator.kshortsize = size(cache.tab.H, 1)
     resize!(integrator.k, integrator.kshortsize)
     for i in 1:(integrator.kshortsize)
@@ -1726,7 +1726,7 @@ function initialize!(integrator, cache::Tsit5DACache)
     return
 end
 
-@muladd function perform_step!(integrator, cache::Tsit5DACache, repeat_step = false)
+@muladd function perform_step!(integrator, cache::HybridExplicitImplicitCache, repeat_step = false)
     (; t, dt, uprev, u, f, p) = integrator
     (;
         du, du1, du2, dT, J, W, uf, tf, ks, linsolve_tmp, jac_config, atmp, weight,
