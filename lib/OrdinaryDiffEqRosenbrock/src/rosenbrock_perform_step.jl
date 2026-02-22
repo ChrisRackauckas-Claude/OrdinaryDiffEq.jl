@@ -1598,8 +1598,8 @@ end
     end
 
     # Compute Jacobian and time derivative for DAE case
-    local g_z, g_y, W_z_factored, dT
-    if has_alg && !repeat_step
+    g_z = g_y = W_z_factored = dT = nothing
+    if has_alg
         tf.u = uprev
         dT = calc_tderivative(integrator, cache)
 
