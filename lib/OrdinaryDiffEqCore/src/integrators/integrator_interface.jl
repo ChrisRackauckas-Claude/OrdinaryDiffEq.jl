@@ -365,11 +365,13 @@ SciMLBase.get_rng(integrator::ODEIntegrator) = integrator.rng
 function SciMLBase.set_rng!(integrator::ODEIntegrator, rng)
     R = typeof(integrator.rng)
     if !isa(rng, R)
-        throw(ArgumentError(
-            "Cannot set RNG of type $(typeof(rng)) on an integrator " *
-            "whose RNG type parameter is $R. " *
-            "Construct a new integrator via `init(prob, alg; rng = your_rng)` instead."
-        ))
+        throw(
+            ArgumentError(
+                "Cannot set RNG of type $(typeof(rng)) on an integrator " *
+                    "whose RNG type parameter is $R. " *
+                    "Construct a new integrator via `init(prob, alg; rng = your_rng)` instead."
+            )
+        )
     end
     integrator.rng = rng
     return nothing

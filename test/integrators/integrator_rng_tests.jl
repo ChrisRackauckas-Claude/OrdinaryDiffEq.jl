@@ -149,11 +149,11 @@ f_iip(du, u, p, t) = (du .= 2 .* u)
         rng = Random.Xoshiro(42)
 
         for (alg, prob) in [
-            (Tsit5(), prob_oop),
-            (Vern7(), prob_oop),
-            (RK4(), prob_iip),
-            (Rosenbrock23(), prob_iip),
-        ]
+                (Tsit5(), prob_oop),
+                (Vern7(), prob_oop),
+                (RK4(), prob_iip),
+                (Rosenbrock23(), prob_iip),
+            ]
             integrator = init(prob, alg; rng)
             @test SciMLBase.has_rng(integrator)
             @test SciMLBase.get_rng(integrator) === rng
