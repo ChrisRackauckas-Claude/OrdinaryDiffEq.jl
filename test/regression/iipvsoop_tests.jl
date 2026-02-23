@@ -119,8 +119,8 @@ sdirk_algs = [
 
 @testset "Algorithm $(nameof(typeof(alg)))" for alg in sdirk_algs
     println(nameof(typeof(alg)))
-    sol_ip = solve(prob_ip, alg, dt = 0.0125)
-    sol_scalar = solve(prob_scalar, alg, dt = 0.0125)
+    sol_ip = solve(prob_ip, alg, dt = 0.0125, adaptive = false)
+    sol_scalar = solve(prob_scalar, alg, dt = 0.0125, adaptive = false)
 
     @test sol_ip(ts, idxs = 1) ≈ sol_scalar(ts)
     @test sol_ip.t ≈ sol_scalar.t && sol_ip[1, :] ≈ sol_scalar.u
@@ -138,8 +138,8 @@ rosenbrock_algs = [
 
 @testset "Algorithm $(nameof(typeof(alg)))" for alg in rosenbrock_algs
     println(nameof(typeof(alg)))
-    sol_ip = solve(prob_ip, alg, dt = 0.0125)
-    sol_scalar = solve(prob_scalar, alg, dt = 0.0125)
+    sol_ip = solve(prob_ip, alg, dt = 0.0125, adaptive = false)
+    sol_scalar = solve(prob_scalar, alg, dt = 0.0125, adaptive = false)
 
     @test sol_ip(ts, idxs = 1) ≈ sol_scalar(ts)
     @test sol_ip.t ≈ sol_scalar.t && sol_ip[1, :] ≈ sol_scalar.u
