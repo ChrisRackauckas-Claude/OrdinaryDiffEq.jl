@@ -37,7 +37,6 @@ DifferentiationInterface = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 ODEProblemLibrary = "fdc4e326-1af4-4b90-96e7-779fcce2daa5"
 AllocCheck = "9b6a8646-10ed-4001-bbdc-1d2f46dfbb1a"
-JLArrays = "27aeb0d3-9eb9-45fb-866b-73c2ecf80fcb"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 
 [compat]
@@ -71,13 +70,12 @@ RecursiveArrayTools = "3.36"
 ODEProblemLibrary = "1"
 OrdinaryDiffEqNonlinearSolve = "1.16.0"
 AllocCheck = "0.2"
-JLArrays = "0.2, 0.3"
 DiffEqBase = "6.194"
 Reexport = "1.2"
 SafeTestsets = "0.1.0"
 
 [targets]
-test = ["DiffEqDevTools", "DifferentiationInterface", "ForwardDiff", "Random", "SafeTestsets", "Test", "ODEProblemLibrary", "NonlinearSolve", "Enzyme", "LinearSolve", "Pkg", "JET", "JLArrays", "Aqua", "AllocCheck"]
+test = ["DiffEqDevTools", "DifferentiationInterface", "ForwardDiff", "Random", "SafeTestsets", "Test", "ODEProblemLibrary", "NonlinearSolve", "Enzyme", "LinearSolve", "Pkg", "JET", "Aqua", "AllocCheck"]
 
 [sources.OrdinaryDiffEqSDIRK]
 path = "../OrdinaryDiffEqSDIRK"

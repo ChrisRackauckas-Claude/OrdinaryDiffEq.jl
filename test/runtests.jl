@@ -224,6 +224,7 @@ end
         @time @safetestset "Scalar indexing bug bypass" include("gpu/hermite_test.jl")
         @time @safetestset "RKIP Semilinear PDE GPU" include("gpu/rkip_semilinear_pde.jl")
         @time @safetestset "simple dae on GPU" include("gpu/simple_dae.jl")
+        @time @safetestset "BDF solvers GPU" include("gpu/bdf_solvers.jl")
     end
 
     if !is_APPVEYOR && GROUP == "QA"
