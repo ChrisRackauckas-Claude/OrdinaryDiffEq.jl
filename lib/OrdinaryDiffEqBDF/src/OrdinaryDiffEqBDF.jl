@@ -48,7 +48,7 @@ else
     end
 end
 
-@static if Base.pkgversion(OrdinaryDiffEqCore) >= v"3.9"
+@static if Base.pkgversion(OrdinaryDiffEqCore) >= v"3.10"
     @eval begin
         import OrdinaryDiffEqCore: get_current_qmax
     end
