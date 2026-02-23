@@ -13,14 +13,14 @@
 ####################################################################
 # QNDF: Rebuild backward differences for interpolation
 #
-# Layout: k[1..max_order] = backward differences D[:,j]
+# Layout: k[1..max_order] = backward differences D[j]
 # Interpolation: p(Θ) = y₁ + Σ φ_j(Θ-1) * k[j]
 # where y₁ = u (step endpoint).
 #
 # After a callback truncates the step and modifies u, we rebuild k
 # using the cache's D matrix for higher-order accuracy. The first
 # difference k[1] is updated to u - uprev so that the interpolant
-# passes through the correct endpoints; higher differences D[:,j≥2]
+# passes through the correct endpoints; higher differences D[j≥2]
 # are preserved from the completed step.
 ####################################################################
 
@@ -39,7 +39,7 @@ function _ode_addsteps!(
             k[j] = u isa Number ? (u - uprev) : @.. u - uprev
         elseif j <= order
             # Preserve higher-order differences from the completed step
-            k[j] = u isa Number ? D[j] : _reshape(D[:, j], axes(u))
+            k[j] = D[j]
         else
             k[j] = zero(u)
         end
@@ -59,7 +59,7 @@ function _ode_addsteps!(
     @.. broadcast = false k[1] = u - uprev
     for j in 2:length(k)
         if j <= order
-            @views copyto!(_vec(k[j]), D[:, j])
+            copyto!(k[j], D[j])
         else
             fill!(k[j], zero(eltype(u)))
         end
@@ -77,7 +77,7 @@ end
 # After a callback truncates the step to dt (= t_event - t_prev)
 # and modifies u, we rebuild k using the cache's u_history and ts:
 #   k[1] = u (post-callback) at Θ = 1
-#   k[1+j] = u_history[:,j] (past solutions, still valid)
+#   k[1+j] = u_history[j] (past solutions, still valid)
 #   k[half+1] = 1
 #   k[half+1+j] = (ts[j] - t) / dt  (recomputed for truncated dt)
 #
@@ -112,7 +112,7 @@ function _ode_addsteps!(
         k[half + 1] = fill(one(t), size(u))
         for j in 1:(half - 1)
             if j <= order
-                k[1 + j] = _reshape(copy(view(u_history, :, j)), axes(u))
+                k[1 + j] = copy(u_history[j])
                 k[half + 1 + j] = fill((ts[j] - t) / dt, size(u))
             else
                 k[1 + j] = zero(u)
@@ -137,7 +137,7 @@ function _ode_addsteps!(
     fill!(k[half + 1], one(eltype(u)))
     for j in 1:(half - 1)
         if j <= order
-            @views copyto!(_vec(k[1 + j]), u_history[:, j])
+            copyto!(k[1 + j], u_history[j])
             fill!(k[half + 1 + j], (ts[j] - t) / dt)
         else
             fill!(k[1 + j], zero(eltype(u)))
