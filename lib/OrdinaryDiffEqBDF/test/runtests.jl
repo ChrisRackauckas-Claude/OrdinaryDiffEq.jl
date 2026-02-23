@@ -13,6 +13,8 @@ if TEST_GROUP != "QA"
     @time @safetestset "BDF Inference Tests" include("inference_tests.jl")
     @time @safetestset "BDF Convergence Tests" include("bdf_convergence_tests.jl")
     @time @safetestset "BDF Regression Tests" include("bdf_regression_tests.jl")
+
+    @time @safetestset "GPU and Static Array Tests" include("gpu_static_array_tests.jl")
 end
 
 # Run QA tests (JET, Aqua, AllocCheck) - skip on pre-release Julia
