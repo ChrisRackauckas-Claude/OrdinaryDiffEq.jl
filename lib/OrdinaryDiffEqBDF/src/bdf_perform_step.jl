@@ -792,7 +792,10 @@ function perform_step!(
     κlist = alg.kappa
     κ = κlist[k]
     if cache.consfailcnt > 0
-        copyto!(D, cache.prevD)
+        # Deep copy to avoid aliasing: D[i] and prevD[i] must not share arrays
+        for i in eachindex(D)
+            D[i] = copy(cache.prevD[i])
+        end
     end
     if dt != dtprev || cache.prevorder != k
         ρ = dt / dtprev
@@ -871,7 +874,10 @@ function perform_step!(
         end
     end
     if integrator.EEst <= one(integrator.EEst)
-        copyto!(cache.prevD, D)
+        # Deep copy to avoid aliasing: prevD[i] must not share arrays with D[i]
+        for i in eachindex(D)
+            cache.prevD[i] = copy(D[i])
+        end
         cache.dtprev = dt
         cache.prevorder = k
         if integrator.opts.dense
@@ -882,7 +888,8 @@ function perform_step!(
     if integrator.opts.calck
         for j in 1:max_order
             if j <= k
-                integrator.k[j] = D[j]
+                # Deep copy: k[j] must not alias D[j] since update_D! mutates in-place
+                integrator.k[j] = copy(D[j])
             else
                 integrator.k[j] = zero(u)
             end
