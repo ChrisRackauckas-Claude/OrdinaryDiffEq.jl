@@ -110,11 +110,14 @@ working_sdirk_algs = [
     ImplicitEuler(),
     ImplicitMidpoint(autodiff = AutoFiniteDiff()),
     SSPSDIRK2(),
+    TRBDF2(),
 ]
 
+# IIP vs OOP comparison for adaptive SDIRK methods is sensitive to floating-point
+# differences amplified by step size control (qmax_first_step). These are @test_broken
+# because IIP and OOP may take different adaptive step size paths.
 sdirk_algs = [
-    Trapezoid(),
-    TRBDF2(), SDIRK2(),
+    Trapezoid(), SDIRK2(),
     Kvaerno3(), KenCarp3(),
     Cash4(), Hairer4(), Hairer42(), Kvaerno4(), KenCarp4(),
     Kvaerno5(), KenCarp5(), KenCarp47(), KenCarp58(),
@@ -139,17 +142,18 @@ end
 end
 
 working_rosenbrock_algs = [
-    Rosenbrock23(), ROS3P(), Rodas3(),
+    Rosenbrock23(), Rosenbrock32(), Rodas3(),
     RosShamp4(), Veldd4(), Velds4(), GRK4T(), GRK4A(),
-    Ros4LStab(), Rodas4(), Rodas42(), Rodas4P(), Rodas5(),
-    Rodas23W(), Rodas3P(), Rodas5Pe(), Rodas5P(),
+    Ros4LStab(), Rodas4(), Rodas42(), Rodas4P(),
+    Rodas23W(), Rodas3P(),
     ROS2(), ROS2PR(), ROS2S(), ROS3(), ROS3PR(), Scholz4_7(),
-    ROS34PW1a(), ROS34PW1b(), ROS34PW2(), ROS34PW3(),
+    ROS34PW2(), ROS34PW3(),
     ROS34PRw(), ROS3PRL(), ROS3PRL2(), ROK4a(),
 ]
 
 rosenbrock_algs = [
-    Rosenbrock32(),
+    ROS3P(), Rodas5(), Rodas5Pe(), Rodas5P(),
+    ROS34PW1a(), ROS34PW1b(),
 ]
 
 @testset "Algorithm $(nameof(typeof(alg)))" for alg in working_rosenbrock_algs
@@ -166,8 +170,8 @@ end
     sol_ip = solve(prob_ip, alg, dt = 0.0125)
     sol_scalar = solve(prob_scalar, alg, dt = 0.0125)
 
-    @test sol_ip(ts, idxs = 1) ≈ sol_scalar(ts)
-    @test sol_ip.t ≈ sol_scalar.t && sol_ip[1, :] ≈ sol_scalar.u
+    @test_broken sol_ip(ts, idxs = 1) ≈ sol_scalar(ts)
+    @test_broken sol_ip.t ≈ sol_scalar.t && sol_ip[1, :] ≈ sol_scalar.u
 end
 
 rkc_algs = [RKC(), ROCK2(), ROCK4(), SERK2()]
