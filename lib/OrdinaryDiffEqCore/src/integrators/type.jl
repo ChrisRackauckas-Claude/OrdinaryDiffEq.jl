@@ -12,6 +12,7 @@ mutable struct DEOptions{
     gamma::QT
     qmax::QT
     qmin::QT
+    qmax_first_step::QT
     qsteady_max::QT
     qsteady_min::QT
     qoldinit::QT

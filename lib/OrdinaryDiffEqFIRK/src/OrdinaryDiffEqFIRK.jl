@@ -16,7 +16,7 @@ import OrdinaryDiffEqCore: alg_order, calculate_residuals!,
     step_reject_controller!,
     PredictiveController, alg_can_repeat_jac, NewtonAlgorithm,
     fac_default_gamma,
-    get_current_adaptive_order, get_fsalfirstlast,
+    get_current_adaptive_order, get_fsalfirstlast, get_current_qmax,
     isfirk, generic_solver_docstring, _bool_to_ADType,
     _process_AD_choice, LinearAliasSpecifier
 using MuladdMacro, DiffEqBase, RecursiveArrayTools, Polyester

@@ -32,7 +32,7 @@ function step_accept_controller!(integrator, cache::Union{QNDFCache, QNDFConstan
     integrator.cache.consfailcnt = 0
     integrator.cache.nconsteps += 1
     if iszero(integrator.EEst)
-        return integrator.dt * integrator.opts.qmax
+        return integrator.dt * get_current_qmax(integrator, integrator.opts.qmax)
     else
         est = integrator.EEst
         estₖ₋₁ = integrator.cache.EEst1
@@ -287,7 +287,7 @@ function stepsize_controller!(
         cache.order = k
     end
     if iszero(terk)
-        q = inv(integrator.opts.qmax)
+        q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
         q = ((2 * terk / (k + 1))^(1 / (k + 1)))
     end
@@ -450,7 +450,7 @@ function stepsize_controller!(
         cache.order = k
     end
     if iszero(terk)
-        q = inv(integrator.opts.qmax)
+        q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
         q = ((2 * terk / (k + 1))^(1 / (k + 1)))
     end
