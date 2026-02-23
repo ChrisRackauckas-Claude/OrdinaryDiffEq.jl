@@ -109,6 +109,7 @@ See also: https://github.com/SciML/DifferentialEquations.jl/issues/299
                 hasfield(typeof(ctrl.controller), :qmax_first_step)
             return ctrl.controller.qmax_first_step
         end
+        return typeof(qmax)(10000)
     end
     return qmax
 end
