@@ -38,6 +38,13 @@ sol = solve(prob, RDPK3SpFSAL49())
         @test sol_default.retcode == ReturnCode.Success
         @test isapprox(sol_default[end], exp(-100.0), atol = 1.0e-6)
 
+        # With a New* controller (default qmax_first_step=10000),
+        # the solution should also be correct
+        ctrl_new = OrdinaryDiffEqCore.NewPIController(alg)
+        sol_new = solve(prob_exp, alg, controller = ctrl_new)
+        @test sol_new.retcode == ReturnCode.Success
+        @test isapprox(sol_new[end], exp(-100.0), atol = 1.0e-6)
+
         # With a very restrictive qmax_first_step (same as normal qmax),
         # the solution should still be correct
         ctrl_restricted = OrdinaryDiffEqCore.NewPIController(alg, qmax_first_step = 10)
@@ -46,13 +53,21 @@ sol = solve(prob, RDPK3SpFSAL49())
         @test isapprox(sol_restricted[end], exp(-100.0), atol = 1.0e-6)
     end
 
-    # Test get_current_qmax helper directly
-    integrator3 = init(prob_exp, Tsit5())
-    @test integrator3.success_iter == 0
-    @test OrdinaryDiffEqCore.get_current_qmax(integrator3, 10.0) == 10000.0
-    # Simulate a successful step
-    integrator3.success_iter = 1
-    @test OrdinaryDiffEqCore.get_current_qmax(integrator3, 10.0) == 10.0
+    # Test get_current_qmax with legacy controller (no qmax_first_step behavior)
+    integrator_legacy = init(prob_exp, Tsit5())
+    @test integrator_legacy.success_iter == 0
+    # Legacy controllers: first step uses normal qmax (no special behavior)
+    @test OrdinaryDiffEqCore.get_current_qmax(integrator_legacy, 10.0) == 10.0
+    integrator_legacy.success_iter = 1
+    @test OrdinaryDiffEqCore.get_current_qmax(integrator_legacy, 10.0) == 10.0
+
+    # Test get_current_qmax with New* controller (qmax_first_step=10000 by default)
+    ctrl_new = OrdinaryDiffEqCore.NewPIController(Tsit5())
+    integrator_new = init(prob_exp, Tsit5(), controller = ctrl_new)
+    @test integrator_new.success_iter == 0
+    @test OrdinaryDiffEqCore.get_current_qmax(integrator_new, 10.0) == 10000.0
+    integrator_new.success_iter = 1
+    @test OrdinaryDiffEqCore.get_current_qmax(integrator_new, 10.0) == 10.0
 
     # Test that all New* controllers have qmax_first_step field
     ctrl_i = OrdinaryDiffEqCore.NewIController(Tsit5(), qmax_first_step = 200)
