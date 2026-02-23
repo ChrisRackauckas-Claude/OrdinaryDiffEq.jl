@@ -19,7 +19,7 @@ import OrdinaryDiffEqCore: alg_order, calculate_residuals!,
     stepsize_controller!,
     step_accept_controller!,
     step_reject_controller!, post_newton_controller!,
-    u_modified!, DAEAlgorithm, _unwrap_val, DummyController, get_current_qmax,
+    u_modified!, DAEAlgorithm, _unwrap_val, DummyController,
     get_fsalfirstlast, generic_solver_docstring, _bool_to_ADType,
     _process_AD_choice,
     _ode_interpolant, _ode_interpolant!, has_stiff_interpolation,
@@ -45,6 +45,17 @@ import OrdinaryDiffEqCore
 else
     @eval begin
         import OrdinaryDiffEqCore: default_controller
+    end
+end
+
+@static if Base.pkgversion(OrdinaryDiffEqCore) >= v"3.9"
+    @eval begin
+        import OrdinaryDiffEqCore: get_current_qmax
+    end
+else
+    @eval begin
+        # Fallback for older OrdinaryDiffEqCore: no first-step qmax behavior
+        @inline get_current_qmax(integrator, qmax) = qmax
     end
 end
 

@@ -93,9 +93,9 @@ end
 
 Return the effective maximum step size growth factor for the current step.
 On the first step (before any successful steps), returns `qmax_first_step`
-from the integrator options, which defaults to 10000. This allows a much
-larger step size increase on the first step since the initial dt from the
-automatic step size selection algorithm is only approximate.
+from the controller (defaulting to 10000). This allows a much larger step
+size increase on the first step since the initial dt from the automatic
+step size selection algorithm is only approximate.
 
 This mirrors the behavior of Sundials CVODE, which limits h_new/h_old to 10
 on normal steps but 10^4 on the first step.
@@ -103,7 +103,15 @@ on normal steps but 10^4 on the first step.
 See also: https://github.com/SciML/DifferentialEquations.jl/issues/299
 """
 @inline function get_current_qmax(integrator, qmax)
-    return integrator.success_iter == 0 ? integrator.opts.qmax_first_step : qmax
+    if integrator.success_iter == 0
+        ctrl = integrator.opts.controller
+        if hasfield(typeof(ctrl), :controller) &&
+                hasfield(typeof(ctrl.controller), :qmax_first_step)
+            return ctrl.controller.qmax_first_step
+        end
+        return typeof(qmax)(10000)
+    end
+    return qmax
 end
 
 reset_alg_dependent_opts!(controller::AbstractController, alg1, alg2) = nothing

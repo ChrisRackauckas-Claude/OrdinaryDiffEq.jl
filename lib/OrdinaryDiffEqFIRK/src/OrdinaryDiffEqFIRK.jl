@@ -16,7 +16,7 @@ import OrdinaryDiffEqCore: alg_order, calculate_residuals!,
     step_reject_controller!,
     PredictiveController, alg_can_repeat_jac, NewtonAlgorithm,
     fac_default_gamma,
-    get_current_adaptive_order, get_fsalfirstlast, get_current_qmax,
+    get_current_adaptive_order, get_fsalfirstlast,
     isfirk, generic_solver_docstring, _bool_to_ADType,
     _process_AD_choice, LinearAliasSpecifier
 using MuladdMacro, DiffEqBase, RecursiveArrayTools, Polyester
@@ -39,6 +39,17 @@ import ADTypes: AutoForwardDiff, AbstractADType
 @static if Base.pkgversion(OrdinaryDiffEqCore) >= v"3.4"
     @eval begin
         import OrdinaryDiffEqCore: PredictiveControllerCache, NewPredictiveController
+    end
+end
+
+@static if Base.pkgversion(OrdinaryDiffEqCore) >= v"3.9"
+    @eval begin
+        import OrdinaryDiffEqCore: get_current_qmax
+    end
+else
+    @eval begin
+        # Fallback for older OrdinaryDiffEqCore: no first-step qmax behavior
+        @inline get_current_qmax(integrator, qmax) = qmax
     end
 end
 

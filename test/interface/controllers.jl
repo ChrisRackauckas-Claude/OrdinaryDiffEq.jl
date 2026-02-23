@@ -28,15 +28,9 @@ sol = solve(prob, RDPK3SpFSAL49())
     # Exponential decay - the auto dt init may pick a very conservative initial dt
     prob_exp = ODEProblem((u, p, t) -> -u, 1.0, (0.0, 100.0))
 
-    # Default qmax_first_step should be 10000 (set via controller -> DEOptions)
-    integrator = init(prob_exp, Tsit5())
-    @test integrator.opts.qmax_first_step == 10000.0
-
     # Custom qmax_first_step via New* controller API
     ctrl = OrdinaryDiffEqCore.NewPIController(Tsit5(), qmax_first_step = 500)
     @test ctrl.qmax_first_step == 500.0
-    integrator2 = init(prob_exp, Tsit5(), controller = ctrl)
-    @test integrator2.opts.qmax_first_step == 500.0
 
     # Verify that qmax_first_step=10000 still produces correct solutions
     for alg in (Tsit5(), Vern7(), RDPK3SpFSAL49())

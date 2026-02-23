@@ -522,7 +522,6 @@ function SciMLBase.__init(
         qsteady_max = hasfield(typeof(controller), :qsteady_max) ? controller.qsteady_max : qsteady_max_default(alg)
         qoldinit = hasfield(typeof(controller), :qoldinit) ? controller.qoldinit : (anyadaptive(alg) ? 1 // 10^4 : 0)
     end
-    qmax_first_step = convert(QT, hasfield(typeof(controller), :qmax_first_step) ? controller.qmax_first_step : 10000)
 
     EEstT = if tTypeNoUnits <: Integer
         promote_type(typeof(qmin), typeof(qmax))
@@ -567,7 +566,6 @@ function SciMLBase.__init(
         QT(gamma),
         QT(qmax),
         QT(qmin),
-        QT(qmax_first_step),
         QT(qsteady_max),
         QT(qsteady_min),
         QT(qoldinit),
