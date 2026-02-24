@@ -1179,7 +1179,7 @@ function perform_step!(
         repeat_step = false
     ) where {max_order}
     (;
-        ts, u_history, order, u_corrector, bdf_coeffs, r, nlsolver,
+        ts, u_history, order, u_corrector, bdf_coeffs, r, weights, nlsolver,
         ts_tmp, iters_from_event, nconsteps,
     ) = cache
     (; t, dt, u, f, p, uprev) = integrator
@@ -1210,10 +1210,7 @@ function perform_step!(
 
     u₀ = zero(u)
     if iters_from_event >= 1
-        u₀ = _ode_interpolant(
-            one(t), dt, uprev, uprev,
-            integrator.k, cache, nothing, Val{0}, nothing
-        )
+        u₀ = calc_history_lagrange_interp(k, weights, tdt, ts, u_history, zero(u))
     else
         u₀ = u
     end
@@ -1229,21 +1226,10 @@ function perform_step!(
             u_corrector[i] = zero(u_corrector[i])
         end
     end
-    if u isa Number
-        for i in 1:(k - 1)
-            u_corrector[i] = _ode_interpolant(
-                oftype(t, -i), dt, uprev, uprev,
-                integrator.k, cache, nothing, Val{0}, nothing
-            )
-        end
-    else
-        for i in 1:(k - 1)
-            val = _ode_interpolant(
-                oftype(t, -i), dt, uprev, uprev,
-                integrator.k, cache, nothing, Val{0}, nothing
-            )
-            u_corrector[i] = val
-        end
+    for i in 1:(k - 1)
+        u_corrector[i] = calc_history_lagrange_interp(
+            k, weights, t - i * dt, ts, u_history, zero(u)
+        )
     end
     if u isa Number
         tmp = -uprev * bdf_coeffs[k, 2]
@@ -1405,7 +1391,7 @@ function perform_step!(
         repeat_step = false
     ) where {max_order}
     (;
-        ts, u_history, order, u_corrector, bdf_coeffs, r, nlsolver, terk_tmp,
+        ts, u_history, order, u_corrector, bdf_coeffs, r, weights, nlsolver, terk_tmp,
         terkp1_tmp, atmp, tmp, u₀, ts_tmp, step_limiter!,
     ) = cache
     (; t, dt, u, f, p, uprev) = integrator
@@ -1430,10 +1416,7 @@ function perform_step!(
 
     @.. broadcast = false u₀ = zero(u)
     if cache.iters_from_event >= 1
-        _ode_interpolant!(
-            u₀, one(t), dt, uprev, uprev,
-            integrator.k, cache, nothing, Val{0}, nothing
-        )
+        calc_history_lagrange_interp!(k, weights, tdt, ts, u_history, u₀)
     else
         @.. broadcast = false u₀ = u
     end
@@ -1445,11 +1428,9 @@ function perform_step!(
         fill!(h, zero(eltype(h)))
     end
     for i in 1:(k - 1)
-        _ode_interpolant!(
-            terk_tmp, oftype(t, -i), dt, uprev, uprev,
-            integrator.k, cache, nothing, Val{0}, nothing
+        calc_history_lagrange_interp!(
+            k, weights, t - i * dt, ts, u_history, u_corrector[i]
         )
-        copyto!(u_corrector[i], terk_tmp)
     end
     @.. broadcast = false tmp = -uprev * bdf_coeffs[k, 2]
     for i in 1:(k - 1)

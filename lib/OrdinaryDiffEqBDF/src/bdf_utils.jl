@@ -140,6 +140,54 @@ function calc_finite_difference_weights(ts, t, order, ::Val{N}) where {N}
     return SArray(c)
 end
 
+# Evaluate the degree-`order` Lagrange interpolant through `u_history[1:order+1]`
+# at time `t_eval`, with nodes at `ts[1:order+1]`.
+function calc_history_lagrange_interp(order, weights, t_eval, ts, u_history, u)
+    n = order + 1
+    @inbounds for j in 1:n
+        Lj = one(t_eval)
+        tj = ts[j]
+        for m in 1:n
+            m == j && continue
+            Lj *= (t_eval - ts[m]) / (tj - ts[m])
+        end
+        weights[j] = Lj
+    end
+
+    if u isa Number
+        out = zero(u)
+        @inbounds for j in 1:n
+            out += weights[j] * u_history[j]
+        end
+        return out
+    end
+
+    out = @.. weights[1] * u_history[1]
+    @inbounds for j in 2:n
+        out = @.. out + weights[j] * u_history[j]
+    end
+    return out
+end
+
+function calc_history_lagrange_interp!(order, weights, t_eval, ts, u_history, out)
+    n = order + 1
+    @inbounds for j in 1:n
+        Lj = one(t_eval)
+        tj = ts[j]
+        for m in 1:n
+            m == j && continue
+            Lj *= (t_eval - ts[m]) / (tj - ts[m])
+        end
+        weights[j] = Lj
+    end
+
+    fill!(out, zero(eltype(out)))
+    @inbounds for j in 1:n
+        @.. broadcast = false out = out + weights[j] * u_history[j]
+    end
+    return out
+end
+
 function reinitFBDF!(integrator, cache)
     # This function is used to initialize arrays that store past history information.
     # It will be used in the first-time step advancing and event handling.

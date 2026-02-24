@@ -22,9 +22,8 @@ prob_gpu = ODEProblem(f_gpu!, copy(u0_gpu), tspan, p_gpu)
     @test isapprox(Array(sol_gpu.u[end]), sol_cpu.u[end], rtol = 1.0e-5)
 end
 
-# FBDF GPU requires fixing scalar indexing in bdf_interpolants.jl (_get_theta)
 @testset "FBDF GPU" begin
-    @test_broken begin
+    @test begin
         sol_gpu = solve(prob_gpu, FBDF(), abstol = 1.0e-8, reltol = 1.0e-8)
         sol_cpu = solve(prob_cpu, FBDF(), abstol = 1.0e-8, reltol = 1.0e-8)
         isapprox(Array(sol_gpu.u[end]), sol_cpu.u[end], rtol = 1.0e-5)
