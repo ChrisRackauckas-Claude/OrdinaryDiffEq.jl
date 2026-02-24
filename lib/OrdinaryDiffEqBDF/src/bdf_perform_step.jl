@@ -1156,15 +1156,14 @@ end
 end
 
 function initialize!(integrator, cache::FBDFConstantCache{max_order}) where {max_order}
-    integrator.kshortsize = 2 * (max_order + 1)
+    integrator.kshortsize = max_order + 1
     integrator.k = typeof(integrator.k)(undef, integrator.kshortsize)
     integrator.fsalfirst = integrator.f(integrator.uprev, integrator.p, integrator.t) # Pre-start fsal
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
 
-    # k[1..half] = solution values, k[half+1..2*half] = Θ positions
-    # where half = max_order + 1
+    # k[1..max_order+1] = solution values; Θ positions stored in cache.k_thetas
     integrator.fsallast = zero(integrator.fsalfirst)
-    for i in 1:(2 * (max_order + 1))
+    for i in 1:(max_order + 1)
         integrator.k[i] = zero(integrator.fsalfirst)
     end
 
@@ -1190,20 +1189,14 @@ function perform_step!(
 
     # Rebuild integrator.k from u_history/ts for predictor/corrector
     # k+1 data points: u_history[:,1..k+1] at Θ = (ts[j]-t)/dt
-    half = max_order + 1
     if iters_from_event >= 1
         for j in 1:(max_order + 1)
             if j <= k + 1
-                if u isa Number
-                    integrator.k[j] = u_history[j]
-                    integrator.k[half + j] = (ts[j] - t) / dt
-                else
-                    integrator.k[j] = copy(u_history[j])
-                    integrator.k[half + j] = fill((ts[j] - t) / dt, size(u))
-                end
+                integrator.k[j] = u isa Number ? u_history[j] : copy(u_history[j])
+                cache.k_thetas[j] = (ts[j] - t) / dt
             else
                 integrator.k[j] = zero(u)
-                integrator.k[half + j] = zero(u)
+                cache.k_thetas[j] = zero(t)
             end
         end
     end
@@ -1357,27 +1350,15 @@ function perform_step!(
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
     if integrator.opts.calck
         # Store dense output data: k[1]=u_new at Θ=1, k[1+j]=u_history[:,j]
-        half = max_order + 1
-        if u isa Number
-            integrator.k[1] = u
-            integrator.k[half + 1] = one(t)
-        else
-            integrator.k[1] = copy(u)
-            integrator.k[half + 1] = fill(one(t), size(u))
-        end
+        integrator.k[1] = u isa Number ? u : copy(u)
+        cache.k_thetas[1] = one(t)
         for j in 1:max_order
             if j <= k
-                if u isa Number
-                    integrator.k[1 + j] = u_history[j]
-                else
-                    integrator.k[1 + j] = copy(u_history[j])
-                end
-                integrator.k[half + 1 + j] = (u isa Number) ?
-                    (ts[j] - t) / dt :
-                    fill((ts[j] - t) / dt, size(u))
+                integrator.k[1 + j] = u isa Number ? u_history[j] : copy(u_history[j])
+                cache.k_thetas[1 + j] = (ts[j] - t) / dt
             else
                 integrator.k[1 + j] = zero(u)
-                integrator.k[half + 1 + j] = zero(u)
+                cache.k_thetas[1 + j] = zero(t)
             end
         end
     end
@@ -1385,10 +1366,10 @@ function perform_step!(
 end
 
 function initialize!(integrator, cache::FBDFCache{max_order}) where {max_order}
-    integrator.kshortsize = 2 * (max_order + 1)
+    integrator.kshortsize = max_order + 1
 
     resize!(integrator.k, integrator.kshortsize)
-    for i in 1:(2 * (max_order + 1))
+    for i in 1:(max_order + 1)
         integrator.k[i] = cache.dense[i]
     end
     integrator.f(integrator.fsalfirst, integrator.uprev, integrator.p, integrator.t)
@@ -1415,15 +1396,14 @@ function perform_step!(
     tdt = t + dt
 
     # Rebuild integrator.k from u_history/ts for predictor/corrector
-    half = max_order + 1
     if cache.iters_from_event >= 1
         for j in 1:(max_order + 1)
             if j <= k + 1
                 copyto!(integrator.k[j], u_history[j])
-                fill!(integrator.k[half + j], (ts[j] - t) / dt)
+                cache.k_thetas[j] = (ts[j] - t) / dt
             else
                 fill!(integrator.k[j], zero(eltype(u)))
-                fill!(integrator.k[half + j], zero(eltype(u)))
+                cache.k_thetas[j] = zero(t)
             end
         end
     end
@@ -1546,16 +1526,15 @@ function perform_step!(
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
     if integrator.opts.calck
         # Store dense output data: k[1]=u_new at Θ=1, k[1+j]=u_history[:,j]
-        half = max_order + 1
         @.. broadcast = false integrator.k[1] = u
-        fill!(integrator.k[half + 1], one(eltype(u)))
+        cache.k_thetas[1] = one(eltype(u))
         for j in 1:max_order
             if j <= k
                 copyto!(integrator.k[1 + j], u_history[j])
-                fill!(integrator.k[half + 1 + j], (ts[j] - t) / dt)
+                cache.k_thetas[1 + j] = (ts[j] - t) / dt
             else
                 fill!(integrator.k[1 + j], zero(eltype(u)))
-                fill!(integrator.k[half + 1 + j], zero(eltype(u)))
+                cache.k_thetas[1 + j] = zero(t)
             end
         end
     end

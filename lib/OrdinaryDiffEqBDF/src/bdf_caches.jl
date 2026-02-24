@@ -610,6 +610,7 @@ end
     r::rType
     weights::wType
     iters_from_event::Int
+    k_thetas::tsType
 end
 
 function alg_cache(
@@ -657,11 +658,12 @@ function alg_cache(
     qwait = 3 # order + 2, matching nconsteps >= order + 2 for failure-free runs
     t_old = zero(t)
     iters_from_event = 0
+    k_thetas = zeros(typeof(t), max_order + 1)
 
     return FBDFConstantCache(
         nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
         u_corrector, bdf_coeffs, Val(MO), nconsteps, consfailcnt, qwait, terkm2,
-        terkm1, terk, terkp1, r, weights, iters_from_event
+        terkm1, terk, terkp1, r, weights, iters_from_event, k_thetas
     )
 end
 
@@ -698,6 +700,7 @@ end
     equi_ts::tsType
     iters_from_event::Int
     dense::Vector{uType}
+    k_thetas::tsType
     step_limiter!::StepLimiter
 end
 
@@ -755,12 +758,13 @@ function alg_cache(
     ts_tmp = similar(ts)
     iters_from_event = 0
 
-    dense = [zero(u) for _ in 1:(2 * (max_order + 1))]
+    dense = [zero(u) for _ in 1:(max_order + 1)]
+    k_thetas = zeros(typeof(t), max_order + 1)
 
     return FBDFCache(
         fsalfirst, nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
         u_corrector, u₀, bdf_coeffs, Val(MO), nconsteps, consfailcnt, qwait, tmp, atmp,
         terkm2, terkm1, terk, terkp1, terk_tmp, terkp1_tmp, r, weights, equi_ts,
-        iters_from_event, dense, alg.step_limiter!
+        iters_from_event, dense, k_thetas, alg.step_limiter!
     )
 end

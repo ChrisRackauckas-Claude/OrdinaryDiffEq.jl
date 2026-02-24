@@ -70,19 +70,13 @@ end
 ####################################################################
 # FBDF / DFBDF: Rebuild Lagrange interpolation nodes
 #
-# Layout: k has 2*half entries where half = length(k)÷2.
-#   k[1..half]       = solution values at nodes
-#   k[half+1..2*half] = corresponding Θ positions
+# k[1..n] = solution values at nodes
+# cache.k_thetas[1..n] = corresponding scalar Θ positions
 #
 # After a callback truncates the step to dt (= t_event - t_prev)
 # and modifies u, we rebuild k using the cache's u_history and ts:
-#   k[1] = u (post-callback) at Θ = 1
-#   k[1+j] = u_history[j] (past solutions, still valid)
-#   k[half+1] = 1
-#   k[half+1+j] = (ts[j] - t) / dt  (recomputed for truncated dt)
-#
-# This preserves high-order Lagrange interpolation accuracy through
-# the actual historical solution values with correct Θ normalization.
+#   k[1] = u (post-callback),           Θ = 1
+#   k[1+j] = u_history[j],              Θ = (ts[j] - t) / dt
 ####################################################################
 
 # FBDF/DFBDF ConstantCache: out-of-place k entries
@@ -94,30 +88,16 @@ function _ode_addsteps!(
     )
     always_calc_begin || return nothing
     (; u_history, ts, order) = cache
-    half = length(k) ÷ 2
-    if u isa Number
-        k[1] = u
-        k[half + 1] = one(t)
-        for j in 1:(half - 1)
-            if j <= order
-                k[1 + j] = u_history[j]
-                k[half + 1 + j] = (ts[j] - t) / dt
-            else
-                k[1 + j] = zero(u)
-                k[half + 1 + j] = zero(t)
-            end
-        end
-    else
-        k[1] = copy(u)
-        k[half + 1] = fill(one(t), size(u))
-        for j in 1:(half - 1)
-            if j <= order
-                k[1 + j] = copy(u_history[j])
-                k[half + 1 + j] = fill((ts[j] - t) / dt, size(u))
-            else
-                k[1 + j] = zero(u)
-                k[half + 1 + j] = fill(zero(t), size(u))
-            end
+    n = length(k)
+    k[1] = u isa Number ? u : copy(u)
+    cache.k_thetas[1] = one(t)
+    for j in 1:(n - 1)
+        if j <= order
+            k[1 + j] = u isa Number ? u_history[j] : copy(u_history[j])
+            cache.k_thetas[1 + j] = (ts[j] - t) / dt
+        else
+            k[1 + j] = zero(u)
+            cache.k_thetas[1 + j] = zero(t)
         end
     end
     return nothing
@@ -132,16 +112,16 @@ function _ode_addsteps!(
     )
     always_calc_begin || return nothing
     (; u_history, ts, order) = cache
-    half = length(k) ÷ 2
+    n = length(k)
     @.. broadcast = false k[1] = u
-    fill!(k[half + 1], one(eltype(u)))
-    for j in 1:(half - 1)
+    cache.k_thetas[1] = one(eltype(u))
+    for j in 1:(n - 1)
         if j <= order
             copyto!(k[1 + j], u_history[j])
-            fill!(k[half + 1 + j], (ts[j] - t) / dt)
+            cache.k_thetas[1 + j] = (ts[j] - t) / dt
         else
             fill!(k[1 + j], zero(eltype(u)))
-            fill!(k[half + 1 + j], zero(eltype(u)))
+            cache.k_thetas[1 + j] = zero(eltype(u))
         end
     end
     return nothing

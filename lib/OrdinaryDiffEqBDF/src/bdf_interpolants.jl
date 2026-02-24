@@ -198,58 +198,45 @@ end
 ####################################################################
 # FBDF / DFBDF: Non-equidistant Lagrange interpolation
 #
-# All data lives in k. y₀ and y₁ are NOT used.
+# Solution data lives in k; Θ positions live in cache.k_thetas.
+# y₀ and y₁ are NOT used.
 #
-# Layout: k has 2*half entries where half = length(k)÷2.
-#   k[1..half] = solution values at past/current times
-#   k[half+1..2*half] = corresponding Θ positions
-#
-# For scalar u, k[half+j] is the Θ value directly.
-# For vector u, k[half+j] is filled with the same Θ value; use first().
+# Layout:
+#   k[1..n]           = solution values at past/current times
+#   cache.k_thetas[1..n] = corresponding scalar Θ positions
 #
 # For dense output (stored in calck block at step end):
 #   k[1] = u_new (step end solution), Θ₁ = 1
-#   k[1+j] = u_history[:,j],          Θ_{1+j} = (ts[j] - t) / dt
+#   k[1+j] = u_history[j],            Θ_{1+j} = (ts[j] - t) / dt
 #   for j = 1..order. Total: order+1 data points.
 #
 # For predictor (rebuilt at step start):
-#   k[j] = u_history[:,j],            Θ_j = (ts[j] - t) / dt
+#   k[j] = u_history[j],              Θ_j = (ts[j] - t) / dt
 #   for j = 1..order+1. Total: order+1 data points.
 #
 # General Lagrange formula:
 #   p(Θ) = Σ_{j=1}^n L_j(Θ) * k[j]
 #   L_j(Θ) = Π_{m≠j} (Θ - Θ_m) / (Θ_j - Θ_m)
-#
-# This matches calc_Lagrange_interp: same polynomial through the same
-# actual solution values at their actual times.
 ####################################################################
 
-# Helper: determine number of active data points from k entries.
-# Layout: k[1..half] solution values, k[half+1..2*half] Θ positions.
-# Active entries are non-zero (counting from the top).
-function _bdf_active_order(k)
-    half = length(k) ÷ 2
-    n = half
-    while n > 0 && iszero(k[n])
+# Helper: determine number of active data points from k_thetas.
+# Active entries are non-zero (counting from the end).
+function _bdf_active_order(k_thetas)
+    n = length(k_thetas)
+    while n > 0 && iszero(k_thetas[n])
         n -= 1
     end
     return max(n, 1)
 end
 
-# Extract scalar Θ from a k entry (which may be a scalar or vector filled
-# with the same value).
-_get_theta(x::Number) = x
-_get_theta(x) = first(x)
-
 # Compute Lagrange basis value L_i(Θ) for node i among n nodes.
-# Node positions: Θ_j = _get_theta(k[half + j]) for j = 1..n.
-@inline function _lagrange_basis(Θ, i, n, k)
-    half = length(k) ÷ 2
-    θ_i = _get_theta(k[half + i])
+# Node positions: Θ_j = k_thetas[j] for j = 1..n.
+@inline function _lagrange_basis(Θ, i, n, k_thetas)
+    θ_i = k_thetas[i]
     Li = one(Θ)
     for m in 1:n
         m == i && continue
-        θ_m = _get_theta(k[half + m])
+        θ_m = k_thetas[m]
         Li *= (Θ - θ_m) / (θ_i - θ_m)
     end
     return Li
@@ -263,13 +250,14 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{0}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
 
-    L1 = _lagrange_basis(Θ, 1, n, k)
+    L1 = _lagrange_basis(Θ, 1, n, k_thetas)
     out = @.. L1 * k[1]
 
     for j in 2:n
-        Lj = _lagrange_basis(Θ, j, n, k)
+        Lj = _lagrange_basis(Θ, j, n, k_thetas)
         out = @.. out + Lj * k[j]
     end
 
@@ -282,13 +270,14 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{0}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
 
-    L1 = _lagrange_basis(Θ, 1, n, k)
+    L1 = _lagrange_basis(Θ, 1, n, k_thetas)
     out = @.. L1 * k[1][idxs]
 
     for j in 2:n
-        Lj = _lagrange_basis(Θ, j, n, k)
+        Lj = _lagrange_basis(Θ, j, n, k_thetas)
         out = @.. out + Lj * k[j][idxs]
     end
 
@@ -301,13 +290,14 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{0}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
 
-    L1 = _lagrange_basis(Θ, 1, n, k)
+    L1 = _lagrange_basis(Θ, 1, n, k_thetas)
     @.. out = L1 * k[1]
 
     for j in 2:n
-        Lj = _lagrange_basis(Θ, j, n, k)
+        Lj = _lagrange_basis(Θ, j, n, k_thetas)
         @.. out = out + Lj * k[j]
     end
 
@@ -320,13 +310,14 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{0}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
 
-    L1 = _lagrange_basis(Θ, 1, n, k)
+    L1 = _lagrange_basis(Θ, 1, n, k_thetas)
     @views @.. out = L1 * k[1][idxs]
 
     for j in 2:n
-        Lj = _lagrange_basis(Θ, j, n, k)
+        Lj = _lagrange_basis(Θ, j, n, k_thetas)
         @views @.. out = out + Lj * k[j][idxs]
     end
 
@@ -342,17 +333,16 @@ end
 # Product-rule form of L'_i(Θ):
 #   L'_i(Θ) = Σ_{m≠i} [1/(θ_i - θ_m)] * Π_{l≠i,l≠m} (Θ - θ_l)/(θ_i - θ_l)
 # This form avoids 0*Inf = NaN at node points (where Θ = θ_j for some j).
-@inline function _lagrange_basis_deriv(Θ, i, n, k)
-    half = length(k) ÷ 2
-    θ_i = _get_theta(k[half + i])
+@inline function _lagrange_basis_deriv(Θ, i, n, k_thetas)
+    θ_i = k_thetas[i]
     result = zero(Θ)
     for m in 1:n
         m == i && continue
-        θ_m = _get_theta(k[half + m])
+        θ_m = k_thetas[m]
         term = inv(θ_i - θ_m)
         for l in 1:n
             (l == i || l == m) && continue
-            θ_l = _get_theta(k[half + l])
+            θ_l = k_thetas[l]
             term *= (Θ - θ_l) / (θ_i - θ_l)
         end
         result += term
@@ -363,20 +353,19 @@ end
 # Product-rule form of L''_i(Θ):
 #   L''_i(Θ) = Σ_{m≠i} Σ_{p≠i,p≠m} [1/((θ_i-θ_m)(θ_i-θ_p))]
 #              * Π_{l≠i,l≠m,l≠p} (Θ-θ_l)/(θ_i-θ_l)
-@inline function _lagrange_basis_deriv2(Θ, i, n, k)
-    half = length(k) ÷ 2
-    θ_i = _get_theta(k[half + i])
+@inline function _lagrange_basis_deriv2(Θ, i, n, k_thetas)
+    θ_i = k_thetas[i]
     result = zero(Θ)
     for m in 1:n
         m == i && continue
-        θ_m = _get_theta(k[half + m])
+        θ_m = k_thetas[m]
         for p in 1:n
             (p == i || p == m) && continue
-            θ_p = _get_theta(k[half + p])
+            θ_p = k_thetas[p]
             term = inv(θ_i - θ_m) * inv(θ_i - θ_p)
             for l in 1:n
                 (l == i || l == m || l == p) && continue
-                θ_l = _get_theta(k[half + l])
+                θ_l = k_thetas[l]
                 term *= (Θ - θ_l) / (θ_i - θ_l)
             end
             result += term
@@ -389,23 +378,22 @@ end
 #   L'''_i(Θ) = Σ_{m≠i} Σ_{p≠i,p≠m} Σ_{q≠i,q≠m,q≠p}
 #              [1/((θ_i-θ_m)(θ_i-θ_p)(θ_i-θ_q))]
 #              * Π_{l≠i,l≠m,l≠p,l≠q} (Θ-θ_l)/(θ_i-θ_l)
-@inline function _lagrange_basis_deriv3(Θ, i, n, k)
-    half = length(k) ÷ 2
-    θ_i = _get_theta(k[half + i])
+@inline function _lagrange_basis_deriv3(Θ, i, n, k_thetas)
+    θ_i = k_thetas[i]
     result = zero(Θ)
     for m in 1:n
         m == i && continue
-        θ_m = _get_theta(k[half + m])
+        θ_m = k_thetas[m]
         for p in 1:n
             (p == i || p == m) && continue
-            θ_p = _get_theta(k[half + p])
+            θ_p = k_thetas[p]
             for q in 1:n
                 (q == i || q == m || q == p) && continue
-                θ_q = _get_theta(k[half + q])
+                θ_q = k_thetas[q]
                 term = inv(θ_i - θ_m) * inv(θ_i - θ_p) * inv(θ_i - θ_q)
                 for l in 1:n
                     (l == i || l == m || l == p || l == q) && continue
-                    θ_l = _get_theta(k[half + l])
+                    θ_l = k_thetas[l]
                     term *= (Θ - θ_l) / (θ_i - θ_l)
                 end
                 result += term
@@ -421,14 +409,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{1}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt = inv(dt)
 
-    dL1 = _lagrange_basis_deriv(Θ, 1, n, k)
+    dL1 = _lagrange_basis_deriv(Θ, 1, n, k_thetas)
     out = @.. (dL1 * invdt) * k[1]
 
     for j in 2:n
-        dLj = _lagrange_basis_deriv(Θ, j, n, k)
+        dLj = _lagrange_basis_deriv(Θ, j, n, k_thetas)
         cj = dLj * invdt
         out = @.. out + cj * k[j]
     end
@@ -441,14 +430,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{1}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt = inv(dt)
 
-    dL1 = _lagrange_basis_deriv(Θ, 1, n, k)
+    dL1 = _lagrange_basis_deriv(Θ, 1, n, k_thetas)
     out = @.. (dL1 * invdt) * k[1][idxs]
 
     for j in 2:n
-        dLj = _lagrange_basis_deriv(Θ, j, n, k)
+        dLj = _lagrange_basis_deriv(Θ, j, n, k_thetas)
         cj = dLj * invdt
         out = @.. out + cj * k[j][idxs]
     end
@@ -461,14 +451,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{1}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt = inv(dt)
 
-    dL1 = _lagrange_basis_deriv(Θ, 1, n, k)
+    dL1 = _lagrange_basis_deriv(Θ, 1, n, k_thetas)
     @.. out = (dL1 * invdt) * k[1]
 
     for j in 2:n
-        dLj = _lagrange_basis_deriv(Θ, j, n, k)
+        dLj = _lagrange_basis_deriv(Θ, j, n, k_thetas)
         cj = dLj * invdt
         @.. out = out + cj * k[j]
     end
@@ -481,14 +472,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{1}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt = inv(dt)
 
-    dL1 = _lagrange_basis_deriv(Θ, 1, n, k)
+    dL1 = _lagrange_basis_deriv(Θ, 1, n, k_thetas)
     @views @.. out = (dL1 * invdt) * k[1][idxs]
 
     for j in 2:n
-        dLj = _lagrange_basis_deriv(Θ, j, n, k)
+        dLj = _lagrange_basis_deriv(Θ, j, n, k_thetas)
         cj = dLj * invdt
         @views @.. out = out + cj * k[j][idxs]
     end
@@ -505,14 +497,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{2}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt2 = inv(dt)^2
 
-    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k)
+    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k_thetas)
     out = @.. (d2L1 * invdt2) * k[1]
 
     for j in 2:n
-        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k)
+        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k_thetas)
         cj = d2Lj * invdt2
         out = @.. out + cj * k[j]
     end
@@ -538,14 +531,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{2}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt2 = inv(dt)^2
 
-    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k)
+    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k_thetas)
     out = @.. (d2L1 * invdt2) * k[1][idxs]
 
     for j in 2:n
-        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k)
+        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k_thetas)
         cj = d2Lj * invdt2
         out = @.. out + cj * k[j][idxs]
     end
@@ -571,14 +565,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{2}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt2 = inv(dt)^2
 
-    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k)
+    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k_thetas)
     @.. out = (d2L1 * invdt2) * k[1]
 
     for j in 2:n
-        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k)
+        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k_thetas)
         cj = d2Lj * invdt2
         @.. out = out + cj * k[j]
     end
@@ -600,14 +595,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{2}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt2 = inv(dt)^2
 
-    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k)
+    d2L1 = _lagrange_basis_deriv2(Θ, 1, n, k_thetas)
     @views @.. out = (d2L1 * invdt2) * k[1][idxs]
 
     for j in 2:n
-        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k)
+        d2Lj = _lagrange_basis_deriv2(Θ, j, n, k_thetas)
         cj = d2Lj * invdt2
         @views @.. out = out + cj * k[j][idxs]
     end
@@ -633,14 +629,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{3}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt3 = inv(dt)^3
 
-    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k)
+    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k_thetas)
     out = @.. (d3L1 * invdt3) * k[1]
 
     for j in 2:n
-        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k)
+        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k_thetas)
         cj = d3Lj * invdt3
         out = @.. out + cj * k[j]
     end
@@ -666,14 +663,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{3}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt3 = inv(dt)^3
 
-    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k)
+    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k_thetas)
     out = @.. (d3L1 * invdt3) * k[1][idxs]
 
     for j in 2:n
-        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k)
+        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k_thetas)
         cj = d3Lj * invdt3
         out = @.. out + cj * k[j][idxs]
     end
@@ -699,14 +697,15 @@ end
         cache::FBDF_CACHES,
         idxs::Nothing, T::Type{Val{3}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt3 = inv(dt)^3
 
-    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k)
+    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k_thetas)
     @.. out = (d3L1 * invdt3) * k[1]
 
     for j in 2:n
-        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k)
+        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k_thetas)
         cj = d3Lj * invdt3
         @.. out = out + cj * k[j]
     end
@@ -728,14 +727,15 @@ end
         cache::FBDF_CACHES,
         idxs, T::Type{Val{3}}, differential_vars
     )
-    n = _bdf_active_order(k)
+    (; k_thetas) = cache
+    n = _bdf_active_order(k_thetas)
     invdt3 = inv(dt)^3
 
-    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k)
+    d3L1 = _lagrange_basis_deriv3(Θ, 1, n, k_thetas)
     @views @.. out = (d3L1 * invdt3) * k[1][idxs]
 
     for j in 2:n
-        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k)
+        d3Lj = _lagrange_basis_deriv3(Θ, j, n, k_thetas)
         cj = d3Lj * invdt3
         @views @.. out = out + cj * k[j][idxs]
     end
