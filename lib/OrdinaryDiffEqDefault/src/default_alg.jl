@@ -48,7 +48,6 @@ function isdefaultalg(
 end
 
 SciMLBase.supports_solve_rng(::SciMLBase.AbstractODEProblem, ::Nothing) = true
-SciMLBase.supports_solve_rng(::SciMLBase.AbstractDAEProblem, ::Nothing) = true
 
 function SciMLBase.__init(prob::ODEProblem, ::Nothing, args...; kwargs...)
     return SciMLBase.__init(
