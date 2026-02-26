@@ -299,7 +299,7 @@ function alg_cache(
     ts_tmp = similar(ts)
     iters_from_event = 0
 
-    dense = [zero(u) for _ in 1:(2 * (max_order + 1))]
+    dense = [zero(u) for _ in 1:(2 * (max_order + 1))]  # first half for integrator.k, second half as scratch
 
     return DFBDFCache(
         fsalfirst, nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
