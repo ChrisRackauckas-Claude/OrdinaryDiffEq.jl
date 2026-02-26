@@ -38,6 +38,74 @@ include("sdirk_perform_step.jl")
 include("kencarp_kvaerno_perform_step.jl")
 include("sdirk_tableaus.jl")
 
+import PrecompileTools
+import Preferences
+PrecompileTools.@compile_workload begin
+    lorenz = OrdinaryDiffEqCore.lorenz
+    solver_list = [TRBDF2()]
+    prob_list = []
+
+    if Preferences.@load_preference("PrecompileDefaultSpecialize", true)
+        push!(prob_list, ODEProblem(lorenz, [1.0; 0.0; 0.0], (0.0, 1.0)))
+        push!(prob_list, ODEProblem(lorenz, [1.0; 0.0; 0.0], (0.0, 1.0), Float64[]))
+    end
+
+    if Preferences.@load_preference("PrecompileAutoSpecialize", false)
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.AutoSpecialize}(
+                lorenz, [1.0; 0.0; 0.0],
+                (0.0, 1.0)
+            )
+        )
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.AutoSpecialize}(
+                lorenz, [1.0; 0.0; 0.0],
+                (0.0, 1.0), Float64[]
+            )
+        )
+    end
+
+    if Preferences.@load_preference("PrecompileFunctionWrapperSpecialize", false)
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.FunctionWrapperSpecialize}(
+                lorenz, [1.0; 0.0; 0.0],
+                (0.0, 1.0)
+            )
+        )
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.FunctionWrapperSpecialize}(
+                lorenz, [1.0; 0.0; 0.0],
+                (0.0, 1.0), Float64[]
+            )
+        )
+    end
+
+    if Preferences.@load_preference("PrecompileNoSpecialize", false)
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.NoSpecialize}(lorenz, [1.0; 0.0; 0.0], (0.0, 1.0))
+        )
+        push!(
+            prob_list,
+            ODEProblem{true, SciMLBase.NoSpecialize}(
+                lorenz, [1.0; 0.0; 0.0], (0.0, 1.0),
+                Float64[]
+            )
+        )
+    end
+
+    for prob in prob_list, solver in solver_list
+        solve(prob, solver)(5.0)
+    end
+
+    prob_list = nothing
+    solver_list = nothing
+end
+
 export ImplicitEuler, ImplicitMidpoint, Trapezoid, TRBDF2, SDIRK2, SDIRK22,
     Kvaerno3, KenCarp3, Cash4, Hairer4, Hairer42, SSPSDIRK2, Kvaerno4,
     Kvaerno5, KenCarp4, KenCarp47, KenCarp5, KenCarp58, ESDIRK54I8L2SA, SFSDIRK4,

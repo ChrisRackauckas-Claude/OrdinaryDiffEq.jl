@@ -227,7 +227,7 @@ import Preferences
 PrecompileTools.@compile_workload begin
     lorenz = OrdinaryDiffEqCore.lorenz
     lorenz_oop = OrdinaryDiffEqCore.lorenz_oop
-    solver_list = [Rosenbrock23(), Rodas5P()]
+    solver_list = [Rosenbrock23(), Rodas5P(), Rodas5()]
     prob_list = []
 
     if Preferences.@load_preference("PrecompileDefaultSpecialize", true)
