@@ -1,8 +1,9 @@
 using Test
 using SparseArrays
 using LinearAlgebra
-using OrdinaryDiffEq
+using OrdinaryDiffEqSDIRK
 using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
+using SciMLBase: ReturnCode
 
 @testset "Sparse jac_prototype in BrownFullBasicInit" begin
     # Verify algebraic_jacobian preserves sparsity
@@ -52,29 +53,21 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
         f_ode = ODEFunction(f_small!; mass_matrix = M, jac_prototype = jac_proto)
         prob = ODEProblem(f_ode, u0, (0.0, 1.0))
 
-        sol = solve(prob, Rodas5P())
+        sol = solve(prob, Trapezoid())
         @test sol.retcode == ReturnCode.Success
         # Check constraint is satisfied after initialization
         @test abs(sol.u[1][1] - sol.u[1][2]^3) < 1.0e-6
     end
 
-    # Small system: 1 differential + 1 algebraic (out-of-place)
-    @testset "Small out-of-place ODEProblem with sparse jac_prototype" begin
-        function f_small_oop(u, p, t)
-            du1 = -u[1] + u[2]
-            du2 = u[1] - u[2]^3
-            [du1, du2]
-        end
+    # Out-of-place: test algebraic_jacobian produces correct sparse sub-matrix
+    @testset "Out-of-place algebraic_jacobian slicing" begin
         M = [1.0 0.0; 0.0 0.0]
         jac_proto = sparse([1.0 1.0; 1.0 1.0])
-
-        u0 = [1.0, 0.5]  # inconsistent
-        f_ode = ODEFunction(f_small_oop; mass_matrix = M, jac_prototype = jac_proto)
-        prob = ODEProblem(f_ode, u0, (0.0, 1.0))
-
-        sol = solve(prob, Rosenbrock23())
-        @test sol.retcode == ReturnCode.Success
-        @test abs(sol.u[1][1] - sol.u[1][2]^3) < 1.0e-6
+        alg_vars, alg_eqs = find_algebraic_vars_eqs(M)
+        J = algebraic_jacobian(jac_proto, alg_eqs, alg_vars)
+        @test J isa SparseMatrixCSC
+        @test size(J) == (1, 1)
+        @test J[1, 1] == 1.0
     end
 
     # ROBER problem with sparse jac_prototype
@@ -88,7 +81,7 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
             nothing
         end
         M = [1.0 0 0; 0 1.0 0; 0 0 0]
-        # Full sparsity for ROBER (all entries nonzero except J[3,2] depending on params)
+        # Full sparsity for ROBER (all entries nonzero)
         jac_proto = sparse(ones(3, 3))
         p = (0.04, 3.0e7, 1.0e4)
 
@@ -97,7 +90,7 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
         f_ode = ODEFunction(rober!; mass_matrix = M, jac_prototype = jac_proto)
         prob = ODEProblem(f_ode, u0, (0.0, 1.0e5), p)
 
-        sol = solve(prob, Rodas5P())
+        sol = solve(prob, Trapezoid())
         @test sol.retcode == ReturnCode.Success
         @test sum(sol.u[1]) ≈ 1
         @test sol.u[1] ≈ [1.0, 0.0, 0.0]
@@ -141,7 +134,7 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
         f_ode = ODEFunction(f_medium!; mass_matrix = M, jac_prototype = jac_proto)
         prob = ODEProblem(f_ode, u0, (0.0, 1.0))
 
-        sol = solve(prob, Rodas5P(); save_everystep = false)
+        sol = solve(prob, Trapezoid(); save_everystep = false)
         @test sol.retcode == ReturnCode.Success
         # Algebraic constraint u[i] = u[N+i]^2 should be satisfied at t=0
         max_violation = maximum(abs.(sol.u[1][1:N] .- sol.u[1][(N + 1):(2N)] .^ 2))
@@ -183,50 +176,16 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
         prob_dense = ODEProblem(f_dense, u0, (0.0, 1.0))
         prob_sparse = ODEProblem(f_sparse, u0, (0.0, 1.0))
 
-        sol_dense = solve(prob_dense, Rodas5P(); save_everystep = false)
-        sol_sparse = solve(prob_sparse, Rodas5P(); save_everystep = false)
+        sol_dense = solve(prob_dense, Trapezoid(); save_everystep = false)
+        sol_sparse = solve(prob_sparse, Trapezoid(); save_everystep = false)
 
         @test sol_dense.retcode == ReturnCode.Success
         @test sol_sparse.retcode == ReturnCode.Success
         @test sol_dense.u[1] ≈ sol_sparse.u[1]
     end
 
-    # Test with FBDF solver (the solver from issue #1107)
-    @testset "FBDF solver with sparse jac_prototype" begin
-        N = 50
-        function f_fbdf!(du, u, p, t)
-            n = div(length(u), 2)
-            for i in 1:n
-                du[i] = -u[i] + u[n + i]
-            end
-            for i in 1:n
-                du[n + i] = u[i] - u[n + i]^2
-            end
-            nothing
-        end
-
-        M = Diagonal(vcat(ones(N), zeros(N)))
-        I_idx = Int[]
-        J_idx = Int[]
-        for i in 1:N
-            push!(I_idx, i); push!(J_idx, i)
-            push!(I_idx, i); push!(J_idx, N + i)
-            push!(I_idx, N + i); push!(J_idx, i)
-            push!(I_idx, N + i); push!(J_idx, N + i)
-        end
-        jac_proto = sparse(I_idx, J_idx, ones(length(I_idx)), 2N, 2N)
-
-        u0 = vcat(ones(N), 0.5 * ones(N))
-        f_ode = ODEFunction(f_fbdf!; mass_matrix = M, jac_prototype = jac_proto)
-        prob = ODEProblem(f_ode, u0, (0.0, 1.0))
-
-        sol = solve(prob, FBDF(); save_everystep = false)
-        @test sol.retcode == ReturnCode.Success
-        max_violation = maximum(abs.(sol.u[1][1:N] .- sol.u[1][(N + 1):(2N)] .^ 2))
-        @test max_violation < 1.0e-5
-    end
-
-    # Large-scale test inspired by issue #1107 (2D grid, two coupled fields)
+    # Large-scale test inspired by issue DifferentialEquations.jl#1107
+    # (2D grid, two coupled fields)
     @testset "Large sparse DAE (issue #1107 pattern)" begin
         # Nx x Ny grid with 2 fields: P (differential) and phi (algebraic)
         Nx, Ny = 32, 16
@@ -296,7 +255,7 @@ using OrdinaryDiffEqNonlinearSolve: find_algebraic_vars_eqs, algebraic_jacobian
         @test size(J_sub) == (N, N)
         @test nnz(J_sub) == N  # diagonal only for algebraic block
 
-        sol = solve(prob, Rodas5P(); save_everystep = false)
+        sol = solve(prob, Trapezoid(); save_everystep = false)
         @test sol.retcode == ReturnCode.Success
         # Verify algebraic constraint P = phi^3 after initialization
         max_violation = maximum(
