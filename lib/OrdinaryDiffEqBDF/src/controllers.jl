@@ -285,7 +285,12 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        q = ((2 * terk / (k + 1))^(1 / (k + 1)))
+        # BDF orders 1-2 are A-stable and the original bias factor (2) works well.
+        # Orders 3-5 are only alpha-stable, and the original formula is too aggressive,
+        # leading to rejection-recovery oscillations on stiff problems near the stability
+        # boundary. Use CVODE-like bias (6) for these higher orders.
+        bias = k <= 2 ? 2 : 6
+        q = ((bias * terk / (k + 1))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
@@ -443,7 +448,9 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        q = ((2 * terk / (k + 1))^(1 / (k + 1)))
+        # Order-dependent bias matching FBDF change
+        bias = k <= 2 ? 2 : 6
+        q = ((bias * terk / (k + 1))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
