@@ -19,7 +19,7 @@ import LinearAlgebra: norm
 using TruncatedStacktraces: @truncate_stacktrace
 using TaylorDiff, Symbolics
 using TaylorDiff: make_seed, get_coefficient, append_coefficient, flatten
-import SciMLBase: @def
+import SciMLBase: @def, unwrapped_f
 import OrdinaryDiffEqCore
 
 using Reexport
