@@ -313,6 +313,25 @@ function _resample_at_chebyshev_iip!(k, thetas, n, scratch)
     return
 end
 
+# Direct in-place resampling: writes Chebyshev-resampled values to k[1..n]
+# using u (step endpoint) and u_history[1..n-1] (past solution values) as
+# sources, without requiring a scratch buffer.  This avoids type mismatches
+# during ForwardDiff AD where k has Dual element types but pre-allocated
+# scratch buffers are Float64.
+function _resample_at_chebyshev_direct_iip!(k, u, u_history, thetas, n)
+    nodes = _CHEB_NODES[n]
+    for i in 1:n
+        xi = nodes[i]
+        L1 = _lagrange_basis_scalar(xi, 1, thetas, n)
+        @.. broadcast = false k[i] = L1 * u
+        for j in 2:n
+            Lj = _lagrange_basis_scalar(xi, j, thetas, n)
+            @.. broadcast = false k[i] = k[i] + Lj * u_history[j - 1]
+        end
+    end
+    return
+end
+
 function estimate_terk!(integrator, cache, k, ::Val{max_order}) where {max_order}
     #calculate hᵏ⁻¹yᵏ⁻¹
     (; ts_tmp, terk_tmp, u_history) = cache

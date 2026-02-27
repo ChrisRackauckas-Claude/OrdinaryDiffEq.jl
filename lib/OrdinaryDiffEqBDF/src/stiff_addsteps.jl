@@ -120,27 +120,20 @@ function _ode_addsteps!(
         force_calc_end = false
     )
     always_calc_begin || return nothing
-    (; u_history, ts, order, equi_ts, dense) = cache
+    (; u_history, ts, order, equi_ts) = cache
     max_order = length(k) - 1
     n = order + 1
 
-    # Copy values into k
-    @.. broadcast = false k[1] = u
-    for j in 1:order
-        copyto!(k[1 + j], u_history[j])
-    end
-    for j in (order + 1):max_order
-        fill!(k[1 + j], zero(eltype(u)))
-    end
-
     # Compute thetas
-    equi_ts[1] = one(eltype(u))
+    equi_ts[1] = one(eltype(equi_ts))
     for j in 1:order
         equi_ts[1 + j] = (ts[j] - t) / dt
     end
 
-    # Resample at Chebyshev nodes (scratch = second half of dense)
-    scratch = @view(dense[(max_order + 2):(2 * (max_order + 1))])
-    _resample_at_chebyshev_iip!(k, equi_ts, n, scratch)
+    # Resample at Chebyshev nodes directly from u and u_history
+    _resample_at_chebyshev_direct_iip!(k, u, u_history, equi_ts, n)
+    for j in (n + 1):(max_order + 1)
+        fill!(k[j], zero(eltype(u)))
+    end
     return nothing
 end

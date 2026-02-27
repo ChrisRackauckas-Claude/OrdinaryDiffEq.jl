@@ -267,10 +267,10 @@ function perform_step!(
 
     # Predictor: evaluate Lagrange interpolant through u_history at Θ=1
     # using actual (variable) theta nodes. No need to fill integrator.k.
+    n_pred = k + 1
+    pred_thetas = Vector{typeof(t)}(undef, n_pred)
     cache.u₀ = zero(u)
     if iters_from_event >= 1
-        n_pred = k + 1
-        pred_thetas = Vector{typeof(t)}(undef, n_pred)
         for j in 1:n_pred
             pred_thetas[j] = (ts[j] - t) / dt
         end
@@ -440,9 +440,9 @@ function perform_step!(
 
     # Predictor: evaluate Lagrange interpolant through u_history at Θ=1
     # using actual (variable) theta nodes. No need to fill integrator.k.
+    n_pred = k + 1
     @.. broadcast = false u₀ = zero(u)
     if cache.iters_from_event >= 1
-        n_pred = k + 1
         for j in 1:n_pred
             equi_ts[j] = (ts[j] - t) / dt
         end
@@ -545,21 +545,18 @@ function perform_step!(
     ) *
         inv(nlsolver.γ * dt)
     if integrator.opts.calck
-        # Store dense output: resample Lagrange interpolant at Chebyshev nodes
+        # Store dense output: resample Lagrange interpolant at Chebyshev nodes.
+        # Use _resample_at_chebyshev_direct_iip! to read from u and u_history
+        # directly, avoiding scratch buffer type mismatches during AD.
         n = min(k + 1, max_order + 1)
-        @.. broadcast = false integrator.k[1] = u
-        for j in 1:min(k, max_order)
-            copyto!(integrator.k[1 + j], u_history[j])
-        end
-        for j in (k + 1):(max_order)
-            fill!(integrator.k[1 + j], zero(eltype(u)))
-        end
-        equi_ts[1] = one(eltype(u))
+        equi_ts[1] = one(eltype(equi_ts))
         for j in 1:min(k, max_order)
             equi_ts[1 + j] = (ts[j] - t) / dt
         end
-        scratch = @view(dense[(max_order + 2):(2 * (max_order + 1))])
-        _resample_at_chebyshev_iip!(integrator.k, equi_ts, n, scratch)
+        _resample_at_chebyshev_direct_iip!(integrator.k, u, u_history, equi_ts, n)
+        for j in (n + 1):(max_order + 1)
+            fill!(integrator.k[j], zero(eltype(u)))
+        end
     end
     return nothing
 end
