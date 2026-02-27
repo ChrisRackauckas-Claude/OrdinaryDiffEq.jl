@@ -127,9 +127,9 @@ end
     end
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, P + 1)
     # Copy Taylor coefficients into k for dense output interpolation.
-    # get_coefficient returns a new array each time, so we must copy into k[i].
+    # Use map! to avoid the intermediate allocation from get_coefficient.
     for i in 1:P
-        integrator.k[i] .= get_coefficient(utaylor, i)
+        map!(ts -> get_coefficient(ts, i), integrator.k[i], utaylor)
     end
     return nothing
 end
