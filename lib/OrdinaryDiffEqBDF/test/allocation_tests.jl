@@ -1,5 +1,6 @@
 using OrdinaryDiffEqBDF
 using OrdinaryDiffEqCore
+using SciMLBase: FullSpecialize, SplitFunction, ODEFunction, DAEFunction
 using AllocCheck
 using Test
 
@@ -97,6 +98,20 @@ which can invalidate compiled code.
 
     # Static analysis tests below. These use AllocCheck's check_allocs which
     # analyzes compiled code and may invalidate method caches.
+    # Use FullSpecialize to avoid FunctionWrappers dynamic dispatch noise.
+
+    fs_prob = ODEProblem{true, FullSpecialize}(simple_system!, [1.0, 1.0], (0.0, 1.0))
+    fs_split_prob = SplitODEProblem(
+        SplitFunction(
+            ODEFunction{true, FullSpecialize}(f1!),
+            ODEFunction{true, FullSpecialize}(f2!)
+        ),
+        [1.0, 1.0], (0.0, 1.0)
+    )
+    fs_dae_prob = DAEProblem(
+        DAEFunction{true, FullSpecialize}(dae_f!),
+        du0, [1.0, 1.0], (0.0, 1.0), differential_vars = differential_vars
+    )
 
     # Test all exported BDF solvers for allocation-free behavior
     # Standard ODE BDF methods
@@ -114,22 +129,17 @@ which can invalidate compiled code.
         for solver in bdf_solvers
             @testset "$(typeof(solver)) perform_step! allocation check" begin
                 integrator = init(
-                    prob, solver, dt = 0.1, save_everystep = false,
+                    fs_prob, solver, dt = 0.1, save_everystep = false,
                     abstol = 1.0e-6, reltol = 1.0e-6
                 )
-                step!(integrator)  # Setup step - initializes caches, may allocate
+                step!(integrator)
 
-                # Test perform_step! directly - this is the core stepping function
-                # that should be allocation-free (unlike step! which includes saving)
                 cache = integrator.cache
                 allocs = check_allocs(
                     OrdinaryDiffEqCore.perform_step!,
                     (typeof(integrator), typeof(cache))
                 )
 
-                # AllocCheck static analysis flags FunctionWrappers dynamic dispatches
-                # which are infrastructure-level, not algorithm-specific.
-                # All solvers currently have these, so mark broken.
                 @test length(allocs) == 0 broken = true
 
                 if length(allocs) > 0
@@ -149,7 +159,7 @@ which can invalidate compiled code.
         for solver in imex_solvers
             @testset "$(typeof(solver)) perform_step! allocation check" begin
                 integrator = init(
-                    split_prob, solver, dt = 0.1, save_everystep = false,
+                    fs_split_prob, solver, dt = 0.1, save_everystep = false,
                     abstol = 1.0e-6, reltol = 1.0e-6
                 )
                 step!(integrator)
@@ -179,7 +189,7 @@ which can invalidate compiled code.
         for solver in dae_solvers
             @testset "$(typeof(solver)) perform_step! allocation check" begin
                 integrator = init(
-                    dae_prob, solver, dt = 0.1, save_everystep = false,
+                    fs_dae_prob, solver, dt = 0.1, save_everystep = false,
                     abstol = 1.0e-6, reltol = 1.0e-6
                 )
                 step!(integrator)
