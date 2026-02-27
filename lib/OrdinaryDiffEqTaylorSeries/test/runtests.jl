@@ -58,18 +58,24 @@ if TEST_GROUP != "QA"
             @test SciMLBase.successful_retcode(sol2)
             @test length(sol2) > 1
 
-            sol8 = solve(prob, ExplicitTaylor(order = Val(8)),
-                abstol = 1e-12, reltol = 1e-12)
+            sol8 = solve(
+                prob, ExplicitTaylor(order = Val(8)),
+                abstol = 1.0e-12, reltol = 1.0e-12
+            )
             @test SciMLBase.successful_retcode(sol8)
             @test length(sol8) > 1
         end
 
         # Verify both give similar results
-        sol_auto = solve(prob_auto, ExplicitTaylor(order = Val(8)),
-            abstol = 1e-12, reltol = 1e-12)
-        sol_full = solve(prob_full, ExplicitTaylor(order = Val(8)),
-            abstol = 1e-12, reltol = 1e-12)
-        @test sol_auto.u[end] ≈ sol_full.u[end] atol = 1e-10
+        sol_auto = solve(
+            prob_auto, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-12, reltol = 1.0e-12
+        )
+        sol_full = solve(
+            prob_full, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-12, reltol = 1.0e-12
+        )
+        @test sol_auto.u[end] ≈ sol_full.u[end] atol = 1.0e-10
     end
 
     # Test OOP (out-of-place) with array state
@@ -86,14 +92,16 @@ if TEST_GROUP != "QA"
         @test SciMLBase.successful_retcode(sol2)
         @test length(sol2) > 1
 
-        sol8 = solve(prob_oop, ExplicitTaylor(order = Val(8)),
-            abstol = 1e-12, reltol = 1e-12)
+        sol8 = solve(
+            prob_oop, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-12, reltol = 1.0e-12
+        )
         @test SciMLBase.successful_retcode(sol8)
         @test length(sol8) > 1
 
         # Check solution accuracy (harmonic oscillator: u1=cos(t), u2=sin(t))
-        @test sol8.u[end][1] ≈ cos(1.0) atol = 1e-10
-        @test sol8.u[end][2] ≈ sin(1.0) atol = 1e-10
+        @test sol8.u[end][1] ≈ cos(1.0) atol = 1.0e-10
+        @test sol8.u[end][2] ≈ sin(1.0) atol = 1.0e-10
     end
 
     # Test IIP with a nonlinear system (Henon-Heiles-style)
@@ -109,17 +117,21 @@ if TEST_GROUP != "QA"
         tspan = (0.0, 10.0)
 
         prob = ODEProblem{true, SciMLBase.FullSpecialize}(henon_heiles!, u0, tspan)
-        sol = solve(prob, ExplicitTaylor(order = Val(8)),
-            abstol = 1e-14, reltol = 1e-14)
+        sol = solve(
+            prob, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-14, reltol = 1.0e-14
+        )
         @test SciMLBase.successful_retcode(sol)
         @test length(sol) > 1
 
         # Also test with AutoSpecialize
         prob_auto = ODEProblem(henon_heiles!, u0, tspan)
-        sol_auto = solve(prob_auto, ExplicitTaylor(order = Val(8)),
-            abstol = 1e-14, reltol = 1e-14)
+        sol_auto = solve(
+            prob_auto, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-14, reltol = 1.0e-14
+        )
         @test SciMLBase.successful_retcode(sol_auto)
-        @test sol_auto.u[end] ≈ sol.u[end] atol = 1e-10
+        @test sol_auto.u[end] ≈ sol.u[end] atol = 1.0e-10
     end
 end
 

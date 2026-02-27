@@ -93,7 +93,8 @@ function build_jet(f, ::Val{iip}, p, order::Val{P}, length = nothing) where {P, 
             end,
             (out, u0_val, t0_val) -> begin
                 coeffs_out = jet_coeffs[2](
-                    similar(coeffs_matrix, eltype(u0_val)), u0_val, t0_val)
+                    similar(coeffs_matrix, eltype(u0_val)), u0_val, t0_val
+                )
                 for i in 1:n
                     out[i] = TaylorScalar(Tuple(coeffs_out[i, :]))
                 end
