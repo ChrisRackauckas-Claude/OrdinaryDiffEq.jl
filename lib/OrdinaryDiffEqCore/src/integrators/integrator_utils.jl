@@ -56,6 +56,13 @@ function apply_step!(integrator)
     end
 
     update_fsal!(integrator)
+
+    # Shorten dt to hit the next tstop after update_fsal!, which for DDEs calls
+    # handle_discontinuities! using integrator.dt to track propagated discontinuities
+    # in the interval [t, t+dt]. Must come after update_fsal! but before the next
+    # perform_step!. loopheader! also calls this unconditionally, which is a harmless
+    # no-op on the accept path since dt was already adjusted here.
+    modify_dt_for_tstops!(integrator)
     return nothing
 end
 
