@@ -104,6 +104,123 @@ if TEST_GROUP != "QA"
         @test sol8.u[end][2] ≈ sin(1.0) atol = 1.0e-10
     end
 
+    # Dense output interpolation tests
+    @testset "Taylor2 Dense Output" begin
+        # Scalar OOP: u' = -u, u(0)=1 => u(t) = exp(-t)
+        prob_scalar = ODEProblem((u, p, t) -> -u, 1.0, (0.0, 1.0))
+        sol = solve(prob_scalar, ExplicitTaylor2(), dt = 0.01, dense = true)
+        @test SciMLBase.successful_retcode(sol)
+        # Check interpolation at intermediate points
+        for t in 0.1:0.1:0.9
+            @test sol(t) ≈ exp(-t) atol = 1.0e-3
+        end
+
+        # Array OOP: harmonic oscillator u1'=-u2, u2'=u1
+        prob_arr = ODEProblem((u, p, t) -> [-u[2], u[1]], [1.0, 0.0], (0.0, 1.0))
+        sol_arr = solve(prob_arr, ExplicitTaylor2(), dt = 0.01, dense = true)
+        @test SciMLBase.successful_retcode(sol_arr)
+        t_mid = 0.5
+        @test sol_arr(t_mid)[1] ≈ cos(t_mid) atol = 1.0e-3
+        @test sol_arr(t_mid)[2] ≈ sin(t_mid) atol = 1.0e-3
+
+        # idxs parameter
+        @test sol_arr(t_mid, idxs = 1) ≈ cos(t_mid) atol = 1.0e-3
+        @test sol_arr(t_mid, idxs = 2) ≈ sin(t_mid) atol = 1.0e-3
+
+        # IIP: same harmonic oscillator
+        function f_dense_iip!(du, u, p, t)
+            du[1] = -u[2]
+            du[2] = u[1]
+            return nothing
+        end
+        prob_iip = ODEProblem{true, SciMLBase.FullSpecialize}(
+            f_dense_iip!, [1.0, 0.0], (0.0, 1.0)
+        )
+        sol_iip = solve(prob_iip, ExplicitTaylor2(), dt = 0.01, dense = true)
+        @test SciMLBase.successful_retcode(sol_iip)
+        @test sol_iip(t_mid)[1] ≈ cos(t_mid) atol = 1.0e-3
+        @test sol_iip(t_mid)[2] ≈ sin(t_mid) atol = 1.0e-3
+    end
+
+    @testset "Taylor2 Dense Convergence" begin
+        dts = 2.0 .^ (-8:-4)
+        testTol = 0.2
+        sim = test_convergence(
+            dts, prob_ode_linear, ExplicitTaylor2(), dense_errors = true
+        )
+        @test sim.𝒪est[:L2] ≈ 2 atol = testTol
+        sim = test_convergence(
+            dts, prob_ode_2Dlinear, ExplicitTaylor2(), dense_errors = true
+        )
+        @test sim.𝒪est[:L2] ≈ 2 atol = testTol
+    end
+
+    @testset "TaylorN Dense Output" begin
+        # Scalar OOP: u' = -u, u(0)=1 => u(t) = exp(-t)
+        prob_scalar = ODEProblem((u, p, t) -> -u, 1.0, (0.0, 1.0))
+
+        for N in (4, 8)
+            alg = ExplicitTaylor(order = Val(N))
+            sol = solve(prob_scalar, alg, abstol = 1.0e-12, reltol = 1.0e-12, dense = true)
+            @test SciMLBase.successful_retcode(sol)
+            # High-order Taylor should give very accurate interpolation
+            tol = N >= 8 ? 1.0e-10 : 1.0e-6
+            for t in 0.1:0.1:0.9
+                @test sol(t) ≈ exp(-t) atol = tol
+            end
+        end
+
+        # Array OOP: harmonic oscillator
+        prob_arr = ODEProblem((u, p, t) -> [-u[2], u[1]], [1.0, 0.0], (0.0, 1.0))
+        sol8 = solve(
+            prob_arr, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-12, reltol = 1.0e-12, dense = true
+        )
+        @test SciMLBase.successful_retcode(sol8)
+        t_mid = 0.5
+        @test sol8(t_mid)[1] ≈ cos(t_mid) atol = 1.0e-10
+        @test sol8(t_mid)[2] ≈ sin(t_mid) atol = 1.0e-10
+
+        # idxs parameter
+        @test sol8(t_mid, idxs = 1) ≈ cos(t_mid) atol = 1.0e-10
+        @test sol8(t_mid, idxs = 2) ≈ sin(t_mid) atol = 1.0e-10
+
+        # IIP: harmonic oscillator with AutoSpecialize
+        function f_taylor_dense_iip!(du, u, p, t)
+            du[1] = -u[2]
+            du[2] = u[1]
+            return nothing
+        end
+        prob_iip = ODEProblem(f_taylor_dense_iip!, [1.0, 0.0], (0.0, 1.0))
+        sol_iip = solve(
+            prob_iip, ExplicitTaylor(order = Val(8)),
+            abstol = 1.0e-12, reltol = 1.0e-12, dense = true
+        )
+        @test SciMLBase.successful_retcode(sol_iip)
+        @test sol_iip(t_mid)[1] ≈ cos(t_mid) atol = 1.0e-10
+        @test sol_iip(t_mid)[2] ≈ sin(t_mid) atol = 1.0e-10
+
+        # idxs on IIP
+        @test sol_iip(t_mid, idxs = 1) ≈ cos(t_mid) atol = 1.0e-10
+        @test sol_iip(t_mid, idxs = 2) ≈ sin(t_mid) atol = 1.0e-10
+    end
+
+    @testset "TaylorN Dense Convergence" begin
+        dts = 2.0 .^ (-8:-4)
+        testTol = 0.3
+        for N in 3:4
+            alg = ExplicitTaylor(order = Val(N))
+            sim = test_convergence(
+                dts, prob_ode_linear, alg, dense_errors = true
+            )
+            @test sim.𝒪est[:L2] ≈ N atol = testTol
+            sim = test_convergence(
+                dts, prob_ode_2Dlinear, alg, dense_errors = true
+            )
+            @test sim.𝒪est[:L2] ≈ N atol = testTol
+        end
+    end
+
     # Test IIP with a nonlinear system (Henon-Heiles-style)
     @testset "Nonlinear IIP System" begin
         function henon_heiles!(du, u, p, t)
