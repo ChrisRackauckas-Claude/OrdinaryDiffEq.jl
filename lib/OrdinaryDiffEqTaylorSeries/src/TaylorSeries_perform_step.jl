@@ -5,6 +5,13 @@ using TaylorDiff: TaylorDiff, extract_derivative, extract_derivative!
 @inline _extract_taylor2_deriv(x::TaylorScalar) = x.partials[1]
 @inline _extract_taylor2_deriv(x::AbstractArray) = map(xi -> xi.partials[1], x)
 
+# Extract the i-th coefficient from a TaylorScalar or array of TaylorScalars.
+# For scalar problems, returns a scalar. For array problems, returns a vector.
+@inline _taylor_get_coefficient(ts::TaylorScalar, i::Int) = get_coefficient(ts, i)
+@inline function _taylor_get_coefficient(arr::AbstractArray{<:TaylorScalar}, i::Int)
+    return map(ts -> get_coefficient(ts, i), arr)
+end
+
 @inline make_taylor(all::Vararg{X, P}) where {P, X <: AbstractArray} = TaylorArray(
     Base.first(all), Base.tail(all)
 )
@@ -61,8 +68,8 @@ end
 end
 
 function initialize!(integrator, cache::ExplicitTaylorConstantCache{P}) where {P}
-    integrator.kshortsize = 0
-    return integrator.k = typeof(integrator.k)(undef, 0)
+    integrator.kshortsize = P
+    return integrator.k = typeof(integrator.k)(undef, P)
 end
 
 @muladd function perform_step!(
@@ -82,6 +89,10 @@ end
         integrator.EEst = integrator.opts.internalnorm(atmp, t)
     end
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, P + 1)
+    # Save Taylor coefficients for dense output interpolation
+    for i in 1:P
+        integrator.k[i] = _taylor_get_coefficient(utaylor, i)
+    end
     integrator.u = u
 end
 
@@ -115,5 +126,10 @@ end
         integrator.EEst = integrator.opts.internalnorm(atmp, t)
     end
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, P + 1)
+    # Copy Taylor coefficients into k for dense output interpolation.
+    # get_coefficient returns a new array each time, so we must copy into k[i].
+    for i in 1:P
+        integrator.k[i] .= get_coefficient(utaylor, i)
+    end
     return nothing
 end
