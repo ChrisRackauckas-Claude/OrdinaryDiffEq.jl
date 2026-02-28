@@ -285,12 +285,12 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        # BDF orders 1-2 are A-stable and the original bias factor (2) works well.
-        # Orders 3-5 are only alpha-stable, and the original formula is too aggressive,
-        # leading to rejection-recovery oscillations on stiff problems near the stability
-        # boundary. Use CVODE-like bias (6) for these higher orders.
-        bias = k <= 2 ? 2 : 6
-        q = ((bias * terk / (k + 1))^(1 / (k + 1)))
+        # CVODE-style step size formula: eta = 1 / (BIAS2 * dsm)^(1/(k+1))
+        # where dsm = terk / (alpha0 * (k+1)) and alpha0 is the BDF leading coefficient.
+        # FBDF uses fixed leading coefficients, so alpha0 = bdf_coeffs[k, 1].
+        # BIAS2 = 6 matches CVODE (cvode_impl.h).
+        alpha0 = cache.bdf_coeffs[k, 1]
+        q = ((6 * terk / (alpha0 * (k + 1)))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
@@ -448,9 +448,9 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        # Order-dependent bias matching FBDF change
-        bias = k <= 2 ? 2 : 6
-        q = ((bias * terk / (k + 1))^(1 / (k + 1)))
+        # CVODE-style step size formula matching FBDF change
+        alpha0 = cache.bdf_coeffs[k, 1]
+        q = ((6 * terk / (alpha0 * (k + 1)))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
