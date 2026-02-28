@@ -11,28 +11,53 @@
 # This algorithm detects that pattern and forces order reduction when needed.
 
 """
-    StabilityLimitDetectionState
+    StabilityLimitDetectionState{T}
 
 State for the CVODE-style Stability Limit Detection (STALD) algorithm.
 Tracks scaled derivative data over a sliding window of 5 steps to detect
 when BDF orders 3-5 are near their stability boundaries.
+
+Parameterized on element type `T` (typically `real(eltype(u))`) to avoid
+hardcoded Float64 and support other floating-point types.
 """
-mutable struct StabilityLimitDetectionState
-    ssdat::Matrix{Float64}  # 5×3 matrix: ssdat[i,k] stores squared scaled derivative norms
+mutable struct StabilityLimitDetectionState{T}
+    ssdat::Matrix{T}    # 5×3 matrix: ssdat[i,k] stores squared scaled derivative norms
     # i = step index (1=newest, 5=oldest), k = derivative level (1=q-2, 2=q-1, 3=q)
-    nscon::Int              # consecutive steps at same order
-    nor::Int                # total number of STALD-triggered order reductions
-    enabled::Bool           # whether STALD is active
-    last_order::Int         # order used on the previous step (for tracking consecutive same-order steps)
+    nscon::Int           # consecutive steps at same order
+    nor::Int             # total number of STALD-triggered order reductions
+    enabled::Bool        # whether STALD is active
+    last_order::Int      # order used on the previous step
+    # Tuning constants (matching CVODE defaults)
+    rrcut::T             # cutoff for characteristic root magnitude
+    vrrtol::T            # tolerance for variance of ratios
+    vrrt2::T             # secondary variance tolerance
+    sqtol::T             # tolerance for quartic residual
+    rrtol::T             # tolerance for rr cross-verification
+    tiny::T              # tiny value to avoid division by zero
 end
 
-function StabilityLimitDetectionState(; enabled::Bool = true)
-    return StabilityLimitDetectionState(
-        zeros(5, 3),
+function StabilityLimitDetectionState(
+        ::Type{T} = Float64;
+        enabled::Bool = true,
+        rrcut = T(0.98),
+        vrrtol = T(1.0e-4),
+        vrrt2 = T(5.0e-4),
+        sqtol = T(1.0e-3),
+        rrtol = T(1.0e-2),
+        tiny = T(1.0e-90),
+    ) where {T}
+    return StabilityLimitDetectionState{T}(
+        zeros(T, 5, 3),
         0,
         0,
         enabled,
         0,
+        T(rrcut),
+        T(vrrtol),
+        T(vrrt2),
+        T(sqtol),
+        T(rrtol),
+        T(tiny),
     )
 end
 
@@ -130,20 +155,12 @@ end
 
 Reset STALD state (e.g., after u_modified or reinit).
 """
-function stald_reset!(stald::StabilityLimitDetectionState)
-    fill!(stald.ssdat, 0.0)
+function stald_reset!(stald::StabilityLimitDetectionState{T}) where {T}
+    fill!(stald.ssdat, zero(T))
     stald.nscon = 0
     stald.last_order = 0
     return nothing
 end
-
-# Constants matching CVODE
-const STALD_RRCUT = 0.98     # cutoff for characteristic root magnitude
-const STALD_VRRTOL = 1.0e-4  # tolerance for variance of ratios
-const STALD_VRRT2 = 5.0e-4   # secondary variance tolerance
-const STALD_SQTOL = 1.0e-3   # tolerance for quartic residual
-const STALD_RRTOL = 1.0e-2   # tolerance for rr cross-verification
-const STALD_TINY = 1.0e-90   # tiny value to avoid division by zero
 
 """
     _stald_detect(stald, q) -> Int
@@ -152,31 +169,33 @@ Core stability limit detection algorithm (port of CVODE's cvSLdet).
 
 Returns:
 - Negative values: algorithm could not determine (insufficient data quality)
-- 1, 2, 3: characteristic root found, but rr <= 0.98 (stable)
-- 4, 5, 6: stability violation detected (rr > 0.98)
+- 1, 2, 3: characteristic root found, but rr <= rrcut (stable)
+- 4, 5, 6: stability violation detected (rr > rrcut)
 """
-function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
+function _stald_detect(stald::StabilityLimitDetectionState{T}, q::Int) where {T}
     ssdat = stald.ssdat
+    (; rrcut, vrrtol, vrrt2, sqtol, rrtol, tiny) = stald
 
     # Phase 1: Compute statistics from stored data
     # For each of the three derivative levels k=1,2,3
-    smax = MVector{3, Float64}(0.0, 0.0, 0.0)
-    ssmax = MVector{3, Float64}(0.0, 0.0, 0.0)
-    rav = MVector{3, Float64}(0.0, 0.0, 0.0)    # average ratio of consecutive data
-    vrat = MVector{3, Float64}(0.0, 0.0, 0.0)   # variance of ratios
-    rat = MMatrix{4, 3, Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-    qc = MMatrix{5, 3, Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    z = zero(T)
+    smax = MVector{3, T}(z, z, z)
+    ssmax = MVector{3, T}(z, z, z)
+    rav = MVector{3, T}(z, z, z)    # average ratio of consecutive data
+    vrat = MVector{3, T}(z, z, z)   # variance of ratios
+    rat = MMatrix{4, 3, T}(z, z, z, z, z, z, z, z, z, z, z, z)
+    qc = MMatrix{5, 3, T}(z, z, z, z, z, z, z, z, z, z, z, z, z, z, z)
 
     for k in 1:3
         smink = ssdat[1, k]
-        smaxk = 0.0
+        smaxk = z
         for i in 1:5
             smink = min(smink, ssdat[i, k])
             smaxk = max(smaxk, ssdat[i, k])
         end
 
         # Data too spread out
-        if smink < STALD_TINY * smaxk
+        if smink < tiny * smaxk
             return -1
         end
 
@@ -184,20 +203,20 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
         ssmax[k] = smaxk * smaxk
 
         # Compute ratios of consecutive data points and their variance
-        sumrat = 0.0
-        sumrsq = 0.0
+        sumrat = z
+        sumrsq = z
         for i in 1:4
             rat[i, k] = ssdat[i, k] / ssdat[i + 1, k]
             sumrat += rat[i, k]
             sumrsq += rat[i, k] * rat[i, k]
         end
-        rav[k] = 0.25 * sumrat                           # average ratio
-        vrat[k] = abs(0.25 * sumrsq - rav[k] * rav[k])   # variance
+        rav[k] = T(0.25) * sumrat                           # average ratio
+        vrat[k] = abs(T(0.25) * sumrsq - rav[k] * rav[k])   # variance
 
         # Quartic polynomial coefficients
         qc[5, k] = ssdat[1, k] * ssdat[3, k] - ssdat[2, k] * ssdat[2, k]
         qc[4, k] = ssdat[2, k] * ssdat[3, k] - ssdat[1, k] * ssdat[4, k]
-        qc[3, k] = 0.0
+        qc[3, k] = z
         qc[2, k] = ssdat[2, k] * ssdat[5, k] - ssdat[3, k] * ssdat[4, k]
         qc[1, k] = ssdat[4, k] * ssdat[4, k] - ssdat[3, k] * ssdat[5, k]
     end
@@ -205,37 +224,33 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
     # Phase 2: Determine rr (characteristic root magnitude)
     vmin = min(vrat[1], vrat[2], vrat[3])
     vmax = max(vrat[1], vrat[2], vrat[3])
-    rr = 0.0
+    rr = z
     kflag = 0
 
-    if vmin < STALD_VRRTOL * STALD_VRRTOL
+    if vmin < vrrtol * vrrtol
         # Low variance case: ratios are consistent
-        if vmax > STALD_VRRT2 * STALD_VRRT2
+        if vmax > vrrt2 * vrrt2
             return -2  # Some ratios are inconsistent
         end
 
         # Average the three ratio estimates
-        rr = (rav[1] + rav[2] + rav[3]) / 3.0
-        drrmax = 0.0
+        rr = (rav[1] + rav[2] + rav[3]) / T(3)
+        drrmax = z
         for k in 1:3
             adrr = abs(rav[k] - rr)
             drrmax = max(drrmax, adrr)
         end
-        if drrmax > STALD_VRRT2
+        if drrmax > vrrt2
             return -3
         end
         kflag = 1  # Found root via normal matrix case
     else
         # Higher variance: use quartic method
         # Gaussian elimination on quartic coefficients
-        qco = MMatrix{5, 3, Float64}(qc)
-
-        # Pivoting and elimination
-        # Find the row with largest qco[4,k] for pivoting
-        sqmx = MVector{3, Float64}(abs(qco[4, 1]), abs(qco[4, 2]), abs(qco[4, 3]))
+        qco = MMatrix{5, 3, T}(qc)
 
         # Simple Gaussian elimination (matching CVODE logic)
-        if abs(qco[4, 1]) > STALD_TINY * smax[1] * smax[1]
+        if abs(qco[4, 1]) > tiny * smax[1] * smax[1]
             r1 = qco[4, 2] / qco[4, 1]
             r2 = qco[4, 3] / qco[4, 1]
             for j in 5:-1:1
@@ -248,7 +263,7 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
             return -4
         end
 
-        if abs(qco[5, 2]) > STALD_TINY * smax[2] * smax[2]
+        if abs(qco[5, 2]) > tiny * smax[2] * smax[2]
             r1 = qco[5, 3] / qco[5, 2]
             for j in 5:-1:1
                 if j != 4 && j != 5
@@ -257,51 +272,51 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
             end
         else
             # Try alternate elimination
-            if abs(qco[5, 3]) > STALD_TINY * smax[3] * smax[3]
+            if abs(qco[5, 3]) > tiny * smax[3] * smax[3]
                 return -4
             end
         end
 
         # Solve for rr
-        if abs(qco[4, 3]) < STALD_TINY
+        if abs(qco[4, 3]) < tiny
             return -4
         end
         rr = -qco[5, 3] / qco[4, 3]
 
-        if rr < STALD_TINY || rr > 100.0
+        if rr < tiny || rr > T(100)
             return -5
         end
 
         # Verify rr satisfies all three quartics
-        sqmax = 0.0
+        sqmax = z
         for k in 1:3
             qkr = qc[5, k] + rr * (qc[4, k] + rr * rr * (qc[2, k] + rr * qc[1, k]))
             saqk = abs(qkr) / ssmax[k]
             sqmax = max(sqmax, saqk)
         end
 
-        if sqmax < STALD_SQTOL
+        if sqmax < sqtol
             kflag = 2  # Found root via quartic
         else
             # Newton corrections to improve rr
             kmin = 0
             for it in 1:3
-                drr = MVector{3, Float64}(0.0, 0.0, 0.0)
-                rrc = MVector{3, Float64}(0.0, 0.0, 0.0)
+                drr = MVector{3, T}(z, z, z)
+                rrc = MVector{3, T}(z, z, z)
 
                 for k in 1:3
                     qkr = qc[5, k] +
                         rr * (qc[4, k] + rr * rr * (qc[2, k] + rr * qc[1, k]))
                     qp = qc[4, k] +
-                        rr * rr * (3.0 * qc[2, k] + rr * 4.0 * qc[1, k])
-                    if abs(qp) > STALD_TINY * ssmax[k]
+                        rr * rr * (T(3) * qc[2, k] + rr * T(4) * qc[1, k])
+                    if abs(qp) > tiny * ssmax[k]
                         drr[k] = -qkr / qp
                     end
                     rrc[k] = rr + drr[k]
                 end
 
                 # Pick correction giving smallest residual
-                sqmin = Inf
+                sqmin = T(Inf)
                 for k in 1:3
                     if rrc[k] > 0
                         qkr_k = qc[5, k] + rrc[k] *
@@ -323,7 +338,7 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
                 end
                 rr = rrc[kmin]
 
-                if sqmin < STALD_SQTOL
+                if sqmin < sqtol
                     kflag = 3  # Found root via Newton-corrected quartic
                     break
                 end
@@ -336,7 +351,7 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
     end
 
     # Phase 3: Compute sigsq and cross-check rr
-    sigsq = MVector{3, Float64}(0.0, 0.0, 0.0)
+    sigsq = MVector{3, T}(z, z, z)
     for k in 1:3
         rsa = ssdat[1, k]
         rsb = ssdat[2, k] * rr
@@ -349,42 +364,42 @@ function _stald_detect(stald::StabilityLimitDetectionState, q::Int)
         rd2b = rd1b - rd1c
         rd3a = rd2a - rd2b
 
-        if abs(rd1b) < STALD_TINY * smax[k]
+        if abs(rd1b) < tiny * smax[k]
             return -7
         end
 
         cest1 = -rd3a / rd1b
-        if cest1 < STALD_TINY || cest1 > 4.0
+        if cest1 < tiny || cest1 > T(4)
             return -7
         end
         corr1 = (rd2b / cest1) / (rr * rr)
         sigsq[k] = ssdat[3, k] + corr1
     end
 
-    if sigsq[2] < STALD_TINY
+    if sigsq[2] < tiny
         return -8
     end
 
     # Phase 4: Cross-check rr from sigsq ratios
     ratp = sigsq[3] / sigsq[2]
     ratm = sigsq[1] / sigsq[2]
-    qfac1 = 0.25 * (q * q - 1)
-    qfac2 = 2.0 / (q - 1)
-    bb = ratp * ratm - 1.0 - qfac1 * ratp
-    tem = 1.0 - qfac2 * bb
+    qfac1 = T(0.25) * (q * q - 1)
+    qfac2 = T(2) / (q - 1)
+    bb = ratp * ratm - one(T) - qfac1 * ratp
+    tem = one(T) - qfac2 * bb
 
-    if abs(tem) < STALD_TINY
+    if abs(tem) < tiny
         return -8
     end
 
-    rrb = 1.0 / tem
+    rrb = one(T) / tem
 
-    if abs(rrb - rr) > STALD_RRTOL
+    if abs(rrb - rr) > rrtol
         return -9
     end
 
     # Phase 5: Final stability decision
-    if rr > STALD_RRCUT
+    if rr > rrcut
         # Stability violation detected!
         return kflag + 3  # Returns 4, 5, or 6
     end

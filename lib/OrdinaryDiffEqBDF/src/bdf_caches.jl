@@ -587,7 +587,7 @@ end
 
 @cache mutable struct FBDFConstantCache{
         MO, N, tsType, tType, uType, uuType, coeffType,
-        EEstType, rType, wType,
+        EEstType, rType, wType, staldType,
     } <:
     OrdinaryDiffEqConstantCache
     nlsolver::N
@@ -610,7 +610,7 @@ end
     r::rType
     weights::wType
     iters_from_event::Int
-    stald::StabilityLimitDetectionState
+    stald::staldType
 end
 
 function alg_cache(
@@ -659,7 +659,17 @@ function alg_cache(
     t_old = zero(t)
     iters_from_event = 0
 
-    stald = StabilityLimitDetectionState()
+    T_stald = real(uBottomEltypeNoUnits)
+    stald = StabilityLimitDetectionState(
+        T_stald;
+        enabled = alg.stald,
+        rrcut = alg.stald_rrcut,
+        vrrtol = alg.stald_vrrtol,
+        vrrt2 = alg.stald_vrrt2,
+        sqtol = alg.stald_sqtol,
+        rrtol = alg.stald_rrtol,
+        tiny = alg.stald_tiny,
+    )
 
     return FBDFConstantCache(
         nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
@@ -670,7 +680,7 @@ end
 
 @cache mutable struct FBDFCache{
         MO, N, rateType, uNoUnitsType, tsType, tType, uType, uuType,
-        coeffType, EEstType, rType, wType, StepLimiter, fdWeightsType,
+        coeffType, EEstType, rType, wType, StepLimiter, fdWeightsType, staldType,
     } <:
     BDFMutableCache
     fsalfirst::rateType
@@ -703,7 +713,7 @@ end
     dense::Vector{uType}
     step_limiter!::StepLimiter
     fd_weights::fdWeightsType
-    stald::StabilityLimitDetectionState
+    stald::staldType
 end
 
 @truncate_stacktrace FBDFCache 1
@@ -763,7 +773,17 @@ function alg_cache(
     dense = [zero(u) for _ in 1:(2 * (max_order + 1))]
 
     fd_weights = zeros(typeof(t), max_order + 1, max_order + 1)
-    stald = StabilityLimitDetectionState()
+    T_stald = real(uBottomEltypeNoUnits)
+    stald = StabilityLimitDetectionState(
+        T_stald;
+        enabled = alg.stald,
+        rrcut = alg.stald_rrcut,
+        vrrtol = alg.stald_vrrtol,
+        vrrt2 = alg.stald_vrrt2,
+        sqtol = alg.stald_sqtol,
+        rrtol = alg.stald_rrtol,
+        tiny = alg.stald_tiny,
+    )
 
     return FBDFCache(
         fsalfirst, nlsolver, ts, ts_tmp, t_old, u_history, order, prev_order,
