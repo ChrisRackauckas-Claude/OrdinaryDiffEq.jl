@@ -34,6 +34,17 @@ mutable struct StabilityLimitDetectionState{T}
     sqtol::T             # tolerance for quartic residual
     rrtol::T             # tolerance for rr cross-verification
     tiny::T              # tiny value to avoid division by zero
+    # Pre-allocated workspace for _stald_detect (avoids MVector/MMatrix allocations)
+    smax::Vector{T}      # length 3
+    ssmax::Vector{T}     # length 3
+    rav::Vector{T}       # length 3
+    vrat::Vector{T}      # length 3
+    rat::Matrix{T}       # 4×3
+    qc::Matrix{T}        # 5×3
+    qco::Matrix{T}       # 5×3
+    drr::Vector{T}       # length 3
+    rrc::Vector{T}       # length 3
+    sigsq::Vector{T}     # length 3
 end
 
 function StabilityLimitDetectionState(
@@ -58,6 +69,16 @@ function StabilityLimitDetectionState(
         T(sqtol),
         T(rrtol),
         T(tiny),
+        zeros(T, 3),       # smax
+        zeros(T, 3),       # ssmax
+        zeros(T, 3),       # rav
+        zeros(T, 3),       # vrat
+        zeros(T, 4, 3),    # rat
+        zeros(T, 5, 3),    # qc
+        zeros(T, 5, 3),    # qco
+        zeros(T, 3),       # drr
+        zeros(T, 3),       # rrc
+        zeros(T, 3),       # sigsq
     )
 end
 
@@ -156,9 +177,20 @@ end
 Reset STALD state (e.g., after u_modified or reinit).
 """
 function stald_reset!(stald::StabilityLimitDetectionState{T}) where {T}
-    fill!(stald.ssdat, zero(T))
+    z = zero(T)
+    fill!(stald.ssdat, z)
     stald.nscon = 0
     stald.last_order = 0
+    fill!(stald.smax, z)
+    fill!(stald.ssmax, z)
+    fill!(stald.rav, z)
+    fill!(stald.vrat, z)
+    fill!(stald.rat, z)
+    fill!(stald.qc, z)
+    fill!(stald.qco, z)
+    fill!(stald.drr, z)
+    fill!(stald.rrc, z)
+    fill!(stald.sigsq, z)
     return nothing
 end
 
@@ -175,16 +207,17 @@ Returns:
 function _stald_detect(stald::StabilityLimitDetectionState{T}, q::Int) where {T}
     ssdat = stald.ssdat
     (; rrcut, vrrtol, vrrt2, sqtol, rrtol, tiny) = stald
+    (; smax, ssmax, rav, vrat, rat, qc, qco, drr, rrc, sigsq) = stald
 
     # Phase 1: Compute statistics from stored data
     # For each of the three derivative levels k=1,2,3
     z = zero(T)
-    smax = MVector{3, T}(z, z, z)
-    ssmax = MVector{3, T}(z, z, z)
-    rav = MVector{3, T}(z, z, z)    # average ratio of consecutive data
-    vrat = MVector{3, T}(z, z, z)   # variance of ratios
-    rat = MMatrix{4, 3, T}(z, z, z, z, z, z, z, z, z, z, z, z)
-    qc = MMatrix{5, 3, T}(z, z, z, z, z, z, z, z, z, z, z, z, z, z, z)
+    fill!(smax, z)
+    fill!(ssmax, z)
+    fill!(rav, z)
+    fill!(vrat, z)
+    fill!(rat, z)
+    fill!(qc, z)
 
     for k in 1:3
         smink = ssdat[1, k]
@@ -247,7 +280,7 @@ function _stald_detect(stald::StabilityLimitDetectionState{T}, q::Int) where {T}
     else
         # Higher variance: use quartic method
         # Gaussian elimination on quartic coefficients
-        qco = MMatrix{5, 3, T}(qc)
+        copyto!(qco, qc)
 
         # Simple Gaussian elimination (matching CVODE logic)
         if abs(qco[4, 1]) > tiny * smax[1] * smax[1]
@@ -301,8 +334,8 @@ function _stald_detect(stald::StabilityLimitDetectionState{T}, q::Int) where {T}
             # Newton corrections to improve rr
             kmin = 0
             for it in 1:3
-                drr = MVector{3, T}(z, z, z)
-                rrc = MVector{3, T}(z, z, z)
+                fill!(drr, z)
+                fill!(rrc, z)
 
                 for k in 1:3
                     qkr = qc[5, k] +
@@ -351,7 +384,7 @@ function _stald_detect(stald::StabilityLimitDetectionState{T}, q::Int) where {T}
     end
 
     # Phase 3: Compute sigsq and cross-check rr
-    sigsq = MVector{3, T}(z, z, z)
+    fill!(sigsq, z)
     for k in 1:3
         rsa = ssdat[1, k]
         rsb = ssdat[2, k] * rr
