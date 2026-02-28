@@ -219,23 +219,6 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
     return saved, savedexactly
 end
 
-# Release excess allocated memory from a Vector.
-# sizehint! always allocates a new backing buffer, so we only call it when the
-# array's backing memory (capacity) is substantially larger than its length.
-# Julia's push!/resize! use a 2x growth strategy, so capacity >= 2*length means
-# at least half the allocated memory is wasted.
-@static if VERSION >= v"1.11"
-    function _shrink_to_fit!(v::Vector)
-        n = length(v)
-        if length(v.ref.mem) >= 2 * n
-            sizehint!(v, n)
-        end
-        return nothing
-    end
-else
-    _shrink_to_fit!(v::Vector) = nothing
-end
-
 # Want to extend postamble! for DDEIntegrator
 postamble!(integrator::ODEIntegrator) = _postamble!(integrator)
 
@@ -244,11 +227,11 @@ function _postamble!(integrator)
     solution_endpoint_match_cur_integrator!(integrator)
     resize!(integrator.sol.t, integrator.saveiter)
     resize!(integrator.sol.u, integrator.saveiter)
-    _shrink_to_fit!(integrator.sol.t)
-    _shrink_to_fit!(integrator.sol.u)
+    sizehint!(integrator.sol.t, integrator.saveiter)
+    sizehint!(integrator.sol.u, integrator.saveiter)
     if !(integrator.sol isa DAESolution)
         resize!(integrator.sol.k, integrator.saveiter_dense)
-        _shrink_to_fit!(integrator.sol.k)
+        sizehint!(integrator.sol.k, integrator.saveiter_dense)
     end
     if integrator.opts.progress
         final_progress(integrator)
