@@ -2,7 +2,7 @@ abstract type RosenbrockMutableCache <: OrdinaryDiffEqMutableCache end
 abstract type RosenbrockConstantCache <: OrdinaryDiffEqConstantCache end
 
 """
-    JacReuseState{T}
+    JacReuseState
 
 Lightweight mutable state for tracking Jacobian reuse in Rosenbrock-W methods.
 W-methods guarantee correctness with a stale Jacobian, so we can skip expensive
@@ -16,9 +16,9 @@ Fields:
 - `cached_dT`: Cached time derivative for OOP reuse
 - `cached_W`: Cached factorized W matrix for OOP reuse
 """
-mutable struct JacReuseState{T}
-    last_dtgamma::T
-    pending_dtgamma::T
+mutable struct JacReuseState
+    last_dtgamma::Float64
+    pending_dtgamma::Float64
     last_naccept::Int
     max_jac_age::Int
     cached_J::Any
@@ -26,8 +26,8 @@ mutable struct JacReuseState{T}
     cached_W::Any
 end
 
-function JacReuseState(dtgamma::T) where {T}
-    return JacReuseState{T}(dtgamma, dtgamma, 0, 50, nothing, nothing, nothing)
+function JacReuseState(dtgamma)
+    return JacReuseState(Float64(dtgamma), Float64(dtgamma), 0, 50, nothing, nothing, nothing)
 end
 
 # Fake values since non-FSAL
@@ -39,7 +39,7 @@ get_fsalfirstlast(cache::RosenbrockMutableCache, u) = (nothing, nothing)
 
 mutable struct RosenbrockCache{
         uType, rateType, tabType, uNoUnitsType, JType, WType, TabType,
-        TFType, UFType, F, JCType, GCType, RTolType, A, StepLimiter, StageLimiter, JRType,
+        TFType, UFType, F, JCType, GCType, RTolType, A, StepLimiter, StageLimiter,
     } <:
     RosenbrockMutableCache
     u::uType
@@ -71,7 +71,7 @@ mutable struct RosenbrockCache{
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
     interp_order::Int
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 function full_cache(c::RosenbrockCache)
     return [
@@ -80,7 +80,7 @@ function full_cache(c::RosenbrockCache)
     ]
 end
 
-struct RosenbrockCombinedConstantCache{TF, UF, Tab, JType, WType, F, AD, JRType} <:
+struct RosenbrockCombinedConstantCache{TF, UF, Tab, JType, WType, F, AD} <:
     RosenbrockConstantCache
     tf::TF
     uf::UF
@@ -90,13 +90,13 @@ struct RosenbrockCombinedConstantCache{TF, UF, Tab, JType, WType, F, AD, JRType}
     linsolve::F
     autodiff::AD
     interp_order::Int
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 
 @cache mutable struct Rosenbrock23Cache{
         uType, rateType, uNoUnitsType, JType, WType,
         TabType, TFType, UFType, F, JCType, GCType,
-        RTolType, A, AV, StepLimiter, StageLimiter, JRType,
+        RTolType, A, AV, StepLimiter, StageLimiter,
     } <: RosenbrockMutableCache
     u::uType
     uprev::uType
@@ -126,13 +126,13 @@ end
     algebraic_vars::AV
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 
 @cache mutable struct Rosenbrock32Cache{
         uType, rateType, uNoUnitsType, JType, WType,
         TabType, TFType, UFType, F, JCType, GCType,
-        RTolType, A, AV, StepLimiter, StageLimiter, JRType,
+        RTolType, A, AV, StepLimiter, StageLimiter,
     } <: RosenbrockMutableCache
     u::uType
     uprev::uType
@@ -162,7 +162,7 @@ end
     algebraic_vars::AV
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 
 function alg_cache(
@@ -286,7 +286,7 @@ function alg_cache(
     )
 end
 
-struct Rosenbrock23ConstantCache{T, TF, UF, JType, WType, F, AD, JRType} <:
+struct Rosenbrock23ConstantCache{T, TF, UF, JType, WType, F, AD} <:
     RosenbrockConstantCache
     c₃₂::T
     d::T
@@ -296,7 +296,7 @@ struct Rosenbrock23ConstantCache{T, TF, UF, JType, WType, F, AD, JRType} <:
     W::WType
     linsolve::F
     autodiff::AD
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 
 function Rosenbrock23ConstantCache(
@@ -326,7 +326,7 @@ function alg_cache(
     )
 end
 
-struct Rosenbrock32ConstantCache{T, TF, UF, JType, WType, F, AD, JRType} <:
+struct Rosenbrock32ConstantCache{T, TF, UF, JType, WType, F, AD} <:
     RosenbrockConstantCache
     c₃₂::T
     d::T
@@ -336,7 +336,7 @@ struct Rosenbrock32ConstantCache{T, TF, UF, JType, WType, F, AD, JRType} <:
     W::WType
     linsolve::F
     autodiff::AD
-    jac_reuse::JRType
+    jac_reuse::JacReuseState
 end
 
 function Rosenbrock32ConstantCache(

@@ -1,6 +1,6 @@
 module OrdinaryDiffEqRosenbrock
 
-import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, isWmethod, aggressive_W_reuse, isfsal, _unwrap_val,
+import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, isWmethod, isfsal, _unwrap_val,
     DEFAULT_PRECS, OrdinaryDiffEqRosenbrockAlgorithm, @cache,
     alg_cache, initialize!,
     calculate_residuals!, OrdinaryDiffEqMutableCache,
@@ -27,13 +27,32 @@ using LinearAlgebra: mul!, diag, diagm, I, Diagonal, norm, lu, lu!
 using ADTypes
 import OrdinaryDiffEqCore, OrdinaryDiffEqDifferentiation
 
+# Conditionally import aggressive_W_reuse (added in newer OrdinaryDiffEqCore)
+@static if isdefined(OrdinaryDiffEqCore, :aggressive_W_reuse)
+    import OrdinaryDiffEqCore: aggressive_W_reuse
+else
+    aggressive_W_reuse(alg) = false
+end
+
 using OrdinaryDiffEqDifferentiation: TimeDerivativeWrapper, TimeGradientWrapper,
     UDerivativeWrapper, UJacobianWrapper,
     wrapprecs, calc_tderivative, build_grad_config,
     build_jac_config, issuccess_W, jacobian2W!,
     resize_jac_config!, resize_grad_config!,
-    calc_W, calc_rosenbrock_differentiation!, calc_rosenbrock_differentiation, build_J_W,
+    calc_W, calc_rosenbrock_differentiation!, build_J_W,
     UJacobianWrapper, dolinsolve, WOperator, resize_J_W!
+
+# Conditionally import OOP calc_rosenbrock_differentiation (added in newer OrdinaryDiffEqDifferentiation)
+@static if isdefined(OrdinaryDiffEqDifferentiation, :calc_rosenbrock_differentiation)
+    using OrdinaryDiffEqDifferentiation: calc_rosenbrock_differentiation
+else
+    # Fallback: standard path without Jacobian reuse for OOP
+    function calc_rosenbrock_differentiation(integrator, cache, dtgamma, repeat_step)
+        dT = calc_tderivative(integrator, cache)
+        W = calc_W(integrator, cache, dtgamma, repeat_step)
+        return dT, W
+    end
+end
 
 using Reexport
 @reexport using SciMLBase
