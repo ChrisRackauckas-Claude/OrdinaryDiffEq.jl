@@ -236,4 +236,79 @@ strict_rosenbrock = [
             @test norm(sol.u[end] - exact) < 1.0e-2
         end
     end
+
+    # ========================================================================
+    @testset "aggressive_W_reuse option for adaptive W-methods (nw < naccept)" begin
+        # With aggressive_W_reuse=true, W should be reused across steps.
+        # nw (W factorizations) should be less than naccept (accepted steps).
+        for alg in [
+                Rosenbrock23(aggressive_W_reuse = true),
+                Rosenbrock32(aggressive_W_reuse = true),
+                Rodas23W(aggressive_W_reuse = true),
+                ROS34PW3(aggressive_W_reuse = true),
+            ]
+            sol = solve(vdp_prob, alg, reltol = 1.0e-6, abstol = 1.0e-8)
+            @test SciMLBase.successful_retcode(sol)
+            if sol.stats.naccept > 10
+                @test sol.stats.nw < sol.stats.naccept
+            end
+        end
+    end
+
+    # ========================================================================
+    @testset "Default W-methods rebuild W every step (no aggressive reuse)" begin
+        # Without aggressive_W_reuse, W-methods rebuild W every step
+        for alg in [Rosenbrock23(), Rodas23W(), ROS34PW3()]
+            sol = solve(vdp_prob, alg, reltol = 1.0e-6, abstol = 1.0e-8)
+            @test SciMLBase.successful_retcode(sol)
+            if sol.stats.naccept > 5
+                @test sol.stats.nw >= sol.stats.naccept
+            end
+        end
+    end
+
+    # ========================================================================
+    @testset "Strict Rosenbrock methods rebuild W every step" begin
+        # Strict Rosenbrock methods must rebuild W every step (no W reuse)
+        for alg in [Rodas3(), Rodas4(), Rodas5(), Rodas5P()]
+            sol = solve(vdp_prob, alg, reltol = 1.0e-6, abstol = 1.0e-8)
+            @test SciMLBase.successful_retcode(sol)
+            if sol.stats.naccept > 5
+                @test sol.stats.nw >= sol.stats.naccept
+            end
+        end
+    end
+
+    # ========================================================================
+    @testset "aggressive_W_reuse doesn't cause excessive step rejections" begin
+        # Verify that stale W doesn't blow up the number of steps.
+        for alg in [
+                Rosenbrock23(aggressive_W_reuse = true),
+                Rodas23W(aggressive_W_reuse = true),
+            ]
+            sol = solve(vdp_prob, alg, reltol = 1.0e-6, abstol = 1.0e-8)
+            @test SciMLBase.successful_retcode(sol)
+            # Rejection rate should be bounded — stale W may cause some
+            # rejections but shouldn't cause more than 50% rejection rate
+            @test sol.stats.nreject < sol.stats.naccept
+        end
+    end
+
+    # ========================================================================
+    @testset "aggressive_W_reuse accuracy on ROBER" begin
+        ref_sol = solve(rober_prob, Rodas5P(), reltol = 1.0e-12, abstol = 1.0e-12)
+        for alg in [
+                Rosenbrock23(aggressive_W_reuse = true),
+                Rodas23W(aggressive_W_reuse = true),
+                ROS34PW3(aggressive_W_reuse = true),
+            ]
+            sol = solve(rober_prob, alg, reltol = 1.0e-6, abstol = 1.0e-8)
+            @test SciMLBase.successful_retcode(sol)
+            @test norm(sol.u[end] - ref_sol.u[end]) / norm(ref_sol.u[end]) < 1.0e-3
+            # Verify W reuse is active
+            if sol.stats.naccept > 10
+                @test sol.stats.nw < sol.stats.naccept
+            end
+        end
+    end
 end

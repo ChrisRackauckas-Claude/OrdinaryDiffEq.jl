@@ -1,6 +1,6 @@
 module OrdinaryDiffEqRosenbrock
 
-import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, isWmethod, isfsal, _unwrap_val,
+import OrdinaryDiffEqCore: alg_order, alg_adaptive_order, isWmethod, aggressive_W_reuse, isfsal, _unwrap_val,
     DEFAULT_PRECS, OrdinaryDiffEqRosenbrockAlgorithm, @cache,
     alg_cache, initialize!,
     calculate_residuals!, OrdinaryDiffEqMutableCache,

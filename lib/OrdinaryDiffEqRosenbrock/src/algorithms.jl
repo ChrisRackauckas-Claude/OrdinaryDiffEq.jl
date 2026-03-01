@@ -109,13 +109,15 @@ for (Alg, desc, refs, is_W) in [
             step_limiter!::StepLimiter
             stage_limiter!::StageLimiter
             autodiff::AD
+            aggressive_W_reuse::Bool
         end
         function $Alg(;
                 chunk_size = Val{0}(), autodiff = AutoForwardDiff(),
                 standardtag = Val{true}(), concrete_jac = nothing,
                 diff_type = Val{:forward}(), linsolve = nothing,
                 precs = DEFAULT_PRECS, step_limiter! = trivial_limiter!,
-                stage_limiter! = trivial_limiter!
+                stage_limiter! = trivial_limiter!,
+                aggressive_W_reuse = false
             )
             AD_choice, chunk_size,
                 diff_type = _process_AD_choice(
@@ -128,7 +130,7 @@ for (Alg, desc, refs, is_W) in [
                 typeof(stage_limiter!),
             }(
                 linsolve, precs, step_limiter!,
-                stage_limiter!, AD_choice
+                stage_limiter!, AD_choice, aggressive_W_reuse
             )
         end
     end
@@ -152,13 +154,15 @@ struct RosenbrockW6S4OS{CS, AD, F, P, FDT, ST, CJ} <:
     linsolve::F
     precs::P
     autodiff::AD
+    aggressive_W_reuse::Bool
 end
 function RosenbrockW6S4OS(;
         chunk_size = Val{0}(), autodiff = AutoForwardDiff(),
         standardtag = Val{true}(),
         concrete_jac = nothing, diff_type = Val{:forward}(),
         linsolve = nothing,
-        precs = DEFAULT_PRECS
+        precs = DEFAULT_PRECS,
+        aggressive_W_reuse = false
     )
     AD_choice, chunk_size, diff_type = _process_AD_choice(autodiff, chunk_size, diff_type)
 
@@ -168,7 +172,7 @@ function RosenbrockW6S4OS(;
         _unwrap_val(standardtag), _unwrap_val(concrete_jac),
     }(
         linsolve,
-        precs, AD_choice
+        precs, AD_choice, aggressive_W_reuse
     )
 end
 
@@ -312,11 +316,13 @@ for (Alg, desc, refs, is_W) in [
             linsolve::F
             precs::P
             autodiff::AD
+            aggressive_W_reuse::Bool
         end
         function $Alg(;
                 chunk_size = Val{0}(), autodiff = AutoForwardDiff(),
                 standardtag = Val{true}(), concrete_jac = nothing,
-                diff_type = Val{:forward}(), linsolve = nothing, precs = DEFAULT_PRECS
+                diff_type = Val{:forward}(), linsolve = nothing, precs = DEFAULT_PRECS,
+                aggressive_W_reuse = false
             )
             AD_choice, chunk_size,
                 diff_type = _process_AD_choice(
@@ -329,7 +335,7 @@ for (Alg, desc, refs, is_W) in [
                 _unwrap_val(concrete_jac),
             }(
                 linsolve,
-                precs, AD_choice
+                precs, AD_choice, aggressive_W_reuse
             )
         end
     end
@@ -348,6 +354,7 @@ struct HybridExplicitImplicitRK{TabType, CS, AD, F, P, FDT, ST, CJ, StepLimiter,
     step_limiter!::StepLimiter
     stage_limiter!::StageLimiter
     autodiff::AD
+    aggressive_W_reuse::Bool
 end
 
 function HybridExplicitImplicitRK(
@@ -357,7 +364,8 @@ function HybridExplicitImplicitRK(
         standardtag = Val{true}(), concrete_jac = nothing,
         diff_type = Val{:forward}(), linsolve = nothing,
         precs = DEFAULT_PRECS, step_limiter! = trivial_limiter!,
-        stage_limiter! = trivial_limiter!
+        stage_limiter! = trivial_limiter!,
+        aggressive_W_reuse = false
     )
     AD_choice, chunk_size, diff_type = _process_AD_choice(
         autodiff, chunk_size, diff_type
@@ -369,7 +377,7 @@ function HybridExplicitImplicitRK(
         typeof(stage_limiter!),
     }(
         tab, order, linsolve, precs, step_limiter!,
-        stage_limiter!, AD_choice
+        stage_limiter!, AD_choice, aggressive_W_reuse
     )
 end
 
@@ -381,12 +389,14 @@ function HybridExplicitImplicitRK(;
         standardtag = Val{true}(), concrete_jac = nothing,
         diff_type = Val{:forward}(), linsolve = nothing,
         precs = DEFAULT_PRECS, step_limiter! = trivial_limiter!,
-        stage_limiter! = trivial_limiter!
+        stage_limiter! = trivial_limiter!,
+        aggressive_W_reuse = false
     )
     return HybridExplicitImplicitRK(
         tab;
         order, chunk_size, autodiff, standardtag, concrete_jac,
-        diff_type, linsolve, precs, step_limiter!, stage_limiter!
+        diff_type, linsolve, precs, step_limiter!, stage_limiter!,
+        aggressive_W_reuse
     )
 end
 

@@ -13,12 +13,13 @@ get_jac_reuse(cache) = hasproperty(cache, :jac_reuse) ? cache.jac_reuse : nothin
 
 Decide whether to recompute the Jacobian and/or W matrix for Rosenbrock methods.
 For W-methods (where `isWmethod(alg) == true`), implements CVODE-inspired reuse:
-- Always recompute on first iteration
-- Recompute J on error test failure (EEst > 1)
-- Recompute when gamma ratio changes too much: |dtgamma/last_dtgamma - 1| > 0.3
-- Recompute every `max_jac_age` accepted steps (default 50)
-- Recompute when u_modified (callback modification)
-- W is always rebuilt (since W = J - M/(dt*gamma) depends on current dt)
+- Always recompute J and W on first iteration
+- Recompute J and W on error test failure (EEst > 1)
+- Recompute J and W when gamma ratio changes too much: |dtgamma/last_dtgamma - 1| > 0.3
+- Recompute J and W every `max_jac_age` accepted steps (default 50)
+- Recompute J and W when u_modified (callback modification)
+- If `aggressive_W_reuse(alg)` and adaptive: reuse both J and W (error controller catches staleness)
+- Otherwise: reuse J but rebuild W each step
 
 For strict Rosenbrock methods, returns `nothing` to delegate to `do_newJW`.
 """
@@ -67,6 +68,13 @@ function _rosenbrock_jac_reuse_decision(integrator, cache, dtgamma)
         return (true, true)
     end
 
+    # Error test failure: force fresh J and W (CVODE-inspired)
+    errorfail = integrator.EEst > one(integrator.EEst)
+    if errorfail
+        jac_reuse.pending_dtgamma = dtgamma
+        return (true, true)
+    end
+
     # Gamma ratio check (uses only accepted-step dtgamma)
     last_dtg = jac_reuse.last_dtgamma
     if !iszero(last_dtg) && abs(dtgamma / last_dtg - 1) > 0.3
@@ -80,8 +88,9 @@ function _rosenbrock_jac_reuse_decision(integrator, cache, dtgamma)
         return (true, true)
     end
 
-    # Reuse J, but always rebuild W (since dtgamma changes)
-    return (false, true)
+    # Reuse J; if aggressive_W_reuse is enabled, also reuse W
+    # (error controller will trigger rebuild via step rejection)
+    return (false, !(aggressive_W_reuse(alg) && integrator.opts.adaptive))
 end
 
 function calc_tderivative!(integrator, cache, dtd1, repeat_step)
@@ -819,7 +828,7 @@ function calc_rosenbrock_differentiation(integrator, cache, dtgamma, repeat_step
         return dT, W
     end
 
-    new_jac, _ = newJW
+    new_jac, new_W = newJW
 
     # For complex W types (operators), delegate to standard calc_W
     if cache.W isa StaticWOperator || cache.W isa WOperator ||
@@ -837,6 +846,7 @@ function calc_rosenbrock_differentiation(integrator, cache, dtgamma, repeat_step
     # force a fresh computation regardless of the decision.
     if !new_jac && jac_reuse.cached_J === nothing
         new_jac = true
+        new_W = true
     end
 
     if new_jac
@@ -858,12 +868,20 @@ function calc_rosenbrock_differentiation(integrator, cache, dtgamma, repeat_step
         jac_reuse.pending_dtgamma = dtgamma
     end
 
+    # Reuse cached W if not rebuilding
+    if !new_W && jac_reuse.cached_W !== nothing
+        return dT, jac_reuse.cached_W
+    end
+
     # Build W from J
     W = J - mass_matrix * inv(dtgamma)
     if !isa(W, Number)
         W = DiffEqBase.default_factorize(W)
     end
     integrator.stats.nw += 1
+
+    # Cache W for future reuse
+    jac_reuse.cached_W = W
 
     return dT, W
 end

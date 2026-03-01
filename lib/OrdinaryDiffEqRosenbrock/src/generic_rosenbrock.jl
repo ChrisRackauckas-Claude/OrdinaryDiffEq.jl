@@ -407,7 +407,7 @@ function gen_perform_step(tabmask::RosenbrockTableau{Bool,Bool},cachename::Symbo
 
             if $(i==1)
                 # Must be a part of the first linsolve for preconditioner step
-                linres = dolinsolve(integrator, linsolve; A = !repeat_step ? W : nothing, b = _vec(linsolve_tmp))
+                linres = dolinsolve(integrator, linsolve; A = (!repeat_step && new_W) ? W : nothing, b = _vec(linsolve_tmp))
             else
                 linres = dolinsolve(integrator, linsolve; b = _vec(linsolve_tmp))
             end
@@ -480,7 +480,7 @@ function gen_perform_step(tabmask::RosenbrockTableau{Bool,Bool},cachename::Symbo
             calculate_residuals!(weight, fill!(weight, one(eltype(u))), uprev, uprev,
                                  integrator.opts.abstol, integrator.opts.reltol, integrator.opts.internalnorm, t)
 
-            calc_rosenbrock_differentiation!(integrator, cache, dtd1, dtgamma, repeat_step)
+            new_W = calc_rosenbrock_differentiation!(integrator, cache, dtd1, dtgamma, repeat_step)
 
             linsolve = cache.linsolve
 

@@ -19,8 +19,8 @@ function SciMLBase.interp_summary(
     ) where {
         cacheType <:
         Union{
-            RosenbrockCombinedConstantCache, Rodas23WConstantCache, Rodas3PConstantCache,
-            RosenbrockCache, Rodas23WCache, Rodas3PCache,
+            RosenbrockCombinedConstantCache,
+            RosenbrockCache,
             HybridExplicitImplicitConstantCache, HybridExplicitImplicitCache,
         },
     }
