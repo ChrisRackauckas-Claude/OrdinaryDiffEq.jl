@@ -94,6 +94,22 @@ function last_step_failed(integrator::ODEIntegrator)
     return integrator.last_stepfail && !integrator.opts.adaptive
 end
 
+# Accessor functions for tstop flag fields with fallbacks for non-ODE integrators
+# (e.g. DDEIntegrator in DelayDiffEq.jl which doesn't have these fields)
+_get_next_step_tstop(integrator::ODEIntegrator) = integrator.next_step_tstop
+_get_next_step_tstop(integrator) = false
+
+function _set_tstop_flag!(integrator::ODEIntegrator, is_tstop::Bool, target = nothing)
+    integrator.next_step_tstop = is_tstop
+    if is_tstop && target !== nothing
+        integrator.tstop_target = target
+    end
+    return nothing
+end
+_set_tstop_flag!(integrator, is_tstop::Bool, target = nothing) = nothing
+
+_get_tstop_target(integrator::ODEIntegrator) = integrator.tstop_target
+
 function modify_dt_for_tstops!(integrator)
     return if has_tstop(integrator)
         tdir_t = integrator.tdir * integrator.t
@@ -104,32 +120,32 @@ function modify_dt_for_tstops!(integrator)
             original_dt = abs(integrator.dt)
             integrator.dtpropose = original_dt
             if original_dt < distance_to_tstop
-                integrator.next_step_tstop = false
+                _set_tstop_flag!(integrator, false)
             else
-                integrator.next_step_tstop = true
-                integrator.tstop_target = integrator.tdir * tdir_tstop
+                _set_tstop_flag!(
+                    integrator, true, integrator.tdir * tdir_tstop)
             end
             integrator.dt = integrator.tdir * min(original_dt, distance_to_tstop)
         elseif iszero(integrator.dtcache) && integrator.dtchangeable
             integrator.dt = integrator.tdir * distance_to_tstop
-            integrator.next_step_tstop = true
-            integrator.tstop_target = integrator.tdir * tdir_tstop
+            _set_tstop_flag!(
+                integrator, true, integrator.tdir * tdir_tstop)
         elseif integrator.dtchangeable && !integrator.force_stepfail
             # always try to step! with dtcache, but lower if a tstop
             # however, if force_stepfail then don't set to dtcache, and no tstop worry
             if abs(integrator.dtcache) < distance_to_tstop
-                integrator.next_step_tstop = false
+                _set_tstop_flag!(integrator, false)
             else
-                integrator.next_step_tstop = true
-                integrator.tstop_target = integrator.tdir * tdir_tstop
+                _set_tstop_flag!(
+                    integrator, true, integrator.tdir * tdir_tstop)
             end
             integrator.dt = integrator.tdir *
                 min(abs(integrator.dtcache), distance_to_tstop)
         else
-            integrator.next_step_tstop = false
+            _set_tstop_flag!(integrator, false)
         end
     else
-        integrator.next_step_tstop = false
+        _set_tstop_flag!(integrator, false)
     end
 end
 
@@ -376,7 +392,7 @@ function _loopfooter!(integrator)
             integrator.last_stepfail = false
             integrator.tprev = integrator.t
 
-            if integrator.next_step_tstop
+            if _get_next_step_tstop(integrator)
                 # Step controller dt is overly pessimistic, since dt = time to tstop.
                 # Restore the original dt so the controller proposes a reasonable next step.
                 integrator.dt = integrator.dtpropose
@@ -445,9 +461,9 @@ end
 
 function fixed_t_for_tstop_error!(integrator, ttmp)
     # If we're in tstop snap mode, use exact tstop target
-    if integrator.next_step_tstop
-        integrator.next_step_tstop = false
-        return integrator.tstop_target
+    if _get_next_step_tstop(integrator)
+        _set_tstop_flag!(integrator, false)
+        return _get_tstop_target(integrator)
     elseif has_tstop(integrator)
         # Fallback floating-point correction: snap to tstop if within 100*eps
         tstop = integrator.tdir * first_tstop(integrator)
