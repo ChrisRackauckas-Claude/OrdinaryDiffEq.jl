@@ -28,15 +28,6 @@ end
     dtmin = nextfloat(max(integrator.opts.dtmin, eps(t)))
     smalldt = max(dtmin, convert(_tType, oneunit_tType * 1 // 10^(6)))
 
-    # DAE guard: use IDA-style h = 0.001 * tdist for mass-matrix DAEs
-    if integrator.isdae
-        tspan = prob.tspan
-        tdist = abs(tspan[2] - tspan[1])
-        h = convert(_tType, 1 // 1000) * tdist * oneunit_tType
-        h = clamp(h, dtmin, tdir * dtmax)
-        return tdir * h
-    end
-
     if eltype(u0) <: Number && !(integrator.alg isa CompositeAlgorithm)
         cache = get_tmp_cache(integrator)
         sk = first(cache)
@@ -74,6 +65,7 @@ end
         end
         f(f₀, u0, p, t)
     end
+    integrator.stats.nf += 1
 
     # TODO: use more caches
     #tmp = cache[2]
@@ -207,6 +199,7 @@ end
     end
     f₁ = zero(f₀)
     f(f₁, u₁, p, t + dt₀_tdir)
+    integrator.stats.nf += 1
 
     if prob.f.mass_matrix != I && (
             !(prob.f isa DynamicalODEFunction) ||
@@ -310,19 +303,11 @@ end
     dtmin = nextfloat(max(integrator.opts.dtmin, eps(t)))
     smalldt = max(dtmin, convert(_tType, oneunit_tType * 1 // 10^(6)))
 
-    # DAE guard: use IDA-style h = 0.001 * tdist for mass-matrix DAEs
-    if integrator.isdae
-        tspan = prob.tspan
-        tdist = abs(tspan[2] - tspan[1])
-        h = convert(_tType, 1 // 1000) * tdist * oneunit_tType
-        h = clamp(h, dtmin, tdir * dtmax)
-        return tdir * h
-    end
-
     sk = @.. broadcast = false abstol + internalnorm(u0, t) * reltol
     d₀ = internalnorm(u0 ./ sk, t)
 
     f₀ = f(u0, p, t)
+    integrator.stats.nf += 1
 
     if any(x -> any(isnan, x), f₀)
         @SciMLMessage(
@@ -348,6 +333,7 @@ end
 
     u₁ = @.. broadcast = false u0 + dt₀_tdir * f₀
     f₁ = f(u₁, p, t + dt₀_tdir)
+    integrator.stats.nf += 1
 
     # Constant zone before callback
     # Just return first guess
@@ -440,6 +426,7 @@ end
         end
         f(f₀, u0, p, t)
     end
+    integrator.stats.nf += 1
 
     # Handle mass matrix
     ftmp = nothing
@@ -573,6 +560,7 @@ end
 
             # Evaluate f at stepped point
             f(f₁, u₁, p, t + hgs)
+            integrator.stats.nf += 1
 
             # Handle mass matrix
             if prob.f.mass_matrix != I && (
@@ -715,6 +703,7 @@ end
     end
 
     f₀ = f(u0, p, t)
+    integrator.stats.nf += 1
 
     if any(x -> any(isnan, x), f₀)
         @SciMLMessage(
@@ -774,6 +763,7 @@ end
 
             u₁ = @.. broadcast = false u0 + hgs * f₀
             f₁ = f(u₁, p, t + hgs)
+            integrator.stats.nf += 1
 
             ydd_ok = !any(x -> any(!isfinite, x), f₁)
 
@@ -798,6 +788,7 @@ end
         hgs = hg * tdir
         u₁ = @.. broadcast = false u0 + hgs * f₀
         f₁ = f(u₁, p, t + hgs)
+        integrator.stats.nf += 1
 
         yddnrm = zero(_tType)
         N = length(u0)
