@@ -162,6 +162,9 @@ function reinitFBDF!(integrator, cache)
         consfailcnt = cache.consfailcnt = cache.nconsteps = 0
         cache.qwait = 3 # order + 2, matching nconsteps >= order + 2 for failure-free runs
         iters_from_event = cache.iters_from_event = 0
+        if hasproperty(cache, :stald)
+            stald_reset!(cache.stald)
+        end
 
         fill!(ts, zero(eltype(ts)))
         for h in u_history
