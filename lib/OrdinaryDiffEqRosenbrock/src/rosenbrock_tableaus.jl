@@ -227,16 +227,32 @@ end
 
 @Rosenbrock4(:tableau)
 
-struct RodasTableau{T, T2, bType, btType}
+struct RodasTableau{T, T2}
     A::Matrix{T}
     C::Matrix{T}
     gamma::T2
     c::Vector{T2}
     d::Vector{T}
     H::Matrix{T}
-    b::bType       # explicit b weights (nothing = use Rodas encoding)
-    btilde::btType  # explicit btilde (nothing = use last k-stage as error)
 end
+
+# Unified tableau for consolidated Rosenbrock methods that have explicit b/btilde weights
+struct RosenbrockUnifiedTableau{T, T2, bType, btType}
+    A::Matrix{T}
+    C::Matrix{T}
+    gamma::T2
+    c::Vector{T2}
+    d::Vector{T}
+    H::Matrix{T}
+    b::bType       # explicit b weights
+    btilde::btType  # explicit btilde for error estimation (nothing = fixed-step method)
+end
+
+# Accessors: RodasTableau uses Rodas encoding (no explicit b/btilde)
+tableau_b(::RodasTableau) = nothing
+tableau_btilde(::RodasTableau) = nothing
+tableau_b(tab::RosenbrockUnifiedTableau) = tab.b
+tableau_btilde(tab::RosenbrockUnifiedTableau) = tab.btilde
 
 const RODAS4A = [
     0 0 0 0 0 0
@@ -262,7 +278,7 @@ const RODAS4H = [
 ]
 function Rodas4Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4A, RODAS4C, gamma, RODAS4c, RODAS4d, RODAS4H, nothing, nothing)
+    return RodasTableau(RODAS4A, RODAS4C, gamma, RODAS4c, RODAS4d, RODAS4H)
 end
 
 const RODAS42A = [
@@ -289,7 +305,7 @@ const RODAS42H = [
 ]
 function Rodas42Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS42A, RODAS42C, gamma, RODAS42c, RODAS42d, RODAS42H, nothing, nothing)
+    return RodasTableau(RODAS42A, RODAS42C, gamma, RODAS42c, RODAS42d, RODAS42H)
 end
 
 const RODAS4PA = [
@@ -316,7 +332,7 @@ const RODAS4PH = [
 ]
 function Rodas4PTableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4PA, RODAS4PC, gamma, RODAS4Pc, RODAS4Pd, RODAS4PH, nothing, nothing)
+    return RodasTableau(RODAS4PA, RODAS4PC, gamma, RODAS4Pc, RODAS4Pd, RODAS4PH)
 end
 
 const RODAS4P2A = [
@@ -343,7 +359,7 @@ const RODAS4P2H = [
 ]
 function Rodas4P2Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4P2A, RODAS4P2C, gamma, RODAS4P2c, RODAS4P2d, RODAS4P2H, nothing, nothing)
+    return RodasTableau(RODAS4P2A, RODAS4P2C, gamma, RODAS4P2c, RODAS4P2d, RODAS4P2H)
 end
 
 const RODAS5A = [
@@ -380,7 +396,7 @@ const RODAS5H = [
 
 function Rodas5Tableau(T, T2)
     gamma = 0.19
-    return RodasTableau(RODAS5A, RODAS5C, gamma, RODAS5c, RODAS5d, RODAS5H, nothing, nothing)
+    return RodasTableau(RODAS5A, RODAS5C, gamma, RODAS5c, RODAS5d, RODAS5H)
 end
 
 const RODAS5PA = [
@@ -418,7 +434,7 @@ const RODAS5PH = [
 ]
 function Rodas5PTableau(T, T2)
     gamma = 0.21193756319429014
-    return RodasTableau(RODAS5PA, RODAS5PC, gamma, RODAS5Pc, RODAS5Pd, RODAS5PH, nothing, nothing)
+    return RodasTableau(RODAS5PA, RODAS5PC, gamma, RODAS5Pc, RODAS5Pd, RODAS5PH)
 end
 
 const RODAS6PA = [
@@ -485,7 +501,7 @@ const RODAS6PH = [
 ]
 function Rodas6PTableau(T, T2)
     gamma = 0.26
-    return RodasTableau(RODAS6PA, RODAS6PC, gamma, RODAS6Pc, RODAS6Pd, RODAS6PH, nothing, nothing)
+    return RodasTableau(RODAS6PA, RODAS6PC, gamma, RODAS6Pc, RODAS6Pd, RODAS6PH)
 end
 
 @RosenbrockW6S4OS(:tableau)
@@ -552,10 +568,10 @@ function _rosenbrock_to_rodas(tab_fn, T, T2)
 
     if tab isa RosenbrockAdaptiveTableau
         btilde_vec = T[convert(T, tab.btilde[i]) for i in 1:n]
-        return RodasTableau(A, C, gamma, c, d, H, b_vec, btilde_vec)
+        return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b_vec, btilde_vec)
     else
         # RosenbrockFixedTableau — no error estimator
-        return RodasTableau(A, C, gamma, c, d, H, b_vec, nothing)
+        return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b_vec, nothing)
     end
 end
 
@@ -610,7 +626,7 @@ function ROS3PRodasTableau(T, T2)
     btilde = T[tab.btilde1, tab.btilde2, tab.btilde3]
     H = zeros(T, 0, 3)
 
-    return RodasTableau(A, C, gamma, c, d, H, b, btilde)
+    return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b, btilde)
 end
 
 # --- Rodas3 (4-stage, hand-written named-field tableau) ---
@@ -639,7 +655,7 @@ function Rodas3RodasTableau(T, T2)
     btilde = T[tab.btilde1, tab.btilde2, tab.btilde3, tab.btilde4]
     H = zeros(T, 0, 4)
 
-    return RodasTableau(A, C, gamma, c, d, H, b, btilde)
+    return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b, btilde)
 end
 
 # --- Rodas3P (5-stage, hand-written tableau with dense output H matrix) ---
@@ -696,7 +712,7 @@ function Rodas3PRodasTableau(T, T2)
     H[3, 4] = tab.h2_24
     H[3, 5] = tab.h2_25
 
-    return RodasTableau(A, C, gamma, c, d, H, b, btilde)
+    return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b, btilde)
 end
 
 # --- Rodas23W (5-stage, same tableau data as Rodas3P but uses 2nd order solution) ---
@@ -748,7 +764,7 @@ function Rodas23WRodasTableau(T, T2)
     H[3, 4] = tab.h2_24
     H[3, 5] = tab.h2_25
 
-    return RodasTableau(A, C, gamma, c, d, H, b, btilde)
+    return RosenbrockUnifiedTableau(A, C, gamma, c, d, H, b, btilde)
 end
 
 ################################################################################

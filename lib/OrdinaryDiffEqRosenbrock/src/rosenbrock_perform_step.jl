@@ -506,8 +506,8 @@ end
         ks = Base.setindex(ks, _reshape(W \ -_vec(linsolve_tmp), axes(uprev)), stage)
         integrator.stats.nsolve += 1
     end
-    tab_b = cache.tab.b
-    tab_btilde = cache.tab.btilde
+    tab_b = tableau_b(cache.tab)
+    tab_btilde = tableau_btilde(cache.tab)
     if tab_b !== nothing
         # Explicit b weights: u = uprev + sum(b[i]*ks[i])
         u = copy(uprev)
@@ -680,8 +680,8 @@ end
         @.. $(_vec(ks[stage])) = -linres.u
         integrator.stats.nsolve += 1
     end
-    tab_b = cache.tab.b
-    tab_btilde = cache.tab.btilde
+    tab_b = tableau_b(cache.tab)
+    tab_btilde = tableau_btilde(cache.tab)
     if tab_b !== nothing
         # Explicit b weights: u = uprev + sum(b[i]*ks[i])
         u .= uprev
