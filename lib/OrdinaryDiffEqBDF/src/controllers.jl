@@ -309,7 +309,12 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        q = ((2 * terk / (k + 1))^(1 / (k + 1)))
+        # CVODE-style step size formula: eta = 1 / (BIAS2 * dsm)^(1/(k+1))
+        # where dsm = terk / (alpha0 * (k+1)) and alpha0 is the BDF leading coefficient.
+        # FBDF uses fixed leading coefficients, so alpha0 = bdf_coeffs[k, 1].
+        # BIAS2 = 6 matches CVODE (cvode_impl.h).
+        alpha0 = cache.bdf_coeffs[k, 1]
+        q = ((6 * terk / (alpha0 * (k + 1)))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
@@ -467,7 +472,9 @@ function stepsize_controller!(
     if iszero(terk)
         q = inv(get_current_qmax(integrator, integrator.opts.qmax))
     else
-        q = ((2 * terk / (k + 1))^(1 / (k + 1)))
+        # CVODE-style step size formula matching FBDF change
+        alpha0 = cache.bdf_coeffs[k, 1]
+        q = ((6 * terk / (alpha0 * (k + 1)))^(1 / (k + 1)))
     end
     integrator.qold = q
     return q
