@@ -278,7 +278,7 @@ const RODAS4H = [
 ]
 function Rodas4Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4A, RODAS4C, gamma, RODAS4c, RODAS4d, RODAS4H)
+    return RodasTableau{T, T2}(RODAS4A, RODAS4C, gamma, RODAS4c, RODAS4d, RODAS4H)
 end
 
 const RODAS42A = [
@@ -305,7 +305,7 @@ const RODAS42H = [
 ]
 function Rodas42Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS42A, RODAS42C, gamma, RODAS42c, RODAS42d, RODAS42H)
+    return RodasTableau{T, T2}(RODAS42A, RODAS42C, gamma, RODAS42c, RODAS42d, RODAS42H)
 end
 
 const RODAS4PA = [
@@ -332,7 +332,7 @@ const RODAS4PH = [
 ]
 function Rodas4PTableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4PA, RODAS4PC, gamma, RODAS4Pc, RODAS4Pd, RODAS4PH)
+    return RodasTableau{T, T2}(RODAS4PA, RODAS4PC, gamma, RODAS4Pc, RODAS4Pd, RODAS4PH)
 end
 
 const RODAS4P2A = [
@@ -359,7 +359,7 @@ const RODAS4P2H = [
 ]
 function Rodas4P2Tableau(T, T2)
     gamma = 0.25
-    return RodasTableau(RODAS4P2A, RODAS4P2C, gamma, RODAS4P2c, RODAS4P2d, RODAS4P2H)
+    return RodasTableau{T, T2}(RODAS4P2A, RODAS4P2C, gamma, RODAS4P2c, RODAS4P2d, RODAS4P2H)
 end
 
 const RODAS5A = [
@@ -396,7 +396,7 @@ const RODAS5H = [
 
 function Rodas5Tableau(T, T2)
     gamma = 0.19
-    return RodasTableau(RODAS5A, RODAS5C, gamma, RODAS5c, RODAS5d, RODAS5H)
+    return RodasTableau{T, T2}(RODAS5A, RODAS5C, gamma, RODAS5c, RODAS5d, RODAS5H)
 end
 
 const RODAS5PA = [
@@ -434,7 +434,7 @@ const RODAS5PH = [
 ]
 function Rodas5PTableau(T, T2)
     gamma = 0.21193756319429014
-    return RodasTableau(RODAS5PA, RODAS5PC, gamma, RODAS5Pc, RODAS5Pd, RODAS5PH)
+    return RodasTableau{T, T2}(RODAS5PA, RODAS5PC, gamma, RODAS5Pc, RODAS5Pd, RODAS5PH)
 end
 
 const RODAS6PA = [
@@ -501,7 +501,7 @@ const RODAS6PH = [
 ]
 function Rodas6PTableau(T, T2)
     gamma = 0.26
-    return RodasTableau(RODAS6PA, RODAS6PC, gamma, RODAS6Pc, RODAS6Pd, RODAS6PH)
+    return RodasTableau{T, T2}(RODAS6PA, RODAS6PC, gamma, RODAS6Pc, RODAS6Pd, RODAS6PH)
 end
 
 @RosenbrockW6S4OS(:tableau)
