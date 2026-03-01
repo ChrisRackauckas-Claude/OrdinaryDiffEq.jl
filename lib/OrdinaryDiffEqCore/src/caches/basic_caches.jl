@@ -149,3 +149,28 @@ alg_cache(alg::OrdinaryDiffEqAlgorithm, prob, callback::F) where {F} = ODEEmptyC
 
 get_chunksize(cache::SciMLBase.DECache) = error("This cache does not have a chunksize.")
 get_chunksize(cache::ODEChunkCache{CS}) where {CS} = CS
+
+"""
+    supports_k_swap(cache) -> Bool
+
+Return `true` if the cache supports zero-copy k-buffer swapping during dense saves.
+Caches that support this must implement `swap_k_buffers!(integrator, cache)`.
+"""
+supports_k_swap(cache) = false
+
+"""
+    swap_k_buffers!(integrator, cache)
+
+After saving k array references to the solution (zero-copy), allocate fresh k arrays
+in the cache and update integrator pointers. Only called when `supports_k_swap(cache)`
+returns `true`.
+
+Must handle:
+- Replacing cache k-array fields with fresh allocations
+- Updating `integrator.k[1:kshortsize]` to point to new arrays
+- Copying FSAL data into the appropriate new array
+- Updating `integrator.fsalfirst` and `integrator.fsallast` pointers
+"""
+function swap_k_buffers!(integrator, cache)
+    error("swap_k_buffers! not implemented for $(typeof(cache))")
+end

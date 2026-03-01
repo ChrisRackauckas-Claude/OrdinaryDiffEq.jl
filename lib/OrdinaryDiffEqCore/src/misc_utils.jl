@@ -26,6 +26,30 @@ macro cache(expr)
     end
 end
 
+macro mutable_cache(expr)
+    name = expr.args[2].args[1].args[1]
+    fields = [x for x in expr.args[3].args if typeof(x) != LineNumberNode]
+    cache_vars = Expr[]
+    for x in fields
+        if x.args[2] == :uType || x.args[2] == :rateType ||
+                x.args[2] == :kType || x.args[2] == :uNoUnitsType
+            push!(cache_vars, :(c.$(x.args[1])))
+        elseif x.args[2] == :DiffCacheType
+            push!(cache_vars, :(c.$(x.args[1]).du))
+            push!(cache_vars, :(c.$(x.args[1]).dual_du))
+        end
+    end
+    # Convert struct to mutable struct
+    mut_expr = copy(expr)
+    if mut_expr.head == :struct && mut_expr.args[1] == false
+        mut_expr.args[1] = true
+    end
+    return quote
+        $(esc(mut_expr))
+        $(esc(:full_cache))(c::$(esc(name))) = tuple($(cache_vars...))
+    end
+end
+
 # Nest one layer of value in order to get rid of possible Dual{Complex} or Complex{Dual} issues
 # value should recurse for anything else.
 function constvalue(::Type{T}) where {T}

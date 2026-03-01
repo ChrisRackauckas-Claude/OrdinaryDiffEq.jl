@@ -122,6 +122,10 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
     !integrator.opts.save_on && return saved, savedexactly
     tdir_t = integrator.tdir * integrator.t
     saveat = integrator.opts.saveat
+    _k_swapped = false
+    _use_k_swap = integrator.opts.dense &&
+                  integrator.opts.save_idxs === nothing &&
+                  supports_k_swap(integrator.cache)
     while !isempty(saveat) && first(saveat) <= tdir_t # Perform saveat
         integrator.saveiter += 1
         saved = true
@@ -157,7 +161,21 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
             if isdiscretealg(integrator.alg) || integrator.opts.dense
                 integrator.saveiter_dense += 1
                 if integrator.opts.dense
-                    if integrator.opts.save_idxs === nothing
+                    if _use_k_swap && !_k_swapped
+                        # Save k array references directly (zero-copy).
+                        # Must create a new outer vector since integrator.k
+                        # will be mutated by swap_k_buffers!.
+                        k_refs = eltype(integrator.k)[
+                            integrator.k[j]
+                            for j in 1:length(integrator.k)
+                        ]
+                        copyat_or_push!(
+                            integrator.sol.k, integrator.saveiter_dense,
+                            k_refs, false
+                        )
+                        swap_k_buffers!(integrator, integrator.cache)
+                        _k_swapped = true
+                    elseif integrator.opts.save_idxs === nothing
                         copyat_or_push!(
                             integrator.sol.k, integrator.saveiter_dense,
                             integrator.k
@@ -201,7 +219,19 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
         if isdiscretealg(integrator.alg) || integrator.opts.dense
             integrator.saveiter_dense += 1
             if integrator.opts.dense
-                if integrator.opts.save_idxs === nothing
+                if _use_k_swap && !_k_swapped
+                    # Save k array references directly (zero-copy).
+                    k_refs = eltype(integrator.k)[
+                        integrator.k[j]
+                        for j in 1:length(integrator.k)
+                    ]
+                    copyat_or_push!(
+                        integrator.sol.k, integrator.saveiter_dense,
+                        k_refs, false
+                    )
+                    swap_k_buffers!(integrator, integrator.cache)
+                    _k_swapped = true
+                elseif integrator.opts.save_idxs === nothing
                     copyat_or_push!(
                         integrator.sol.k, integrator.saveiter_dense,
                         integrator.k

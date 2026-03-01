@@ -4,17 +4,18 @@ import OrdinaryDiffEqCore: alg_order, alg_stability_size, explicit_rk_docstring,
     OrdinaryDiffEqAdaptiveAlgorithm, OrdinaryDiffEqMutableCache,
     alg_cache,
     OrdinaryDiffEqConstantCache, @fold, trivial_limiter!,
-    constvalue, perform_step!, calculate_residuals, @cache,
+    constvalue, perform_step!, calculate_residuals, @cache, @mutable_cache,
     calculate_residuals!, _ode_interpolant, _ode_interpolant!,
     CompiledFloats, @OnDemandTableauExtract, initialize!,
     perform_step!,
     CompositeAlgorithm, _ode_addsteps!, copyat_or_push!,
     AutoAlgSwitch, get_fsalfirstlast,
-    full_cache, DerivativeOrderNotPossibleError
+    full_cache, DerivativeOrderNotPossibleError,
+    supports_k_swap, swap_k_buffers!
 import Static: False
 import MuladdMacro: @muladd
 import FastBroadcast: @..
-import RecursiveArrayTools: recursivefill!, recursive_unitless_bottom_eltype
+import RecursiveArrayTools: recursivefill!, recursivecopy!, recursive_unitless_bottom_eltype
 import LinearAlgebra: norm
 using TruncatedStacktraces: @truncate_stacktrace
 import SciMLBase: @def
