@@ -1,18 +1,18 @@
 using Test
 using OrdinaryDiffEqBDF
 using OrdinaryDiffEqSDIRK
-using OrdinaryDiffEqCore: initdt_alg, DefaultInitDt, StiffInitDt
+import OrdinaryDiffEqCore
 
 @testset "StiffInitDt Algorithm" begin
 
     @testset "Trait dispatch" begin
         # All implicit methods should use StiffInitDt
-        @test initdt_alg(FBDF()) isa StiffInitDt
-        @test initdt_alg(QNDF()) isa StiffInitDt
-        @test initdt_alg(QNDF1()) isa StiffInitDt
-        @test initdt_alg(QNDF2()) isa StiffInitDt
-        @test initdt_alg(ABDF2()) isa StiffInitDt
-        @test initdt_alg(ImplicitEuler()) isa StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(FBDF()) isa OrdinaryDiffEqCore.StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(QNDF()) isa OrdinaryDiffEqCore.StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(QNDF1()) isa OrdinaryDiffEqCore.StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(QNDF2()) isa OrdinaryDiffEqCore.StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(ABDF2()) isa OrdinaryDiffEqCore.StiffInitDt
+        @test OrdinaryDiffEqCore.initdt_alg(ImplicitEuler()) isa OrdinaryDiffEqCore.StiffInitDt
     end
 
     @testset "Simple exponential decay (in-place)" begin

@@ -394,12 +394,12 @@ end
     tspan = prob.tspan
     tdist = abs(tspan[2] - tspan[1])
 
-    # DAE guard: use IDA-style h = 0.001 * tdist for mass-matrix DAEs
-    # Must be before f₀ evaluation to avoid type issues with AD (ForwardDiff Duals)
+    # DAE guard: use conservative small dt for mass-matrix DAEs.
+    # Must be before f₀ evaluation to avoid type issues with AD (ForwardDiff Duals).
+    # Uses smalldt (≈1e-6) rather than 0.001*tdist which can be too large for
+    # DAE initialization with inconsistent initial conditions.
     if integrator.isdae
-        h = convert(_tType, 1 // 1000) * tdist * oneunit_tType
-        h = clamp(h, dtmin, tdir * dtmax)
-        return tdir * h
+        return tdir * max(smalldt, dtmin)
     end
 
     # Fall back to DefaultInitDt for non-Array types (GPU arrays need broadcast)
@@ -521,6 +521,9 @@ end
         end
     end
 
+    # Ensure hub_inv stays as _tType (avoid promotion from BigFloat u0 elements)
+    hub_inv = convert(_tType, hub_inv)
+
     hub = convert(_tType, 0.1) * tdist * oneunit_tType
     if hub * hub_inv > 1
         hub = 1 / hub_inv
@@ -559,7 +562,7 @@ end
             end
 
             # Evaluate f at stepped point
-            f(f₁, u₁, p, t + hgs)
+            f(f₁, u₁, p, t + convert(_tType, hgs))
             integrator.stats.nf += 1
 
             # Handle mass matrix
@@ -630,11 +633,11 @@ end
                 yddnrm += (ydd_i * ewt_i)^2
             end
         end
-        yddnrm = sqrt(yddnrm / N)
+        yddnrm = convert(_tType, sqrt(yddnrm / N))
 
         # Compute new step proposal
         if yddnrm * hub^2 > 2
-            hnew = sqrt(2 / yddnrm)
+            hnew = sqrt(convert(_tType, 2) / yddnrm)
         else
             hnew = sqrt(hg * hub)
         end
@@ -685,12 +688,10 @@ end
     tspan = prob.tspan
     tdist = abs(tspan[2] - tspan[1])
 
-    # DAE guard: use IDA-style h = 0.001 * tdist for mass-matrix DAEs
-    # Must be before f₀ evaluation to avoid type issues with AD (ForwardDiff Duals)
+    # DAE guard: use conservative small dt for mass-matrix DAEs.
+    # Must be before f₀ evaluation to avoid type issues with AD (ForwardDiff Duals).
     if integrator.isdae
-        h = convert(_tType, 1 // 1000) * tdist * oneunit_tType
-        h = clamp(h, dtmin, tdir * dtmax)
-        return tdir * h
+        return tdir * max(smalldt, dtmin)
     end
 
     # Fall back to DefaultInitDt for non-Array types (GPU arrays need broadcast)
@@ -736,6 +737,9 @@ end
         end
     end
 
+    # Ensure hub_inv stays as _tType (avoid promotion from BigFloat u0 elements)
+    hub_inv = convert(_tType, hub_inv)
+
     hub = convert(_tType, 0.1) * tdist * oneunit_tType
     if hub * hub_inv > 1
         hub = 1 / hub_inv
@@ -762,7 +766,7 @@ end
             hgs = hg * tdir
 
             u₁ = @.. broadcast = false u0 + hgs * f₀
-            f₁ = f(u₁, p, t + hgs)
+            f₁ = f(u₁, p, t + convert(_tType, hgs))
             integrator.stats.nf += 1
 
             ydd_ok = !any(x -> any(!isfinite, x), f₁)
@@ -787,7 +791,7 @@ end
 
         hgs = hg * tdir
         u₁ = @.. broadcast = false u0 + hgs * f₀
-        f₁ = f(u₁, p, t + hgs)
+        f₁ = f(u₁, p, t + convert(_tType, hgs))
         integrator.stats.nf += 1
 
         yddnrm = zero(_tType)
@@ -799,10 +803,10 @@ end
             ydd_i = (f₁[i] - f₀[i]) / hg * oneunit_tType
             yddnrm += (ydd_i * ewt_i)^2
         end
-        yddnrm = sqrt(yddnrm / N)
+        yddnrm = convert(_tType, sqrt(yddnrm / N))
 
         if yddnrm * hub^2 > 2
-            hnew = sqrt(2 / yddnrm)
+            hnew = sqrt(convert(_tType, 2) / yddnrm)
         else
             hnew = sqrt(hg * hub)
         end
