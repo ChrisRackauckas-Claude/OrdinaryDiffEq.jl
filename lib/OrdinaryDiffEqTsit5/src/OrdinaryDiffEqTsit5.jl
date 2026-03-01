@@ -15,7 +15,7 @@ import OrdinaryDiffEqCore: alg_order, alg_stability_size, explicit_rk_docstring,
 import Static: False
 import MuladdMacro: @muladd
 import FastBroadcast: @..
-import RecursiveArrayTools: recursivefill!, recursivecopy!, recursive_unitless_bottom_eltype
+import RecursiveArrayTools: recursivefill!, recursive_unitless_bottom_eltype
 import LinearAlgebra: norm
 using TruncatedStacktraces: @truncate_stacktrace
 import SciMLBase: @def

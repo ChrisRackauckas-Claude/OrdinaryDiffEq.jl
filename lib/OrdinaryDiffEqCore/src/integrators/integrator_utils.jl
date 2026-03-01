@@ -120,12 +120,12 @@ end
 function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
     saved, savedexactly = false, false
     !integrator.opts.save_on && return saved, savedexactly
-    tdir_t = integrator.tdir * integrator.t
-    saveat = integrator.opts.saveat
-    _k_swapped = false
+    cache = integrator.cache
     _use_k_swap = integrator.opts.dense &&
                   integrator.opts.save_idxs === nothing &&
-                  supports_k_swap(integrator.cache)
+                  supports_k_swap(cache)
+    tdir_t = integrator.tdir * integrator.t
+    saveat = integrator.opts.saveat
     while !isempty(saveat) && first(saveat) <= tdir_t # Perform saveat
         integrator.saveiter += 1
         saved = true
@@ -161,20 +161,8 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
             if isdiscretealg(integrator.alg) || integrator.opts.dense
                 integrator.saveiter_dense += 1
                 if integrator.opts.dense
-                    if _use_k_swap && !_k_swapped
-                        # Save k array references directly (zero-copy).
-                        # Must create a new outer vector since integrator.k
-                        # will be mutated by swap_k_buffers!.
-                        k_refs = eltype(integrator.k)[
-                            integrator.k[j]
-                            for j in 1:length(integrator.k)
-                        ]
-                        copyat_or_push!(
-                            integrator.sol.k, integrator.saveiter_dense,
-                            k_refs, false
-                        )
-                        swap_k_buffers!(integrator, integrator.cache)
-                        _k_swapped = true
+                    if _use_k_swap
+                        _save_k_with_swap!(integrator, cache)
                     elseif integrator.opts.save_idxs === nothing
                         copyat_or_push!(
                             integrator.sol.k, integrator.saveiter_dense,
@@ -219,18 +207,8 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
         if isdiscretealg(integrator.alg) || integrator.opts.dense
             integrator.saveiter_dense += 1
             if integrator.opts.dense
-                if _use_k_swap && !_k_swapped
-                    # Save k array references directly (zero-copy).
-                    k_refs = eltype(integrator.k)[
-                        integrator.k[j]
-                        for j in 1:length(integrator.k)
-                    ]
-                    copyat_or_push!(
-                        integrator.sol.k, integrator.saveiter_dense,
-                        k_refs, false
-                    )
-                    swap_k_buffers!(integrator, integrator.cache)
-                    _k_swapped = true
+                if _use_k_swap
+                    _save_k_with_swap!(integrator, cache)
                 elseif integrator.opts.save_idxs === nothing
                     copyat_or_push!(
                         integrator.sol.k, integrator.saveiter_dense,
@@ -256,12 +234,95 @@ function _savevalues!(integrator, force_save, reduce_size)::Tuple{Bool, Bool}
     return saved, savedexactly
 end
 
+function _save_k_with_swap!(integrator, cache)
+    # Ensure the next cycle slot is free (not borrowed by a previous sol.k entry)
+    _reclaim_cycle_slot!(integrator, cache)
+
+    # Save references to current k arrays (zero-copy)
+    k_refs = eltype(integrator.k)[integrator.k[j] for j in 1:length(integrator.k)]
+    copyat_or_push!(integrator.sol.k, integrator.saveiter_dense, k_refs, false)
+
+    # Track which sol.k index borrows the current cycle slot
+    current_slot = cache.k_cycle_idx
+    cache.k_cycle_sol_k_idxs[current_slot] = integrator.saveiter_dense
+
+    # Spawn async materialization if multi-threaded
+    _spawn_async_materialize!(integrator, cache, current_slot, integrator.saveiter_dense)
+
+    # Rotate to the next k-buffer set
+    swap_k_buffers!(integrator, cache)
+
+    return nothing
+end
+
+function _reclaim_cycle_slot!(integrator, cache)
+    next_idx = mod1(cache.k_cycle_idx + 1, length(cache.k_cycle))
+    sol_k_idx = cache.k_cycle_sol_k_idxs[next_idx]
+    sol_k_idx == 0 && return nothing  # slot is free
+
+    task = cache.k_cycle_tasks[next_idx]
+    if task !== nothing
+        materialized = fetch(task)
+        integrator.sol.k[sol_k_idx] = materialized
+        cache.k_cycle_tasks[next_idx] = nothing
+    else
+        if sol_k_idx <= length(integrator.sol.k)
+            integrator.sol.k[sol_k_idx] = [recursivecopy(k) for k in integrator.sol.k[sol_k_idx]]
+        end
+    end
+
+    cache.k_cycle_sol_k_idxs[next_idx] = 0
+    return nothing
+end
+
+# Minimum array length to justify async spawn overhead (~8KB per k-array)
+const _ASYNC_SPAWN_THRESHOLD = 1000
+
+function _spawn_async_materialize!(integrator, cache, slot, sol_k_idx)
+    if Threads.nthreads() > 1 && length(integrator.k[1]) >= _ASYNC_SPAWN_THRESHOLD
+        k_to_copy = integrator.sol.k[sol_k_idx]
+        cache.k_cycle_tasks[slot] = Threads.@spawn begin
+            [recursivecopy(k) for k in k_to_copy]
+        end
+    else
+        cache.k_cycle_tasks[slot] = nothing
+    end
+    return nothing
+end
+
+function finalize_k_swap!(integrator)
+    cache = integrator.cache
+    supports_k_swap(cache) || return nothing
+
+    for i in eachindex(cache.k_cycle_sol_k_idxs)
+        sol_k_idx = cache.k_cycle_sol_k_idxs[i]
+        sol_k_idx == 0 && continue
+
+        task = cache.k_cycle_tasks[i]
+        if task !== nothing
+            materialized = fetch(task)
+            if sol_k_idx <= length(integrator.sol.k)
+                integrator.sol.k[sol_k_idx] = materialized
+            end
+            cache.k_cycle_tasks[i] = nothing
+        else
+            if sol_k_idx <= length(integrator.sol.k)
+                integrator.sol.k[sol_k_idx] = [recursivecopy(k) for k in integrator.sol.k[sol_k_idx]]
+            end
+        end
+        cache.k_cycle_sol_k_idxs[i] = 0
+    end
+
+    return nothing
+end
+
 # Want to extend postamble! for DDEIntegrator
 postamble!(integrator::ODEIntegrator) = _postamble!(integrator)
 
 function _postamble!(integrator)
     DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
     solution_endpoint_match_cur_integrator!(integrator)
+    finalize_k_swap!(integrator)
     resize!(integrator.sol.t, integrator.saveiter)
     resize!(integrator.sol.u, integrator.saveiter)
     sizehint!(integrator.sol.t, integrator.saveiter)

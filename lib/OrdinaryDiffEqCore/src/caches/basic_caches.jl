@@ -174,3 +174,4 @@ Must handle:
 function swap_k_buffers!(integrator, cache)
     error("swap_k_buffers! not implemented for $(typeof(cache))")
 end
+
