@@ -835,9 +835,8 @@ end
     return tdir * max(dtmin, min(h0, tdir * dtmax))
 end
 
-# Simple initial step size for DAE problems: h = 0.001 * tdist.
+# Simple initial step size for DAE problems: h = 1e-6 * tdist.
 # Kept simple to avoid type issues with ComplexF64, ForwardDiff Duals, etc.
-# Based on IDA from SUNDIALS (Hindmarsh et al., 2005).
 @inline function ode_determine_initdt(
         u0, t, tdir, dtmax, abstol, reltol, internalnorm,
         prob::SciMLBase.AbstractDAEProblem{
@@ -847,13 +846,8 @@ end
         integrator
     ) where {duType, uType, tType}
     _tType = eltype(tType)
-    dtmin = nextfloat(max(integrator.opts.dtmin, eps(t)))
     tspan = prob.tspan
-    tdist = abs(tspan[2] - tspan[1])
-    tdist = isfinite(tdist) ? tdist : oneunit(_tType)
-
-    h = convert(_tType, 1 // 1000) * tdist
-    h = max(h, dtmin)
-    h = min(h, tdir * dtmax)
-    return tdir * h
+    init_dt = abs(tspan[2] - tspan[1])
+    init_dt = isfinite(init_dt) ? init_dt : oneunit(_tType)
+    return convert(_tType, init_dt * 1 // 10^(6))
 end
