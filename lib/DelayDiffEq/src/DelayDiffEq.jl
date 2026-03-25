@@ -14,6 +14,7 @@ using RecursiveArrayTools: copyat_or_push!, recursivecopy, recursivecopy!,
     recursive_bottom_eltype, recursive_unitless_bottom_eltype,
     recursive_unitless_eltype
 using ForwardDiff: ForwardDiff
+using Random: Random
 
 import ArrayInterface
 import SimpleNonlinearSolve
@@ -21,6 +22,7 @@ import SymbolicIndexingInterface as SII
 
 using SciMLBase: AbstractDDEAlgorithm, AbstractDDEIntegrator, AbstractODEIntegrator,
     DEIntegrator
+using SciMLBase: AbstractSDDEProblem, SDDEProblem, AbstractSDDEAlgorithm
 
 using Base: deleteat!
 import FastBroadcast: @..
@@ -28,9 +30,14 @@ import FastBroadcast: @..
 using OrdinaryDiffEqNonlinearSolve: NLAnderson, NLFunctional
 using OrdinaryDiffEqCore: AbstractNLSolverCache, SlowConvergence,
     alg_extrapolates, alg_maximum_order, initialize!, DEVerbosity
+using OrdinaryDiffEqCore: StochasticDiffEqAlgorithm, StochasticDiffEqAdaptiveAlgorithm,
+    StochasticDiffEqRODEAlgorithm,
+    StochasticDiffEqCache, StochasticDiffEqConstantCache, StochasticDiffEqMutableCache
 using OrdinaryDiffEqRosenbrock: RosenbrockMutableCache
 using OrdinaryDiffEqFunctionMap: FunctionMap
 # using OrdinaryDiffEqDifferentiation: resize_grad_config!, resize_jac_config!
+
+using DiffEqBase: is_diagonal_noise
 
 # Explicit imports for functions
 using OrdinaryDiffEqCore: AutoSwitch, CompositeAlgorithm
@@ -50,6 +57,14 @@ import DiffEqBase
 using SciMLLogging: AbstractVerbosityPreset, None, @SciMLMessage
 
 import SciMLBase
+
+const SDEAlgUnion = Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorithm}
+
+# Internal hook functions for SDDE support. These are overloaded by the
+# StochasticDiffEqCore extension to provide actual implementations.
+# Calling them without the extension loaded gives a clear error.
+function _sde_alg_cache end
+function _create_sdde_noise end
 
 export Discontinuity, MethodOfSteps
 
