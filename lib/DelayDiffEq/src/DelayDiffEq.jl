@@ -14,7 +14,6 @@ using RecursiveArrayTools: copyat_or_push!, recursivecopy, recursivecopy!,
     recursive_bottom_eltype, recursive_unitless_bottom_eltype,
     recursive_unitless_eltype
 using ForwardDiff: ForwardDiff
-using Random: Random
 
 import ArrayInterface
 import SimpleNonlinearSolve
@@ -63,6 +62,14 @@ const SDEAlgUnion = Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorit
 # Internal hook functions for SDDE support. These are overloaded by the
 # StochasticDiffEqCore extension to provide actual implementations.
 # Calling them without the extension loaded gives a clear error.
+function _sde_alg_cache end
+function _create_sdde_noise end
+
+# Internal hook functions for SDDE support. These are overloaded by the
+# StochasticDiffEqCore extension to provide actual implementations.
+# Calling them without the extension loaded gives a clear error.
+function _sde_alg_order end
+function _sde_isadaptive end
 function _sde_alg_cache end
 function _create_sdde_noise end
 
