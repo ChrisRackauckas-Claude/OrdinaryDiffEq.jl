@@ -65,12 +65,6 @@ const SDEAlgUnion = Union{StochasticDiffEqAlgorithm, StochasticDiffEqRODEAlgorit
 function _sde_alg_cache end
 function _create_sdde_noise end
 
-# Internal hook functions for SDDE support. These are overloaded by the
-# StochasticDiffEqCore extension to provide actual implementations.
-# Calling them without the extension loaded gives a clear error.
-function _sde_alg_cache end
-function _create_sdde_noise end
-
 export Discontinuity, MethodOfSteps
 
 include("discontinuity_type.jl")
