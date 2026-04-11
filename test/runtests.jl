@@ -20,6 +20,24 @@ end
 function activate_ad_env()
     Pkg.activate("ad")
     Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
+    # On Julia < 1.11, the [sources] section in test/ad/Project.toml is not
+    # supported, so Pkg would pull unreleased deps (e.g. OrdinaryDiffEqCore,
+    # DiffEqBase) from the registry. Manually develop the local paths so the
+    # AD tests exercise the PR branch code on LTS too.
+    if VERSION < v"1.11.0-DEV.0"
+        toml = Pkg.TOML.parsefile(joinpath(@__DIR__, "ad", "Project.toml"))
+        if haskey(toml, "sources")
+            for (dep_name, source_spec) in toml["sources"]
+                if source_spec isa Dict && haskey(source_spec, "path")
+                    dep_path = normpath(joinpath(@__DIR__, "ad", source_spec["path"]))
+                    if isdir(dep_path)
+                        @info "Developing local source dependency" dep_name dep_path
+                        Pkg.develop(Pkg.PackageSpec(path = dep_path))
+                    end
+                end
+            end
+        end
+    end
     return Pkg.instantiate()
 end
 
