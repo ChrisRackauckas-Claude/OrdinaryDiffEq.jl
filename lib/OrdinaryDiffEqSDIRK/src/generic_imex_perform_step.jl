@@ -140,10 +140,10 @@ end
 
         if integrator.f isa SplitFunction
             z_guess = z[1]
-        elseif α !== nothing && !iszero(α[i, 1])
+        elseif !isempty(α) && !iszero(α[i][1])
             z_guess = zero(u)
             for j in 1:(i - 1)
-                z_guess = z_guess + α[i, j] * z[j]
+                z_guess = z_guess + α[i][j] * z[j]
             end
         else
             z_guess = zero(u)
@@ -173,12 +173,12 @@ end
         end
     end
 
-    if integrator.opts.adaptive && btilde !== nothing
+    if integrator.opts.adaptive && !isempty(btilde)
         tmp = zero(u)
         for i in 1:s
             tmp = tmp + btilde[i] * z[i]
         end
-        if integrator.f isa SplitFunction && ebtilde !== nothing
+        if integrator.f isa SplitFunction && !isempty(ebtilde)
             for i in 1:s
                 tmp = tmp + ebtilde[i] * k[i]
             end
@@ -252,10 +252,10 @@ end
 
         if integrator.f isa SplitFunction
             copyto!(zs[i], zs[split_guess[i]])
-        elseif α !== nothing && !iszero(α[i, 1])
+        elseif !isempty(α) && !iszero(α[i][1])
             fill!(zs[i], zero(eltype(u)))
             for j in 1:(i - 1)
-                @..zs[i] = zs[i] + α[i, j] * zs[j]
+                @..zs[i] = zs[i] + α[i][j] * zs[j]
             end
         else
             fill!(zs[i], zero(eltype(u)))
@@ -290,12 +290,12 @@ end
 
     step_limiter!(u, integrator, p, t + dt)
 
-    if integrator.opts.adaptive && btilde !== nothing
+    if integrator.opts.adaptive && !isempty(btilde)
         fill!(tmp, zero(eltype(u)))
         for i in 1:s
             @..tmp = tmp + btilde[i] * zs[i]
         end
-        if integrator.f isa SplitFunction && ebtilde !== nothing
+        if integrator.f isa SplitFunction && !isempty(ebtilde)
             for i in 1:s
                 @..tmp = tmp + ebtilde[i] * ks[i]
             end

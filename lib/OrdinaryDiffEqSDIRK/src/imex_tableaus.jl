@@ -4,9 +4,9 @@ struct ESDIRKIMEXTableau{T, T2}
     Ae::Matrix{T}
     be::Vector{T}
     c::Vector{T2}
-    btilde::Union{Vector{T}, Nothing}
-    ebtilde::Union{Vector{T}, Nothing}
-    α::Union{Matrix{T2}, Nothing}
+    btilde::Vector{T}
+    ebtilde::Vector{T}
+    α::Vector{Vector{T2}}
     order::Int
     s::Int
     reuse_W_at_stage2::Bool
@@ -122,16 +122,16 @@ function KenCarp3ESDIRKIMEXTableau(T::Type{<:CompiledFloats}, T2::Type{<:Compile
     ebtilde_vec[3] = ebtilde3
     ebtilde_vec[4] = ebtilde4
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = one(T2)
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 3, s, true, [0, 1, 2, 2], c3
+        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, [0, 1, 2, 2], c3
     )
 end
 
@@ -255,16 +255,16 @@ function KenCarp3ESDIRKIMEXTableau(T, T2)
     ebtilde_vec[3] = ebtilde3
     ebtilde_vec[4] = ebtilde4
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = one(T2)
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 3, s, true, [0, 1, 2, 2], c3
+        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, [0, 1, 2, 2], c3
     )
 end
 
@@ -315,11 +315,9 @@ function ARS343Tableau(T::Type{<:CompiledFloats}, T2::Type{<:CompiledFloats})
 
     c_vec = T2[zero(T2), c2, c3, c4]
 
-    α_mat = zeros(T2, s, s)
-
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        nothing, nothing, α_mat, 3, s, false, zeros(Int, s), c3
+        T[], T[], Vector{T2}[], 3, s, false, zeros(Int, s), c3
     )
 end
 
@@ -472,25 +470,25 @@ function KenCarp4ESDIRKIMEXTableau(T, T2)
     ebtilde_vec[5] = ebtilde5
     ebtilde_vec[6] = ebtilde6
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = α21
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[5, 1] = α51
-    α_mat[5, 2] = α52
-    α_mat[5, 3] = α53
-    α_mat[5, 4] = α54
-    α_mat[6, 1] = α61
-    α_mat[6, 2] = α62
-    α_mat[6, 3] = α63
-    α_mat[6, 4] = α64
-    α_mat[6, 5] = α65
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = α21
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[5][1] = α51
+    α_vecs[5][2] = α52
+    α_vecs[5][3] = α53
+    α_vecs[5][4] = α54
+    α_vecs[6][1] = α61
+    α_vecs[6][2] = α62
+    α_vecs[6][3] = α63
+    α_vecs[6][4] = α64
+    α_vecs[6][5] = α65
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 4, s, true, [0, 1, 2, 2, 4, 5], c3
+        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, [0, 1, 2, 2, 4, 5], c3
     )
 end
 
@@ -692,30 +690,30 @@ function KenCarp5ESDIRKIMEXTableau(T, T2)
     ebtilde_vec[7] = ebtilde7
     ebtilde_vec[8] = ebtilde8
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = one(T2)
-    α_mat[3, 1] = convert(T2, a31)  # master IIP uses a31 (Butcher) not α31 (Hermite predictor)
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[5, 1] = α51
-    α_mat[5, 2] = α52
-    α_mat[6, 1] = α61
-    α_mat[6, 2] = α62
-    α_mat[7, 1] = α71
-    α_mat[7, 2] = α72
-    α_mat[7, 3] = α73
-    α_mat[7, 4] = α74
-    α_mat[7, 5] = α75
-    α_mat[8, 1] = α81
-    α_mat[8, 2] = α82
-    α_mat[8, 3] = α83
-    α_mat[8, 4] = α84
-    α_mat[8, 5] = α85
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][1] = convert(T2, a31)  # master IIP uses a31 (Butcher) not α31 (Hermite predictor)
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[5][1] = α51
+    α_vecs[5][2] = α52
+    α_vecs[6][1] = α61
+    α_vecs[6][2] = α62
+    α_vecs[7][1] = α71
+    α_vecs[7][2] = α72
+    α_vecs[7][3] = α73
+    α_vecs[7][4] = α74
+    α_vecs[7][5] = α75
+    α_vecs[8][1] = α81
+    α_vecs[8][2] = α82
+    α_vecs[8][3] = α83
+    α_vecs[8][4] = α84
+    α_vecs[8][5] = α85
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 5, s, true, [0, 1, 2, 3, 2, 3, 2, 5], c3
+        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, [0, 1, 2, 3, 2, 3, 2, 5], c3
     )
 end
 
@@ -762,11 +760,9 @@ function ARS343Tableau(T, T2)
 
     c_vec = T2[zero(T2), convert(T2, c2), convert(T2, c3), convert(T2, c4)]
 
-    α_mat = zeros(T2, s, s)
-
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        nothing, nothing, α_mat, 3, s, false, zeros(Int, s), convert(T2, c3)
+        T[], T[], Vector{T2}[], 3, s, false, zeros(Int, s), convert(T2, c3)
     )
 end
 
@@ -827,17 +823,17 @@ function Kvaerno3ESDIRKIMEXTableau(T, T2)
     btilde_vec[3] = btilde3
     btilde_vec[4] = btilde4
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = one(T2)
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = convert(T2, a31)
-    α_mat[4, 2] = convert(T2, a32)
-    α_mat[4, 3] = convert(T2, γ)
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = convert(T2, a31)
+    α_vecs[4][2] = convert(T2, a32)
+    α_vecs[4][3] = convert(T2, γ)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, nothing, α_mat, 3, s, true, zeros(Int, s),
+        btilde_vec, T[], α_vecs, 3, s, true, zeros(Int, s),
         convert(T2, 2) * convert(T2, 0.4358665215)
     )
 end
@@ -914,19 +910,19 @@ function Kvaerno4ESDIRKIMEXTableau(T, T2)
     btilde_vec[4] = btilde4
     btilde_vec[5] = btilde5
 
-    α_mat = zeros(T2, s, s)
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[5, 1] = convert(T2, a41)
-    α_mat[5, 2] = convert(T2, a42)
-    α_mat[5, 3] = convert(T2, a43)
-    α_mat[5, 4] = convert(T2, γ)
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[5][1] = convert(T2, a41)
+    α_vecs[5][2] = convert(T2, a42)
+    α_vecs[5][3] = convert(T2, a43)
+    α_vecs[5][4] = convert(T2, γ)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, nothing, α_mat, 4, s, true, zeros(Int, s), c3
+        btilde_vec, T[], α_vecs, 4, s, true, zeros(Int, s), c3
     )
 end
 
@@ -1037,28 +1033,28 @@ function Kvaerno5ESDIRKIMEXTableau(T, T2)
     btilde_vec[6] = btilde6
     btilde_vec[7] = btilde7
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = α21
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[4, 3] = α43
-    α_mat[5, 1] = α51
-    α_mat[5, 2] = α52
-    α_mat[5, 3] = α53
-    α_mat[6, 1] = α61
-    α_mat[6, 2] = α62
-    α_mat[6, 3] = α63
-    α_mat[7, 1] = convert(T2, a61)
-    α_mat[7, 3] = convert(T2, a63)
-    α_mat[7, 4] = convert(T2, a64)
-    α_mat[7, 5] = convert(T2, a65)
-    α_mat[7, 6] = convert(T2, γ)
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = α21
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[4][3] = α43
+    α_vecs[5][1] = α51
+    α_vecs[5][2] = α52
+    α_vecs[5][3] = α53
+    α_vecs[6][1] = α61
+    α_vecs[6][2] = α62
+    α_vecs[6][3] = α63
+    α_vecs[7][1] = convert(T2, a61)
+    α_vecs[7][3] = convert(T2, a63)
+    α_vecs[7][4] = convert(T2, a64)
+    α_vecs[7][5] = convert(T2, a65)
+    α_vecs[7][6] = convert(T2, γ)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, nothing, α_mat, 5, s, true, zeros(Int, s), c3
+        btilde_vec, T[], α_vecs, 5, s, true, zeros(Int, s), c3
     )
 end
 
@@ -1239,28 +1235,28 @@ function KenCarp47ESDIRKIMEXTableau(T, T2)
     ebtilde_vec[6] = ebtilde6
     ebtilde_vec[7] = ebtilde7
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = α21
-    α_mat[3, 1] = convert(T2, a31)  # master IIP uses a31 (Butcher) not α31 (Hermite predictor)
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[4, 3] = α43
-    α_mat[5, 1] = α51
-    α_mat[5, 2] = α52
-    α_mat[6, 1] = α61
-    α_mat[6, 2] = α62
-    α_mat[6, 3] = α63
-    α_mat[7, 1] = α71
-    α_mat[7, 2] = α72
-    α_mat[7, 3] = α73
-    α_mat[7, 4] = α74
-    α_mat[7, 5] = α75
-    α_mat[7, 6] = α76
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = α21
+    α_vecs[3][1] = convert(T2, a31)  # master IIP uses a31 (Butcher) not α31 (Hermite predictor)
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[4][3] = α43
+    α_vecs[5][1] = α51
+    α_vecs[5][2] = α52
+    α_vecs[6][1] = α61
+    α_vecs[6][2] = α62
+    α_vecs[6][3] = α63
+    α_vecs[7][1] = α71
+    α_vecs[7][2] = α72
+    α_vecs[7][3] = α73
+    α_vecs[7][4] = α74
+    α_vecs[7][5] = α75
+    α_vecs[7][6] = α76
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 4, s, true, [0, 1, 2, 3, 1, 3, 6], c3
+        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, [0, 1, 2, 3, 1, 3, 6], c3
     )
 end
 
@@ -1481,31 +1477,31 @@ function KenCarp58ESDIRKIMEXTableau(T, T2)
     ebtilde_vec[7] = ebtilde7
     ebtilde_vec[8] = ebtilde8
 
-    α_mat = zeros(T2, s, s)
-    α_mat[2, 1] = one(T2)
-    α_mat[3, 1] = α31
-    α_mat[3, 2] = α32
-    α_mat[4, 1] = α41
-    α_mat[4, 2] = α42
-    α_mat[5, 1] = α51
-    α_mat[5, 2] = α52
-    α_mat[6, 1] = α61
-    α_mat[6, 2] = α62
-    α_mat[6, 3] = α63
-    α_mat[7, 1] = α71
-    α_mat[7, 2] = α72
-    α_mat[7, 3] = α73
-    α_mat[8, 1] = α81
-    α_mat[8, 2] = α82
-    α_mat[8, 3] = α83
-    α_mat[8, 4] = α84
-    α_mat[8, 5] = α85
-    α_mat[8, 6] = α86
-    α_mat[8, 7] = α87
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][1] = α31
+    α_vecs[3][2] = α32
+    α_vecs[4][1] = α41
+    α_vecs[4][2] = α42
+    α_vecs[5][1] = α51
+    α_vecs[5][2] = α52
+    α_vecs[6][1] = α61
+    α_vecs[6][2] = α62
+    α_vecs[6][3] = α63
+    α_vecs[7][1] = α71
+    α_vecs[7][2] = α72
+    α_vecs[7][3] = α73
+    α_vecs[8][1] = α81
+    α_vecs[8][2] = α82
+    α_vecs[8][3] = α83
+    α_vecs[8][4] = α84
+    α_vecs[8][5] = α85
+    α_vecs[8][6] = α86
+    α_vecs[8][7] = α87
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_mat, 5, s, true, [0, 1, 2, 1, 2, 3, 3, 7], c3
+        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, [0, 1, 2, 1, 2, 3, 3, 7], c3
     )
 end
 
@@ -1521,7 +1517,7 @@ function _pure_esdirk_to_imex_tableau(Ai_mat::Matrix{T}, c_vec::Vector{T2},
     be_vec = zeros(T, s)
     return ESDIRKIMEXTableau(
         Ai_mat, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, nothing, nothing, order, s, false, zeros(Int, s), c_vec[3]
+        btilde_vec, T[], Vector{T2}[], order, s, false, zeros(Int, s), c_vec[3]
     )
 end
 
