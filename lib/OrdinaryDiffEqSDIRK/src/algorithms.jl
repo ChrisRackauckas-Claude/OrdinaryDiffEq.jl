@@ -1043,7 +1043,6 @@ struct KenCarp47{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1053,13 +1052,13 @@ function KenCarp47(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = true, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return KenCarp47(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1135,7 +1134,6 @@ struct KenCarp58{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1145,13 +1143,13 @@ function KenCarp58(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = true, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return KenCarp58(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1183,7 +1181,6 @@ struct ESDIRK54I8L2SA{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1193,13 +1190,13 @@ function ESDIRK54I8L2SA(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = false, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ESDIRK54I8L2SA(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1230,7 +1227,6 @@ struct ESDIRK436L2SA2{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1240,13 +1236,13 @@ function ESDIRK436L2SA2(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = false, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ESDIRK436L2SA2(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1277,7 +1273,6 @@ struct ESDIRK437L2SA{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1287,13 +1282,13 @@ function ESDIRK437L2SA(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = false, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ESDIRK437L2SA(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1324,7 +1319,6 @@ struct ESDIRK547L2SA2{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1334,13 +1328,13 @@ function ESDIRK547L2SA2(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = false, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ESDIRK547L2SA2(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1373,7 +1367,6 @@ struct ESDIRK659L2SA{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1383,13 +1376,13 @@ function ESDIRK659L2SA(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = false, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ESDIRK659L2SA(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
@@ -1407,15 +1400,13 @@ end
     year={1997},
     publisher={Elsevier}}",
     extra_keyword_description = """
-    - `smooth_est`: TBD
-    - `extrapolant`: TBD
-    - `controller`: TBD
+    - `smooth_est`: whether to use a smoothed estimate for error control.
+    - `extrapolant`: extrapolation method used for the initial guess in the nonlinear solve.
     - `step_limiter!`: function of the form `limiter!(u, integrator, p, t)`
     """,
     extra_keyword_default = """
     smooth_est = true,
     extrapolant = :linear,
-    controller = :PI,
     step_limiter! = trivial_limiter!,
     """
 )
@@ -1425,7 +1416,6 @@ struct ARS343{AD, F, F2, StepLimiter, CJ} <:
     nlsolve::F2
     smooth_est::Bool
     extrapolant::Symbol
-    controller::Symbol
     step_limiter!::StepLimiter
     autodiff::AD
     concrete_jac::CJ
@@ -1435,13 +1425,13 @@ function ARS343(;
         concrete_jac = nothing,
         linsolve = nothing, nlsolve = NLNewton(),
         smooth_est = true, extrapolant = :linear,
-        controller = :PI, step_limiter! = trivial_limiter!
+        step_limiter! = trivial_limiter!
     )
     autodiff = _fixup_ad(autodiff)
 
     return ARS343(
         linsolve, nlsolve, smooth_est, extrapolant,
-        controller, step_limiter!, autodiff,
+        step_limiter!, autodiff,
         _unwrap_val(concrete_jac)
     )
 end
