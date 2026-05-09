@@ -1587,3 +1587,282 @@ end
     OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
     integrator.k[2] = integrator.fsallast
 end
+
+function initialize!(integrator, cache::RKG1ConstantCache)
+    integrator.kshortsize = 2
+    integrator.k = typeof(integrator.k)(undef, integrator.kshortsize)
+    integrator.fsalfirst = integrator.f(integrator.uprev, integrator.p, integrator.t)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.fsallast = zero(integrator.fsalfirst)
+    integrator.k[1] = integrator.fsalfirst
+    return integrator.k[2] = integrator.fsallast
+end
+
+function initialize!(integrator, cache::RKG1Cache)
+    integrator.kshortsize = 2
+    resize!(integrator.k, integrator.kshortsize)
+    integrator.k[1] = integrator.fsalfirst
+    integrator.k[2] = integrator.fsallast
+    integrator.f(integrator.fsalfirst, integrator.uprev, integrator.p, integrator.t)
+    return OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+end
+
+@muladd function perform_step!(integrator, cache::RKG1ConstantCache, repeat_step = false)
+    (; t, dt, uprev, u, f, p, fsalfirst) = integrator
+    alg = unwrap_alg(integrator, true)
+    alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
+
+    # stability bound for RKG1 is dt*λ ≤ s(s+3)/4
+    # solving s² + 3s - 4*dt*λ ≥ 0 → s ≥ (-3 + sqrt(9 + 16*dt*λ))/2
+    s = ceil(Int, 0.5 * (-3.0 + sqrt(9.0 + 16.0 * abs(dt) * integrator.eigen_est)))
+    s = max(s, cache.min_stage)
+    s = min(s, cache.max_stage)
+    cache.mdeg = s
+    w1 = 4.0 / (s * (s + 3))
+    rkg1_b(j) = 2.0 / ((j + 1) * (j + 2))
+
+    # first stage coefficients
+    b0 = rkg1_b(0)
+    b1 = rkg1_b(1)
+    μ̃₁ = (3.0 * b1 / b0) * w1
+    uᵢ₋₂ = uprev
+    uᵢ₋₁ = uprev + (dt * μ̃₁) * fsalfirst
+
+    # stages 2 to s
+    for j in 2:s
+        bj = rkg1_b(j)
+        bjm1 = rkg1_b(j - 1)
+        bjm2 = rkg1_b(j - 2)
+
+        # μⱼ = (2j+1)/j * bⱼ/bⱼ₋₁
+        # νⱼ = -(j+1)/j * bⱼ/bⱼ₋₂
+        μⱼ = (2j + 1) / j * bj / bjm1
+        νⱼ = -(j + 1) / j * bj / bjm2
+        μ̃ⱼ = μⱼ * w1
+
+        fYm1 = f(uᵢ₋₁, p, t)
+        OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+        u = μⱼ * uᵢ₋₁ + νⱼ * uᵢ₋₂ + μ̃ⱼ * dt * fYm1
+        uᵢ₋₂ = uᵢ₋₁
+        uᵢ₋₁ = u
+    end
+
+    if integrator.opts.adaptive
+        tmp = u - (uprev + dt * fsalfirst)
+        atmp = calculate_residuals(
+            tmp, uprev, u,
+            integrator.opts.abstol, integrator.opts.reltol,
+            integrator.opts.internalnorm, t
+        )
+        OrdinaryDiffEqCore.set_EEst!(
+            integrator,
+            integrator.opts.internalnorm(atmp, t) / s
+        )
+    end
+
+    integrator.k[1] = integrator.fsalfirst
+    integrator.k[2] = integrator.fsallast = f(u, p, t + dt)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.u = u
+end
+
+@muladd function perform_step!(integrator, cache::RKG1Cache, repeat_step = false)
+    (; t, dt, uprev, u, f, p, fsalfirst) = integrator
+    (; uᵢ₋₁, uᵢ₋₂, tmp, k, atmp) = cache
+    ccache = cache.constantcache
+    alg = unwrap_alg(integrator, true)
+    alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
+
+    # choose s from the eigenvalue estimate from the RKG1 stability bound
+    s = ceil(Int, 0.5 * (-3.0 + sqrt(9.0 + 16.0 * abs(dt) * integrator.eigen_est)))
+    s = max(s, ccache.min_stage)
+    s = min(s, ccache.max_stage)
+    ccache.mdeg = s
+
+    w1 = 4.0 / (s * (s + 3))
+    rkg1_b(j) = 2.0 / ((j + 1) * (j + 2))
+
+    # first stage coefficients
+    b0 = rkg1_b(0); b1 = rkg1_b(1)
+    μ̃₁ = (3.0 * b1 / b0) * w1
+
+    @.. broadcast = false uᵢ₋₂ = uprev
+    @.. broadcast = false uᵢ₋₁ = uprev + (dt * μ̃₁) * fsalfirst
+
+    # stages 2 to s
+    for j in 2:s
+        bj = rkg1_b(j)
+        bjm1 = rkg1_b(j - 1)
+        bjm2 = rkg1_b(j - 2)
+        μⱼ = (2j + 1) / j * bj / bjm1
+        νⱼ = -(j + 1) / j * bj / bjm2
+        μ̃ⱼ = μⱼ * w1
+
+        f(k, uᵢ₋₁, p, t)
+        OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+        @.. broadcast = false u = μⱼ * uᵢ₋₁ + νⱼ * uᵢ₋₂ + (dt * μ̃ⱼ) * k
+        @.. broadcast = false uᵢ₋₂ = uᵢ₋₁
+        @.. broadcast = false uᵢ₋₁ = u
+    end
+
+    if integrator.opts.adaptive
+        @.. broadcast = false tmp = u - (uprev + dt * fsalfirst)
+        calculate_residuals!(
+            atmp, tmp, uprev, u,
+            integrator.opts.abstol, integrator.opts.reltol,
+            integrator.opts.internalnorm, t
+        )
+        OrdinaryDiffEqCore.set_EEst!(
+            integrator,
+            integrator.opts.internalnorm(atmp, t) / s
+        )
+    end
+
+    integrator.k[1] = integrator.fsalfirst
+    f(integrator.fsallast, u, p, t + dt)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.k[2] = integrator.fsallast
+end
+
+function initialize!(integrator, cache::RKG2ConstantCache)
+    integrator.kshortsize = 2
+    integrator.k = typeof(integrator.k)(undef, integrator.kshortsize)
+    integrator.fsalfirst = integrator.f(integrator.uprev, integrator.p, integrator.t)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.fsallast = zero(integrator.fsalfirst)
+    integrator.k[1] = integrator.fsalfirst
+    return integrator.k[2] = integrator.fsallast
+end
+
+function initialize!(integrator, cache::RKG2Cache)
+    integrator.kshortsize = 2
+    resize!(integrator.k, integrator.kshortsize)
+    integrator.k[1] = integrator.fsalfirst
+    integrator.k[2] = integrator.fsallast
+    integrator.f(integrator.fsalfirst, integrator.uprev, integrator.p, integrator.t)
+    return OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+end
+
+@muladd function perform_step!(integrator, cache::RKG2ConstantCache, repeat_step = false)
+    (; t, dt, uprev, u, f, p, fsalfirst) = integrator
+    alg = unwrap_alg(integrator, true)
+    alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
+
+    # stability bound for RKG2 is dt*λ ≤ (s+4)(s-1)/6
+    # Solve: s² + 3s - (4 + 6*dt*λ) ≥ 0 → s ≥ (-3 + sqrt(25 + 24*dt*λ))/2
+    s = ceil(Int, 0.5 * (-3.0 + sqrt(25.0 + 24.0 * abs(dt) * integrator.eigen_est)))
+    s = max(s, cache.min_stage)
+    s = min(s, cache.max_stage)
+    cache.mdeg = s
+    w1 = 6.0 / ((s + 4) * (s - 1))
+
+    # first stage coefficients
+    μ̃₁ = w1
+    uᵢ₋₂ = uprev
+    uᵢ₋₁ = uprev + (dt * μ̃₁) * fsalfirst
+
+    # stages 2 to s: b_0=1, b_1=1/3, b_j=4(j-1)(j+4)/(3j(j+1)(j+2)(j+3)) for j>=2
+    # a_{j-1} = 1 - j(j+1)/2 * b_{j-1}
+    for j in 2:s
+        bj = 4.0 * (j - 1) * (j + 4) / (3.0 * j * (j + 1) * (j + 2) * (j + 3))
+        bjm1 = j == 2 ? (1.0 / 3.0) :
+            4.0 * (j - 2) * (j + 3) / (3.0 * (j - 1) * j * (j + 1) * (j + 2))
+        bjm2 = j == 2 ? 1.0 :
+            j == 3 ? (1.0 / 3.0) :
+            4.0 * (j - 3) * (j + 2) / (3.0 * (j - 2) * (j - 1) * j * (j + 1))
+        ajm1 = 1.0 - j * (j + 1) / 2.0 * bjm1
+
+        μⱼ = (2j + 1) / j * bj / bjm1
+        νⱼ = -(j + 1) / j * bj / bjm2
+        μ̃ⱼ = μⱼ * w1
+        γ̃ⱼ = -μ̃ⱼ * ajm1
+
+        fYm1 = f(uᵢ₋₁, p, t)
+        OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+
+        u = μⱼ * uᵢ₋₁ + νⱼ * uᵢ₋₂ + (1.0 - μⱼ - νⱼ) * uprev +
+            dt * μ̃ⱼ * fYm1 + dt * γ̃ⱼ * fsalfirst
+
+        uᵢ₋₂ = uᵢ₋₁
+        uᵢ₋₁ = u
+    end
+
+    if integrator.opts.adaptive
+        tmp = u - (uprev + dt * fsalfirst)
+        atmp = calculate_residuals(
+            tmp, uprev, u,
+            integrator.opts.abstol, integrator.opts.reltol,
+            integrator.opts.internalnorm, t
+        )
+        OrdinaryDiffEqCore.set_EEst!(
+            integrator,
+            integrator.opts.internalnorm(atmp, t) / s
+        )
+    end
+
+    integrator.k[1] = integrator.fsalfirst
+    integrator.k[2] = integrator.fsallast = f(u, p, t + dt)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.u = u
+end
+
+@muladd function perform_step!(integrator, cache::RKG2Cache, repeat_step = false)
+    (; t, dt, uprev, u, f, p, fsalfirst) = integrator
+    (; uᵢ₋₁, uᵢ₋₂, tmp, k, atmp) = cache
+    ccache = cache.constantcache
+    alg = unwrap_alg(integrator, true)
+    alg.eigen_est === nothing ? maxeig!(integrator, cache) : alg.eigen_est(integrator)
+
+    # choose s from the eigenvalue estimate from the RKG2 stability bound
+    s = ceil(Int, 0.5 * (-3.0 + sqrt(25.0 + 24.0 * abs(dt) * integrator.eigen_est)))
+    s = max(s, ccache.min_stage)
+    s = min(s, ccache.max_stage)
+    ccache.mdeg = s
+    w1 = 6.0 / ((s + 4) * (s - 1))
+    μ̃₁ = w1
+
+    @.. broadcast = false uᵢ₋₂ = uprev
+    @.. broadcast = false uᵢ₋₁ = uprev + (dt * μ̃₁) * fsalfirst
+
+    # stages 2 to s
+    for j in 2:s
+        bj = 4.0 * (j - 1) * (j + 4) / (3.0 * j * (j + 1) * (j + 2) * (j + 3))
+        bjm1 = j == 2 ? (1.0 / 3.0) :
+            4.0 * (j - 2) * (j + 3) / (3.0 * (j - 1) * j * (j + 1) * (j + 2))
+        bjm2 = j == 2 ? 1.0 :
+            j == 3 ? (1.0 / 3.0) :
+            4.0 * (j - 3) * (j + 2) / (3.0 * (j - 2) * (j - 1) * j * (j + 1))
+        ajm1 = 1.0 - j * (j + 1) / 2.0 * bjm1
+
+        μⱼ = (2j + 1) / j * bj / bjm1
+        νⱼ = -(j + 1) / j * bj / bjm2
+        μ̃ⱼ = μⱼ * w1
+        γ̃ⱼ = -μ̃ⱼ * ajm1
+
+        f(k, uᵢ₋₁, p, t)
+        OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+
+        @.. broadcast = false u = μⱼ * uᵢ₋₁ + νⱼ * uᵢ₋₂ +
+            (1.0 - μⱼ - νⱼ) * uprev +
+            (dt * μ̃ⱼ) * k +
+            (dt * γ̃ⱼ) * fsalfirst
+        @.. broadcast = false uᵢ₋₂ = uᵢ₋₁
+        @.. broadcast = false uᵢ₋₁ = u
+    end
+
+    if integrator.opts.adaptive
+        @.. broadcast = false tmp = u - (uprev + dt * fsalfirst)
+        calculate_residuals!(
+            atmp, tmp, uprev, u, integrator.opts.abstol, integrator.opts.reltol,
+            integrator.opts.internalnorm, t
+        )
+        OrdinaryDiffEqCore.set_EEst!(
+            integrator, integrator.opts.internalnorm(atmp, t) / s
+        )
+    end
+
+    integrator.k[1] = integrator.fsalfirst
+    f(integrator.fsallast, u, p, t + dt)
+    OrdinaryDiffEqCore.increment_nf!(integrator.stats, 1)
+    integrator.k[2] = integrator.fsallast
+end

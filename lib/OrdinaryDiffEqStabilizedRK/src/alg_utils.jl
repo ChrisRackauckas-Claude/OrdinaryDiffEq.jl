@@ -14,10 +14,13 @@ alg_extrapolates(alg::TSRKC3) = true
 default_controller(QT, alg::SERK2) = PredictiveController(QT, alg)
 default_controller(QT, alg::Union{RKC, TSRKC3}) = PredictiveController(QT, alg)
 default_controller(QT, alg::Union{RKL1, RKL2}) = PredictiveController(QT, alg)
+default_controller(QT, alg::Union{RKG1, RKG2}) = PredictiveController(QT, alg)
 
 alg_adaptive_order(alg::RKL1) = 1
 alg_adaptive_order(alg::RKL2) = 2
 alg_adaptive_order(alg::Union{RKC, TSRKC3}) = 2
+alg_adaptive_order(alg::RKG1) = 1
+alg_adaptive_order(alg::RKG2) = 2
 
 gamma_default(alg::Union{RKC, TSRKC3}) = 8 // 10
 gamma_default(alg::Union{RKL1, RKL2}) = 8 // 10
@@ -91,4 +94,22 @@ end
 function dtnew_modification(integrator, alg::RKL2, dtnew)
     _, s = _rkl_clamp_odd_stages(alg.min_stages, alg.max_stages)
     return min(dtnew, typeof(dtnew)((s^2 + s - 2) / (2 * integrator.eigen_est)))
+end
+
+alg_order(alg::RKG1) = 1
+alg_order(alg::RKG2) = 2
+
+gamma_default(alg::Union{RKG1, RKG2}) = 8 // 10
+fac_default_gamma(alg::Union{RKG1, RKG2}) = true
+
+has_dtnew_modification(alg::Union{RKG1, RKG2}) = true
+
+function dtnew_modification(integrator, alg::RKG1, dtnew)
+    s = alg.max_stages
+    return min(dtnew, typeof(dtnew)(s * (s + 3) / (2 * integrator.eigen_est)))
+end
+
+function dtnew_modification(integrator, alg::RKG2, dtnew)
+    s = alg.max_stages
+    return min(dtnew, typeof(dtnew)((s + 4) * (s - 1) / (3 * integrator.eigen_est)))
 end
