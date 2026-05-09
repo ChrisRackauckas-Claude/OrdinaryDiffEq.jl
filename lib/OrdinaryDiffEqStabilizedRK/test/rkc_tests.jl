@@ -49,9 +49,30 @@ probArr[2] = prob_ode_2Dlinear
             @test eigest ≈ eigm rtol = 0.35
         end
     end
+
+    @testset "RKG power iteration" begin
+        Random.seed!(789)
+        eigen_est = (integrator) -> integrator.eigen_est = 1.5e2
+        for iip in [true, false], alg in [
+                    RKG2(), RKG2(eigen_est = eigen_est),
+                    RKG1(), RKG1(eigen_est = eigen_est),
+                ]
+            println(typeof(alg))
+            A = randn(20, 20)
+            A = A - maximum(abs.(eigvals(A))) * I
+            test_f(u, p, t) = A * u
+            test_f(du, u, p, t) = mul!(du, A, u)
+            prob = ODEProblem{iip}(test_f, randn(20), (0.0, 1.0))
+            integrator = init(prob, alg)
+            eigm = maximum(abs.(eigvals(A)))
+            maxeig!(integrator, integrator.cache)
+            eigest = integrator.eigen_est
+            @test eigest ≈ eigm rtol = 0.35
+        end
+    end
 end
 
-@testset "Runge-Kutta-Chebyshev and Runge-Kutta-Legendre Convergence Tests" begin
+@testset "Runge-Kutta-Chebyshev, Runge-Kutta-Legendre, and Runge-Kutta-Gegenbauer Convergence Tests" begin
     dts = 1 .// 2 .^ (8:-1:4)
     testTol = 0.1
     for prob in probArr
@@ -127,6 +148,26 @@ end
         @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
         sim = test_convergence(dts, prob, RKL2(min_stages = 11, eigen_est = eigen_est))
         @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
+
+        println("RKG1")
+        eigen_est = (integrator) -> integrator.eigen_est = 1 / integrator.dt
+        sim = test_convergence(dts, prob, RKG1(eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 1 atol = testTol
+        eigen_est = (integrator) -> integrator.eigen_est = 100 / integrator.dt
+        sim = test_convergence(dts, prob, RKG1(eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 1 atol = testTol
+
+        println("RKG2")
+        eigen_est = (integrator) -> integrator.eigen_est = 1 / integrator.dt
+        sim = test_convergence(dts, prob, RKG2(eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
+        eigen_est = (integrator) -> integrator.eigen_est = 100 / integrator.dt
+        sim = test_convergence(dts, prob, RKG2(eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
+        sim = test_convergence(dts, prob, RKG2(min_stages = 3, eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
+        sim = test_convergence(dts, prob, RKG2(min_stages = 5, eigen_est = eigen_est))
+        @test sim.𝒪est[:l∞] ≈ 2 atol = testTol
     end
     dts = 1 .// 2 .^ (6:-1:2)
     for prob in probArr
@@ -162,6 +203,8 @@ end
             ESERK5(), ESERK5(eigen_est = eigen_est),
             RKL1(), RKL1(eigen_est = eigen_est),
             RKL2(), RKL2(eigen_est = eigen_est),
+            RKG1(), RKG1(eigen_est = eigen_est),
+            RKG2(), RKG2(eigen_est = eigen_est),
         ]
         @testset "$alg" for alg in algs
             x[] = 0
@@ -190,6 +233,8 @@ end
         ESERK5(), ESERK5(eigen_est = eigen_est),
         RKL1(), RKL1(eigen_est = eigen_est),
         RKL2(), RKL2(eigen_est = eigen_est),
+        RKG1(), RKG1(eigen_est = eigen_est),
+        RKG2(), RKG2(eigen_est = eigen_est),
     ]
     @testset "$alg" for alg in algs
         # compile once
@@ -254,5 +299,57 @@ end
         end
         @test all(isodd, stages_seen)
         @test all(s -> s >= 3, stages_seen)
+    end
+end
+
+@testset "RKG-specific tests" begin
+    @testset "RKG on stiff parabolic problem" begin
+        N = 20
+        α = 0.1
+        dx = 1.0 / (N + 1)
+        xs = collect(range(dx, 1 - dx; length = N))
+        D2 = Tridiagonal(
+            fill(α / dx^2, N - 1),
+            fill(-2α / dx^2, N),
+            fill(α / dx^2, N - 1)
+        )
+        u0 = sin.(π .* xs)
+        tspan = (0.0, 0.5)
+        prob = ODEProblem((du, u, p, t) -> mul!(du, D2, u), u0, tspan)
+        exact = exp(-π^2 * α * tspan[2]) .* sin.(π .* xs)
+        for alg in [RKG1(), RKG2()]
+            sol = solve(prob, alg, abstol = 1.0e-4, reltol = 1.0e-4)
+            @test sol.retcode == ReturnCode.Success
+            @test norm(sol.u[end] - exact) < 0.05
+        end
+    end
+
+    @testset "RKG monotone near Dirichlet boundary" begin
+        # Looking for bounded solution that is non-negative on a heat diffusion problem with Dirichlet BCs
+        N = 50
+        α = 1.166
+        dx = 1.0 / (N + 1)
+        xs = collect(range(dx, 1 - dx; length = N))
+
+        # spike near left boundary, zero elsewhere
+        u0 = zeros(N)
+        u0[2] = 100.0
+
+        # Dirichlet BCs
+        D2 = Tridiagonal(
+            fill(α / dx^2, N - 1),
+            fill(-2α / dx^2, N),
+            fill(α / dx^2, N - 1)
+        )
+
+        tspan = (0.0, 1.0e-4)
+        prob = ODEProblem((du, u, p, t) -> mul!(du, D2, u), u0, tspan)
+
+        # RKG2 should remain non negative due to Convex Monotone Property even with Dirichlet BCs
+        sol_rkg = solve(prob, RKG2(), abstol = 1.0e-8, reltol = 1.0e-8)
+        @test sol_rkg.retcode == ReturnCode.Success
+        @test all(sol_rkg.u[end] .>= -1.0e-10)   # allow tiny floating point negatives
+        sol_rkl = solve(prob, RKL2(), abstol = 1.0e-8, reltol = 1.0e-8)
+        @test sol_rkl.retcode == ReturnCode.Success
     end
 end

@@ -254,3 +254,74 @@ function RKL2(; min_stages = 3, max_stages = 200, eigen_est = nothing)
     max_s = max(max_s, min_s)
     return RKL2(min_s, max_s, eigen_est)
 end
+
+@doc generic_solver_docstring(
+    """First-order super-time-stepping method based on shifted Gegenbauer polynomials
+    with parameter α=3/2. Maintains the Convex Monotone Property even in the presence
+    of Dirichlet boundary conditions, unlike RKL1. The stage count s is chosen
+    adaptively so that the superstep scales as s² times the explicit timestep.""",
+    "RKG1",
+    "Stabilized Explicit Method.",
+    """T. Skaras, T. Saxton, C. Meyer, T. D. Aslam. Super-time-stepping schemes for
+    parabolic equations with boundary conditions.
+    Journal of Computational Physics, 425, pp 109879, 2021.
+    doi: https://doi.org/10.1016/j.jcp.2020.109879""",
+    """
+    - `min_stages`: Minimum number of stages s (>= 2).
+    - `max_stages`: Maximum number of stages s.
+    - `eigen_est`: Optional function `(integrator) -> integrator.eigen_est = upper_bound`
+        providing an upper bound on the spectral radius. If not provided, estimated
+        by power iteration.
+    """,
+    """
+    min_stages = 2,
+    max_stages = 200,
+    eigen_est = nothing,
+    """
+)
+struct RKG1{E} <: OrdinaryDiffEqAdaptiveAlgorithm
+    min_stages::Int
+    max_stages::Int
+    eigen_est::E
+end
+function RKG1(; min_stages = 2, max_stages = 200, eigen_est = nothing)
+    # RKG does not require odd s — no odd enforcement needed
+    min_s = max(2, min_stages)
+    max_s = max(max_stages, min_s)
+    return RKG1(min_s, max_s, eigen_est)
+end
+
+@doc generic_solver_docstring(
+    """Second-order super-time-stepping method based on shifted Gegenbauer polynomials
+    with parameter α=3/2. Maintains the Convex Monotone Property even in the presence
+    of Dirichlet boundary conditions, unlike RKL2. The stage count s is chosen
+    adaptively so that the superstep scales as s² times the explicit timestep.""",
+    "RKG2",
+    "Stabilized Explicit Method.",
+    """T. Skaras, T. Saxton, C. Meyer, T. D. Aslam. Super-time-stepping schemes for
+    parabolic equations with boundary conditions.
+    Journal of Computational Physics, 425, pp 109879, 2021.
+    doi: https://doi.org/10.1016/j.jcp.2020.109879""",
+    """
+    - `min_stages`: Minimum number of stages s (>= 3).
+    - `max_stages`: Maximum number of stages s.
+    - `eigen_est`: Optional function `(integrator) -> integrator.eigen_est = upper_bound`
+        providing an upper bound on the spectral radius. If not provided, estimated
+        by power iteration.
+    """,
+    """
+    min_stages = 3,
+    max_stages = 200,
+    eigen_est = nothing,
+    """
+)
+struct RKG2{E} <: OrdinaryDiffEqAdaptiveAlgorithm
+    min_stages::Int
+    max_stages::Int
+    eigen_est::E
+end
+function RKG2(; min_stages = 3, max_stages = 200, eigen_est = nothing)
+    min_s = max(3, min_stages)
+    max_s = max(max_stages, min_s)
+    return RKG2(min_s, max_s, eigen_est)
+end
