@@ -1509,8 +1509,10 @@ end
 # Helper to build an ESDIRKIMEXTableau for pure-implicit ESDIRK methods
 # (no explicit tableau, no extrapolation guess)
 #
-function _pure_esdirk_to_imex_tableau(Ai_mat::Matrix{T}, c_vec::Vector{T2},
-        btilde_vec::Vector{T}, order::Int) where {T, T2}
+function _pure_esdirk_to_imex_tableau(
+        Ai_mat::Matrix{T}, c_vec::Vector{T2},
+        btilde_vec::Vector{T}, order::Int
+    ) where {T, T2}
     s = size(Ai_mat, 1)
     bi_vec = Ai_mat[s, :]
     Ae = zeros(T, s, s)
@@ -1566,11 +1568,15 @@ function ESDIRK54I8L2SAESDIRKIMEXTableau(T, T2)
     Ai[8, 7] = tab.a87
     Ai[8, 8] = γ
 
-    c_vec = T2[zero(T2), convert(T2, 2) * convert(T2, tab.γ),
-        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7, one(T2)]
+    c_vec = T2[
+        zero(T2), convert(T2, 2) * convert(T2, tab.γ),
+        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7, one(T2),
+    ]
 
-    btilde_vec = T[tab.btilde1, tab.btilde2, tab.btilde3, tab.btilde4,
-        tab.btilde5, tab.btilde6, tab.btilde7, tab.btilde8]
+    btilde_vec = T[
+        tab.btilde1, tab.btilde2, tab.btilde3, tab.btilde4,
+        tab.btilde5, tab.btilde6, tab.btilde7, tab.btilde8,
+    ]
 
     return _pure_esdirk_to_imex_tableau(Ai, c_vec, btilde_vec, 5)
 end
@@ -1605,11 +1611,15 @@ function ESDIRK436L2SA2ESDIRKIMEXTableau(T, T2)
     Ai[6, 5] = tab.a65
     Ai[6, 6] = γ
 
-    c_vec = T2[zero(T2), convert(T2, 2) * convert(T2, γ),
-        tab.c3, tab.c4, tab.c5, tab.c6]
+    c_vec = T2[
+        zero(T2), convert(T2, 2) * convert(T2, γ),
+        tab.c3, tab.c4, tab.c5, tab.c6,
+    ]
 
-    btilde_vec = T[tab.btilde1, tab.btilde2, tab.btilde3,
-        tab.btilde4, tab.btilde5, tab.btilde6]
+    btilde_vec = T[
+        tab.btilde1, tab.btilde2, tab.btilde3,
+        tab.btilde4, tab.btilde5, tab.btilde6,
+    ]
 
     return _pure_esdirk_to_imex_tableau(Ai, c_vec, btilde_vec, 4)
 end
@@ -1651,11 +1661,15 @@ function ESDIRK437L2SAESDIRKIMEXTableau(T, T2)
     Ai[7, 6] = tab.a76
     Ai[7, 7] = γ
 
-    c_vec = T2[zero(T2), convert(T2, 2) * convert(T2, γ),
-        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7]
+    c_vec = T2[
+        zero(T2), convert(T2, 2) * convert(T2, γ),
+        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7,
+    ]
 
-    btilde_vec = T[tab.btilde1, tab.btilde2, tab.btilde3,
-        tab.btilde4, tab.btilde5, tab.btilde6, tab.btilde7]
+    btilde_vec = T[
+        tab.btilde1, tab.btilde2, tab.btilde3,
+        tab.btilde4, tab.btilde5, tab.btilde6, tab.btilde7,
+    ]
 
     return _pure_esdirk_to_imex_tableau(Ai, c_vec, btilde_vec, 4)
 end
@@ -1697,11 +1711,15 @@ function ESDIRK547L2SA2ESDIRKIMEXTableau(T, T2)
     Ai[7, 6] = tab.a76
     Ai[7, 7] = γ
 
-    c_vec = T2[zero(T2), convert(T2, 2) * convert(T2, γ),
-        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7]
+    c_vec = T2[
+        zero(T2), convert(T2, 2) * convert(T2, γ),
+        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7,
+    ]
 
-    btilde_vec = T[tab.btilde1, tab.btilde2, tab.btilde3,
-        tab.btilde4, tab.btilde5, tab.btilde6, tab.btilde7]
+    btilde_vec = T[
+        tab.btilde1, tab.btilde2, tab.btilde3,
+        tab.btilde4, tab.btilde5, tab.btilde6, tab.btilde7,
+    ]
 
     return _pure_esdirk_to_imex_tableau(Ai, c_vec, btilde_vec, 5)
 end
@@ -1759,11 +1777,15 @@ function ESDIRK659L2SAESDIRKIMEXTableau(T, T2)
     Ai[9, 8] = tab.a98
     Ai[9, 9] = γ
 
-    c_vec = T2[zero(T2), convert(T2, 2) * convert(T2, γ),
-        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7, tab.c8, tab.c9]
+    c_vec = T2[
+        zero(T2), convert(T2, 2) * convert(T2, γ),
+        tab.c3, tab.c4, tab.c5, tab.c6, tab.c7, tab.c8, tab.c9,
+    ]
 
-    btilde_vec = T[tab.btilde1, tab.btilde2, tab.btilde3, tab.btilde4,
-        tab.btilde5, tab.btilde6, tab.btilde7, tab.btilde8, tab.btilde9]
+    btilde_vec = T[
+        tab.btilde1, tab.btilde2, tab.btilde3, tab.btilde4,
+        tab.btilde5, tab.btilde6, tab.btilde7, tab.btilde8, tab.btilde9,
+    ]
 
     return _pure_esdirk_to_imex_tableau(Ai, c_vec, btilde_vec, 6)
 end
