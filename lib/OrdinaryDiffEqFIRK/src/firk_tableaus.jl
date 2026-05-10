@@ -295,11 +295,11 @@ function RadauIIATableau(::Type{T1}, ::Type{T2}, num_stages::Int) where {T1, T2}
 end
 
 function generateRadauTableau(::Type{T1}, ::Type{T2}, num_stages::Int) where {T1, T2}
-    c = reverse!(1 .- gaussradau(num_stages, T1)[1]) ./ 2
+    c = reverse!(1 .- gaussradau(T1, num_stages)[1]) ./ 2
     if T1 == T2
         c2 = c
     else
-        c2 = reverse!(1 .- gaussradau(num_stages, T2)[1]) ./ 2
+        c2 = reverse!(1 .- gaussradau(T2, num_stages)[1]) ./ 2
     end
 
     c_powers = Matrix{T1}(undef, num_stages, num_stages)
@@ -375,7 +375,7 @@ end
 # TODO: add the symplectic integrator stage decoupling from Antonan et al to increase efficiency
 
 function generateGaussLegendreTableau(::Type{T1}, ::Type{T2}, num_stages::Int) where {T1, T2}
-    x, w = gausslegendre(num_stages)
+    x, w = gausslegendre(promote_type(T1, T2), num_stages)
     c = T2.((x .+ 1) ./ 2)
     b = T1.(w ./ 2)
 
@@ -398,7 +398,7 @@ function generateGaussLegendreTableau(::Type{T1}, ::Type{T2}, num_stages::Int) w
 
     # error estimate coefficients: embed using s-1 GL weights via interpolation
     if num_stages > 1
-        x_low, w_low = gausslegendre(num_stages - 1)
+        x_low, w_low = gausslegendre(T1, num_stages - 1)
         c_low = T1.((x_low .+ 1) ./ 2)
         b_low = zeros(T1, num_stages)
         for i in 1:num_stages
