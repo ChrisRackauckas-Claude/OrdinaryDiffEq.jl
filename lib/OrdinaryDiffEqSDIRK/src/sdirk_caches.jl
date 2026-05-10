@@ -824,4 +824,3 @@ function alg_cache(
 
     return Hairer4Cache(u, uprev, fsalfirst, z₁, z₂, z₃, z₄, z₅, atmp, nlsolver, tab)
 end
-
