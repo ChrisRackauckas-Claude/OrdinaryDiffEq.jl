@@ -134,7 +134,7 @@ if TEST_GROUP == "Core" || TEST_GROUP == "ALL"
         sim = test_convergence(dts, prob, GeneralizedAlpha(rho_inf = 1.0), dense_errors = false)
         @test sim.𝒪est[:l2] ≈ 2 rtol = 1.0e-1
 
-        # HHT constructor, when 0 eqaul to Newmark
+        # HHT constructor, when 0 equal to Newmark
         sim = test_convergence(dts, prob, GeneralizedAlpha(alpha_hht = 0.0), dense_errors = false)
         @test sim.𝒪est[:l2] ≈ 2 rtol = 1.0e-1
 
