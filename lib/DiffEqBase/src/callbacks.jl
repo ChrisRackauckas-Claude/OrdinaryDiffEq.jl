@@ -456,9 +456,11 @@ function findall_events!(
     ) where {F1, F2}
     # VectorContinuousCallback path: the single affect! handles both
     # crossing directions via the simultaneous_events mask, so detection
-    # fires on any sign change.
+    # gates only on affect! existing (no separate affect_neg!).
+    hasaffect = affect! !== nothing
     @inbounds for i in 1:length(prev_sign)
-        next_sign[i] = prev_sign[i] * next_sign[i] <= 0
+        next_sign[i] = hasaffect && prev_sign[i] != 0 &&
+            prev_sign[i] * next_sign[i] <= 0
     end
     return any(isone, next_sign)
 end
