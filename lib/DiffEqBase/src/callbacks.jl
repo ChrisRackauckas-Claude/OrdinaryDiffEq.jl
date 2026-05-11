@@ -454,12 +454,12 @@ function findall_events!(
         next_sign::Union{Array, SubArray}, affect!::F1, affect_neg!::F2,
         prev_sign::Union{Array, SubArray}
     ) where {F1, F2}
+    # VectorContinuousCallback path: VCC has only one affect! that handles
+    # both up- and down-crossings via the simultaneous_events mask, so
+    # detection just gates on affect! existing.
+    hasaffect = affect! !== nothing
     @inbounds for i in 1:length(prev_sign)
-        next_sign[i] = (
-            (prev_sign[i] < 0 && affect! !== nothing) ||
-                (prev_sign[i] > 0 && affect_neg! !== nothing)
-        ) &&
-            prev_sign[i] * next_sign[i] <= 0
+        next_sign[i] = hasaffect && prev_sign[i] * next_sign[i] <= 0
     end
     return any(isone, next_sign)
 end
