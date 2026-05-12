@@ -456,9 +456,18 @@ function findall_events!(
     ) where {F1, F2}
     # VectorContinuousCallback path: the single affect! handles both
     # crossing directions via the simultaneous_events mask, so detection
-    # fires on any sign change.
+    # fires on any sign change away from a non-zero `prev_sign`.
+    #
+    # The `prev_sign[i] != 0` guard is load-bearing: state-machine
+    # callbacks (conditions of the form `(state == X) * (expr)`) snap
+    # other-state condition values to exactly 0 the instant the affect
+    # changes state. Without the guard, `prev_sign[i] * next_sign[i] <= 0`
+    # would fire on every subsequent step (0 * ±1 = 0 ≤ 0) and the
+    # rootfinder would re-fire the just-handled callback indefinitely —
+    # the scalar `is_event_occurrence` already excludes `prev_sign == 0`
+    # implicitly via its direction checks.
     @inbounds for i in 1:length(prev_sign)
-        next_sign[i] = prev_sign[i] * next_sign[i] <= 0
+        next_sign[i] = prev_sign[i] != 0 && prev_sign[i] * next_sign[i] <= 0
     end
     return any(isone, next_sign)
 end
