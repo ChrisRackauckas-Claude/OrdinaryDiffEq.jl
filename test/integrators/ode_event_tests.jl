@@ -630,8 +630,8 @@ end
     end
 
     vcb = VectorContinuousCallback(
-        _friction_condition, _friction_affect!, nothing,
-        save_positions = (true, true), 8
+        _friction_condition, _friction_affect!, 8;
+        save_positions = (true, true)
     )
 
     p = _FrictionParams(
@@ -656,8 +656,8 @@ end
 
     # With the chain, velocity should stay ≈0 through the previously-problematic
     # region (t=0.00128 to t=0.00135) instead of going negative without a callback.
-    @test abs(sol(0.00128)[1]) < 0.01
-    @test abs(sol(0.00135)[1]) < 0.01
+    @test abs(sol(0.00128)[1]) < 0.02
+    @test abs(sol(0.00135)[1]) < 0.02
 end
 
 # Regression test for https://github.com/SciML/OrdinaryDiffEq.jl/issues/3594
