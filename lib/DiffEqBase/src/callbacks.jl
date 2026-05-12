@@ -220,15 +220,20 @@ end
             addsteps!(integrator)
         end
 
-        # Find the condition value closest to zero across all triggered events
+        # Find the condition value closest to zero across all triggered events.
+        # Initialise on the first triggered component so we never need
+        # typemax (some AD-traced eltypes don't define typemax).
         min_condition_val = zero(eltype(bottom_condition))
-        min_abs_condition = typemax(eltype(bottom_condition))
+        min_abs_condition = zero(eltype(bottom_condition))
+        found_first = false
         for idx in 1:callback.len
             if prev_simultaneous_events[idx]
                 cond_val = ArrayInterface.allowed_getindex(bottom_condition, idx)
-                if abs(cond_val) < min_abs_condition
-                    min_abs_condition = abs(cond_val)
+                ac = abs(cond_val)
+                if !found_first || ac < min_abs_condition
+                    min_abs_condition = ac
                     min_condition_val = cond_val
+                    found_first = true
                 end
             end
         end
