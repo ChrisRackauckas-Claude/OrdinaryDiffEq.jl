@@ -10,7 +10,6 @@ struct ESDIRKIMEXTableau{T, T2}
     order::Int
     s::Int
     reuse_W_at_stage2::Bool
-    split_guess::Vector{Int}  # for SplitFunction: split_guess[i] = which previous stage to copy for stage i
     nlsolver_init_c::T2       # initial c for build_nlsolver (matches master per-alg cache)
 end
 
@@ -131,7 +130,7 @@ function KenCarp3ESDIRKIMEXTableau(T::Type{<:CompiledFloats}, T2::Type{<:Compile
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, [0, 1, 2, 2], c3
+        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, c3
     )
 end
 
@@ -264,7 +263,7 @@ function KenCarp3ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, [0, 1, 2, 2], c3
+        btilde_vec, ebtilde_vec, α_vecs, 3, s, true, c3
     )
 end
 
@@ -315,9 +314,14 @@ function ARS343Tableau(T::Type{<:CompiledFloats}, T2::Type{<:CompiledFloats})
 
     c_vec = T2[zero(T2), c2, c3, c4]
 
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][2] = one(T2)
+    α_vecs[4][3] = one(T2)
+
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        T[], T[], Vector{T2}[], 3, s, false, zeros(Int, s), c3
+        T[], T[], α_vecs, 3, s, false, c3
     )
 end
 
@@ -488,7 +492,7 @@ function KenCarp4ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, [0, 1, 2, 2, 4, 5], c3
+        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, c3
     )
 end
 
@@ -713,7 +717,7 @@ function KenCarp5ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, [0, 1, 2, 3, 2, 3, 2, 5], c3
+        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, c3
     )
 end
 
@@ -760,9 +764,14 @@ function ARS343Tableau(T, T2)
 
     c_vec = T2[zero(T2), convert(T2, c2), convert(T2, c3), convert(T2, c4)]
 
+    α_vecs = [zeros(T2, s) for _ in 1:s]
+    α_vecs[2][1] = one(T2)
+    α_vecs[3][2] = one(T2)
+    α_vecs[4][3] = one(T2)
+
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        T[], T[], Vector{T2}[], 3, s, false, zeros(Int, s), convert(T2, c3)
+        T[], T[], α_vecs, 3, s, false, convert(T2, c3)
     )
 end
 
@@ -833,7 +842,7 @@ function Kvaerno3ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, T[], α_vecs, 3, s, true, zeros(Int, s),
+        btilde_vec, T[], α_vecs, 3, s, true,
         convert(T2, 2) * convert(T2, 0.4358665215)
     )
 end
@@ -922,7 +931,7 @@ function Kvaerno4ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, T[], α_vecs, 4, s, true, zeros(Int, s), c3
+        btilde_vec, T[], α_vecs, 4, s, true, c3
     )
 end
 
@@ -1054,7 +1063,7 @@ function Kvaerno5ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, T[], α_vecs, 5, s, true, zeros(Int, s), c3
+        btilde_vec, T[], α_vecs, 5, s, true, c3
     )
 end
 
@@ -1256,7 +1265,7 @@ function KenCarp47ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, [0, 1, 2, 3, 1, 3, 6], c3
+        btilde_vec, ebtilde_vec, α_vecs, 4, s, true, c3
     )
 end
 
@@ -1501,7 +1510,7 @@ function KenCarp58ESDIRKIMEXTableau(T, T2)
 
     return ESDIRKIMEXTableau(
         Ai, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, [0, 1, 2, 1, 2, 3, 3, 7], c3
+        btilde_vec, ebtilde_vec, α_vecs, 5, s, true, c3
     )
 end
 
@@ -1519,7 +1528,7 @@ function _pure_esdirk_to_imex_tableau(
     be_vec = zeros(T, s)
     return ESDIRKIMEXTableau(
         Ai_mat, bi_vec, Ae, be_vec, c_vec,
-        btilde_vec, T[], Vector{T2}[], order, s, false, zeros(Int, s), c_vec[3]
+        btilde_vec, T[], Vector{T2}[], order, s, false, c_vec[3]
     )
 end
 

@@ -138,9 +138,7 @@ end
             end
         end
 
-        if integrator.f isa SplitFunction
-            z_guess = z[1]
-        elseif !isempty(α) && !iszero(α[i][1])
+        if !isempty(α) && !iszero(α[i])
             z_guess = zero(u)
             for j in 1:(i - 1)
                 z_guess = z_guess + α[i][j] * z[j]
@@ -213,7 +211,7 @@ end
     (; zs, ks, atmp, nlsolver, step_limiter!) = cache
     (; tmp) = nlsolver
     tab = cache.tab
-    (; Ai, bi, Ae, be, c, btilde, ebtilde, α, s, reuse_W_at_stage2, split_guess) = tab
+    (; Ai, bi, Ae, be, c, btilde, ebtilde, α, s, reuse_W_at_stage2) = tab
     alg = unwrap_alg(integrator, true)
     γ = Ai[2, 2]
 
@@ -250,9 +248,7 @@ end
             end
         end
 
-        if integrator.f isa SplitFunction
-            copyto!(zs[i], zs[split_guess[i]])
-        elseif !isempty(α) && !iszero(α[i][1])
+        if !isempty(α) && !iszero(α[i])
             fill!(zs[i], zero(eltype(u)))
             for j in 1:(i - 1)
                 @..zs[i] = zs[i] + α[i][j] * zs[j]
