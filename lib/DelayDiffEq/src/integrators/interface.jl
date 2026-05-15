@@ -581,6 +581,24 @@ function DiffEqBase.get_tstops_max(integrator::DDEIntegrator)
     return isempty(tstops_array) ? integrator.sol.prob.tspan[end] : maximum(tstops_array)
 end
 
+# tstop-target tracking: with these methods modify_dt_for_tstops! records the
+# exact next tstop, and fixed_t_for_tstop_error! snaps integrator.t back onto
+# it after the step so that floating-point rounding in `tprev + dt` can't
+# overshoot the tstop by an ULP (which would otherwise trip the "stepped past
+# tstops but algorithm was dtchangeable" error in handle_tstop!). See SciML/
+# OrdinaryDiffEq.jl#3636.
+OrdinaryDiffEqCore._get_next_step_tstop(integrator::DDEIntegrator) = integrator.next_step_tstop
+OrdinaryDiffEqCore._get_tstop_target(integrator::DDEIntegrator) = integrator.tstop_target
+function OrdinaryDiffEqCore._set_tstop_flag!(
+        integrator::DDEIntegrator, is_tstop::Bool, target = nothing
+    )
+    integrator.next_step_tstop = is_tstop
+    if is_tstop && target !== nothing
+        integrator.tstop_target = target
+    end
+    return nothing
+end
+
 # update integrator when u is modified by callbacks
 function OrdinaryDiffEqCore.handle_callback_modifiers!(integrator::DDEIntegrator)
     integrator.reeval_fsal = true # recalculate fsalfirst after applying step
