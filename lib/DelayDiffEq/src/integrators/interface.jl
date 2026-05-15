@@ -49,7 +49,19 @@ function DiffEqBase.savevalues!(
     # OrdinaryDiffEqCore.get_EEst(integrator) has unitless type of integrator.t
     if OrdinaryDiffEqCore.get_EEst(integrator) isa AbstractFloat
         if ode_integrator.t != integrator.t
-            abs(integrator.t - ode_integrator.t) < 100eps(integrator.t) ||
+            # Tolerance must match the `tstop_tol = 100 * eps(...)` that
+            # modify_dt_for_tstops! uses when deciding to set
+            # next_step_tstop / tstop_target: when `dt + tstop_tol` already
+            # reaches the next tstop, dt is left at `min(original_dt,
+            # distance_to_tstop)` but the step is then snapped to the tstop
+            # in fixed_t_for_tstop_error!. That can leave `ode_integrator.t`
+            # = `tprev + dt` behind by up to `tstop_tol` from
+            # `integrator.t = tstop_target`. Match that bound on the largest
+            # of the two times so the check tracks the snap-back budget
+            # rather than just the integer-1-ULP gap of the previous
+            # (no-snap) regime.
+            tol = 100 * eps(max(abs(integrator.t), abs(ode_integrator.t)))
+            abs(integrator.t - ode_integrator.t) <= tol ||
                 error("unexpected time discrepancy detected")
 
             ode_integrator.t = integrator.t
