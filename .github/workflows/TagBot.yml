@@ -1,106 +1,74 @@
-name: TagBot
-
+name: "TagBot"
 on:
   issue_comment:
-    types:
-      - created
+    types: [created]
   workflow_dispatch:
-    inputs:
-      lookback:
-        default: "3"
-
-permissions:
-  actions: read
-  checks: read
-  contents: write
-  deployments: read
-  issues: read
-  discussions: read
-  packages: read
-  pages: read
-  pull-requests: read
-  repository-projects: read
-  security-events: read
-  statuses: read
-
 jobs:
-  TagBot-OrdinaryDiffEq:
-    if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Tag OrdinaryDiffEq
-        uses: JuliaRegistries/TagBot@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ssh: ${{ secrets.DOCUMENTER_KEY }}
-
-  TagBot-Subpackages:
-    if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
-    runs-on: ubuntu-latest
+  tagbot:
+    uses: "SciML/.github/.github/workflows/tagbot.yml@v1"
+    secrets: "inherit"
+  tagbot-subpackages:
     strategy:
       fail-fast: false
       matrix:
-        package:
-          - DelayDiffEq
-          - DiffEqBase
-          - DiffEqDevTools
-          - ImplicitDiscreteSolve
-          - OrdinaryDiffEqAMF
-          - OrdinaryDiffEqAdamsBashforthMoulton
-          - OrdinaryDiffEqBDF
-          - OrdinaryDiffEqCore
-          - OrdinaryDiffEqDefault
-          - OrdinaryDiffEqDifferentiation
-          - OrdinaryDiffEqExplicitRK
-          - OrdinaryDiffEqExplicitTableaus
-          - OrdinaryDiffEqExponentialRK
-          - OrdinaryDiffEqExtrapolation
-          - OrdinaryDiffEqFIRK
-          - OrdinaryDiffEqFeagin
-          - OrdinaryDiffEqFunctionMap
-          - OrdinaryDiffEqHighOrderRK
-          - OrdinaryDiffEqIMEXMultistep
-          - OrdinaryDiffEqImplicitTableaus
-          - OrdinaryDiffEqLinear
-          - OrdinaryDiffEqLowOrderRK
-          - OrdinaryDiffEqLowStorageRK
-          - OrdinaryDiffEqMultirate
-          - OrdinaryDiffEqNewmark
-          - OrdinaryDiffEqNonlinearSolve
-          - OrdinaryDiffEqNordsieck
-          - OrdinaryDiffEqPDIRK
-          - OrdinaryDiffEqPRK
-          - OrdinaryDiffEqQPRK
-          - OrdinaryDiffEqRKIP
-          - OrdinaryDiffEqRKN
-          - OrdinaryDiffEqRosenbrock
-          - OrdinaryDiffEqRosenbrockTableaus
-          - OrdinaryDiffEqSDIRK
-          - OrdinaryDiffEqSIMDRK
-          - OrdinaryDiffEqSSPRK
-          - OrdinaryDiffEqStabilizedIRK
-          - OrdinaryDiffEqStabilizedRK
-          - OrdinaryDiffEqSymplecticRK
-          - OrdinaryDiffEqTaylorSeries
-          - OrdinaryDiffEqTsit5
-          - OrdinaryDiffEqVerner
-          - SimpleImplicitDiscreteSolve
-          - StochasticDiffEq
-          - StochasticDiffEqCore
-          - StochasticDiffEqHighOrder
-          - StochasticDiffEqIIF
-          - StochasticDiffEqImplicit
-          - StochasticDiffEqLeaping
-          - StochasticDiffEqLevyArea
-          - StochasticDiffEqLowOrder
-          - StochasticDiffEqMilstein
-          - StochasticDiffEqROCK
-          - StochasticDiffEqRODE
-          - StochasticDiffEqWeak
-    steps:
-      - name: Tag ${{ matrix.package }}
-        uses: JuliaRegistries/TagBot@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ssh: ${{ secrets.DOCUMENTER_KEY }}
-          subdir: "lib/${{ matrix.package }}"
+        subdir:
+          - "lib/DelayDiffEq"
+          - "lib/DiffEqBase"
+          - "lib/DiffEqDevTools"
+          - "lib/ImplicitDiscreteSolve"
+          - "lib/OrdinaryDiffEqAdamsBashforthMoulton"
+          - "lib/OrdinaryDiffEqAMF"
+          - "lib/OrdinaryDiffEqBDF"
+          - "lib/OrdinaryDiffEqCore"
+          - "lib/OrdinaryDiffEqDefault"
+          - "lib/OrdinaryDiffEqDifferentiation"
+          - "lib/OrdinaryDiffEqExplicitRK"
+          - "lib/OrdinaryDiffEqExplicitTableaus"
+          - "lib/OrdinaryDiffEqExponentialRK"
+          - "lib/OrdinaryDiffEqExtrapolation"
+          - "lib/OrdinaryDiffEqFeagin"
+          - "lib/OrdinaryDiffEqFIRK"
+          - "lib/OrdinaryDiffEqFunctionMap"
+          - "lib/OrdinaryDiffEqHighOrderRK"
+          - "lib/OrdinaryDiffEqIMEXMultistep"
+          - "lib/OrdinaryDiffEqImplicitTableaus"
+          - "lib/OrdinaryDiffEqLinear"
+          - "lib/OrdinaryDiffEqLowOrderRK"
+          - "lib/OrdinaryDiffEqLowStorageRK"
+          - "lib/OrdinaryDiffEqMultirate"
+          - "lib/OrdinaryDiffEqNewmark"
+          - "lib/OrdinaryDiffEqNonlinearSolve"
+          - "lib/OrdinaryDiffEqNordsieck"
+          - "lib/OrdinaryDiffEqPDIRK"
+          - "lib/OrdinaryDiffEqPRK"
+          - "lib/OrdinaryDiffEqQPRK"
+          - "lib/OrdinaryDiffEqRKIP"
+          - "lib/OrdinaryDiffEqRKN"
+          - "lib/OrdinaryDiffEqRosenbrock"
+          - "lib/OrdinaryDiffEqRosenbrockTableaus"
+          - "lib/OrdinaryDiffEqSDIRK"
+          - "lib/OrdinaryDiffEqSIMDRK"
+          - "lib/OrdinaryDiffEqSSPRK"
+          - "lib/OrdinaryDiffEqStabilizedIRK"
+          - "lib/OrdinaryDiffEqStabilizedRK"
+          - "lib/OrdinaryDiffEqSymplecticRK"
+          - "lib/OrdinaryDiffEqTaylorSeries"
+          - "lib/OrdinaryDiffEqTsit5"
+          - "lib/OrdinaryDiffEqVerner"
+          - "lib/SimpleImplicitDiscreteSolve"
+          - "lib/StochasticDiffEq"
+          - "lib/StochasticDiffEqCore"
+          - "lib/StochasticDiffEqHighOrder"
+          - "lib/StochasticDiffEqIIF"
+          - "lib/StochasticDiffEqImplicit"
+          - "lib/StochasticDiffEqLeaping"
+          - "lib/StochasticDiffEqLevyArea"
+          - "lib/StochasticDiffEqLowOrder"
+          - "lib/StochasticDiffEqMilstein"
+          - "lib/StochasticDiffEqROCK"
+          - "lib/StochasticDiffEqRODE"
+          - "lib/StochasticDiffEqWeak"
+    uses: "SciML/.github/.github/workflows/tagbot.yml@v1"
+    with:
+      subdir: "${{ matrix.subdir }}"
+    secrets: "inherit"

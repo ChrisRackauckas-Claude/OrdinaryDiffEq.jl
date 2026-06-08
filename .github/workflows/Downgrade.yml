@@ -22,7 +22,5 @@ jobs:
     name: "Downgrade"
     uses: "SciML/.github/.github/workflows/downgrade.yml@v1"
     with:
-      julia-version: "1.11"
       group: "InterfaceI"
-      skip: "Pkg,TOML,Statistics,LinearAlgebra,SparseArrays,InteractiveUtils"
     secrets: "inherit"
