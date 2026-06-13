@@ -114,6 +114,7 @@ prob = SDDEProblem(
 );
 dts = (1 / 2) .^ (7:-1:3)
 test_dt = 1 / 2^8
+Random.seed!(100)
 sim2 = analyticless_test_convergence(
     dts, prob, MethodOfSteps(RKMil()), test_dt, trajectories = 100,
     use_noise_grid = false
