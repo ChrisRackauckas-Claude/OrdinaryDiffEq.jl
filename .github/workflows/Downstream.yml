@@ -33,6 +33,13 @@ jobs:
           - {user: SciML, repo: ModelingToolkit.jl, group: SymbolicIndexingInterface}
           - {user: nathanaelbosch, repo: ProbNumDiffEq.jl, group: Downstream}
           - {user: SKopecz, repo: PositiveIntegrators.jl, group: Downstream}
+        exclude:
+          - julia-version: '1.10'
+            package: {user: nathanaelbosch, repo: ProbNumDiffEq.jl, group: Downstream}
+        include:
+          - julia-version: '1.12'
+            os: ubuntu-latest
+            package: {user: nathanaelbosch, repo: ProbNumDiffEq.jl, group: Downstream}
 
     steps:
       - uses: actions/checkout@v7
