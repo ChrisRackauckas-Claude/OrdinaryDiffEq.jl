@@ -126,11 +126,12 @@ end
             zs[1] .= zero(eltype(zs[1]))
         end
         nlsolver.z = zs[1]
-        # Copy into the nlsolver scratch buffer rather than aliasing uprev.
-        copyto!(tmp, uprev)
-        nlsolver.tmp = tmp
+        # Stage 1 must track uprev through MethodOfSteps fixed-point updates. Single-stage
+        # methods restore the owned scratch after the solve; later stages do so below.
+        nlsolver.tmp = uprev
         nlsolver.c = c[1]
         zs[1] = nlsolve!(nlsolver, integrator, cache, repeat_step)
+        s == 1 && (nlsolver.tmp = tmp)
         nlsolvefail(nlsolver) && return
         # All implicit stages share γ on the diagonal; reuse the W from stage 1.
         isnewton(nlsolver) && set_new_W!(nlsolver, false)
